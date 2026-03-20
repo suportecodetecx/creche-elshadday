@@ -9,25 +9,9 @@ class AlunoService:
         self.contador_collection = db.get_collection('contadores')
     
     def get_proximo_numero_inscricao(self):
-        """Gera o próximo número de inscrição sequencial com fallback"""
+        """Gera o próximo número de inscrição sequencial - VERSÃO SIMPLIFICADA"""
         try:
-            # Tenta usar o contador
-            contador = self.contador_collection.find_one_and_update(
-                {'nome': 'num_inscricao'},
-                {'$inc': {'valor': 1}},
-                upsert=True,
-                return_document=True
-            )
-            
-            if not contador:
-                self.contador_collection.insert_one({'nome': 'num_inscricao', 'valor': 1})
-                valor = 1
-            else:
-                valor = contador['valor']
-                
-        except Exception as e:
-            print(f"⚠️ Erro no contador: {e}")
-            # Fallback: busca o último número de inscrição do ano atual
+            # Busca o último número de inscrição do ano atual
             ano = datetime.now().year
             ultimo_aluno = self.collection.find_one(
                 {'num_inscricao': {'$regex': f'-{ano}$'}},
@@ -35,18 +19,22 @@ class AlunoService:
             )
             
             if ultimo_aluno and ultimo_aluno.get('num_inscricao'):
-                try:
-                    partes = ultimo_aluno['num_inscricao'].split('-')
-                    valor = int(partes[0]) + 1
-                except:
-                    valor = 1
+                partes = ultimo_aluno['num_inscricao'].split('-')
+                valor = int(partes[0]) + 1
+                print(f"📌 Último número: {partes[0]}, próximo: {valor}")
             else:
                 valor = 1
-                
-            print(f"📌 Usando fallback - próximo valor: {valor}")
-        
-        ano = datetime.now().year
-        return f"{str(valor).zfill(3)}-{ano}"
+                print("📌 Nenhum aluno encontrado, começando do 1")
+            
+            return f"{str(valor).zfill(3)}-{ano}"
+            
+        except Exception as e:
+            print(f"❌ Erro ao gerar número: {e}")
+            import traceback
+            traceback.print_exc()
+            # Fallback: usar timestamp
+            from datetime import datetime
+            return f"{datetime.now().strftime('%y%m%d%H%M%S')}-{ano}"
     
     def salvar_aluno(self, dados_form, arquivos):
         """Salva os dados do aluno no banco"""
