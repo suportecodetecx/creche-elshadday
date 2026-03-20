@@ -2,7 +2,6 @@ from database.mongo import db
 from datetime import datetime
 from bson.objectid import ObjectId
 import os
-import traceback
 
 class AlunoService:
     def __init__(self):
@@ -10,57 +9,28 @@ class AlunoService:
         self.contador_collection = db.get_collection('contadores')
     
     def get_proximo_numero_inscricao(self):
-        """Gera o próximo número de inscrição sequencial - VERSÃO SIMPLIFICADA"""
-        try:
-            print("🔍 Buscando último aluno...")
-            ano = datetime.now().year
-            
-            # Busca todos os alunos do ano atual
-            alunos_ano = list(self.collection.find(
-                {'num_inscricao': {'$regex': f'-{ano}$'}}
-            ))
-            
-            print(f"📊 Encontrados {len(alunos_ano)} alunos no ano {ano}")
-            
-            if alunos_ano:
-                # Extrai os números e pega o maior
-                numeros = []
-                for aluno in alunos_ano:
-                    try:
-                        num = int(aluno['num_inscricao'].split('-')[0])
-                        numeros.append(num)
-                        print(f"   Número encontrado: {num}")
-                    except Exception as e:
-                        print(f"   Erro ao processar {aluno.get('num_inscricao')}: {e}")
-                        continue
-                
-                if numeros:
-                    valor = max(numeros) + 1
-                    print(f"📌 Último número: {max(numeros)}, próximo: {valor}")
-                else:
-                    valor = 1
-                    print("📌 Nenhum número válido, começando do 1")
-            else:
-                valor = 1
-                print("📌 Nenhum aluno encontrado, começando do 1")
-            
-            numero = f"{str(valor).zfill(3)}-{ano}"
-            print(f"🎯 Número gerado: {numero}")
-            return numero
-            
-        except Exception as e:
-            print(f"❌ Erro ao gerar número: {e}")
-            traceback.print_exc()
-            # Fallback simples
-            from datetime import datetime
-            return f"001-{datetime.now().year}"
+        """Gera o próximo número de inscrição sequencial"""
+        contador = self.contador_collection.find_one_and_update(
+            {'nome': 'num_inscricao'},
+            {'$inc': {'valor': 1}},
+            upsert=True,
+            return_document=True
+        )
+        
+        if not contador:
+            self.contador_collection.insert_one({'nome': 'num_inscricao', 'valor': 1})
+            valor = 1
+        else:
+            valor = contador['valor']
+        
+        ano = datetime.now().year
+        return f"{str(valor).zfill(3)}-{ano}"
     
     def salvar_aluno(self, dados_form, arquivos):
         """Salva os dados do aluno no banco"""
         
         # Gera número de inscrição
         num_inscricao = self.get_proximo_numero_inscricao()
-        print(f"📌 Novo número de inscrição gerado: {num_inscricao}")
         
         # Prepara o documento do aluno
         aluno = {
@@ -113,20 +83,20 @@ class AlunoService:
             'arquivos': arquivos
         }
         
-        # Adiciona responsável principal
+        # Adiciona responsável principal (COM TELEFONE DE CONTATO)
         if dados_form.get('responsavel1_nome'):
             aluno['responsaveis'].append({
                 'tipo': 'principal',
                 'nome': dados_form.get('responsavel1_nome'),
                 'parentesco': dados_form.get('responsavel1_parentesco'),
                 'telefone': dados_form.get('responsavel1_telefone'),
-                'telefone_contato': dados_form.get('responsavel1_telefone_contato'),
+                'telefone_contato': dados_form.get('responsavel1_telefone_contato'),  # NOVO CAMPO
                 'cpf': dados_form.get('responsavel1_cpf'),
                 'rg': dados_form.get('responsavel1_rg'),
                 'email': dados_form.get('responsavel1_email')
             })
         
-        # Adiciona responsáveis adicionais
+        # Adiciona responsáveis adicionais (COM TELEFONE DE CONTATO)
         for i in range(2, 5):
             if dados_form.get(f'responsavel{i}_nome'):
                 aluno['responsaveis'].append({
@@ -134,7 +104,7 @@ class AlunoService:
                     'nome': dados_form.get(f'responsavel{i}_nome'),
                     'parentesco': dados_form.get(f'responsavel{i}_parentesco'),
                     'telefone': dados_form.get(f'responsavel{i}_telefone'),
-                    'telefone_contato': dados_form.get(f'responsavel{i}_telefone_contato'),
+                    'telefone_contato': dados_form.get(f'responsavel{i}_telefone_contato'),  # NOVO CAMPO
                     'cpf': dados_form.get(f'responsavel{i}_cpf'),
                     'rg': dados_form.get(f'responsavel{i}_rg'),
                     'email': dados_form.get(f'responsavel{i}_email')
@@ -164,7 +134,6 @@ class AlunoService:
         
         # Insere no banco
         result = self.collection.insert_one(aluno)
-        print(f"✅ Aluno salvo com ID: {result.inserted_id}")
         
         return {
             'id': str(result.inserted_id),
@@ -181,7 +150,7 @@ class AlunoService:
             if not aluno_original:
                 raise Exception("Aluno não encontrado")
             
-            # Prepara os dados atualizados
+            # Prepara os dados atualizados (mesma estrutura do salvar_aluno)
             aluno_atualizado = {
                 'num_inscricao': num_inscricao_original,
                 'data_cadastro': aluno_original.get('data_cadastro', datetime.now()),
@@ -232,20 +201,20 @@ class AlunoService:
                 'transporte': None
             }
             
-            # Adiciona responsável principal
+            # Adiciona responsável principal (COM TELEFONE DE CONTATO)
             if dados_form.get('responsavel1_nome'):
                 aluno_atualizado['responsaveis'].append({
                     'tipo': 'principal',
                     'nome': dados_form.get('responsavel1_nome'),
                     'parentesco': dados_form.get('responsavel1_parentesco'),
                     'telefone': dados_form.get('responsavel1_telefone'),
-                    'telefone_contato': dados_form.get('responsavel1_telefone_contato'),
+                    'telefone_contato': dados_form.get('responsavel1_telefone_contato'),  # NOVO CAMPO
                     'cpf': dados_form.get('responsavel1_cpf'),
                     'rg': dados_form.get('responsavel1_rg'),
                     'email': dados_form.get('responsavel1_email')
                 })
             
-            # Adiciona responsáveis adicionais
+            # Adiciona responsáveis adicionais (COM TELEFONE DE CONTATO)
             for i in range(2, 5):
                 if dados_form.get(f'responsavel{i}_nome'):
                     aluno_atualizado['responsaveis'].append({
@@ -253,7 +222,7 @@ class AlunoService:
                         'nome': dados_form.get(f'responsavel{i}_nome'),
                         'parentesco': dados_form.get(f'responsavel{i}_parentesco'),
                         'telefone': dados_form.get(f'responsavel{i}_telefone'),
-                        'telefone_contato': dados_form.get(f'responsavel{i}_telefone_contato'),
+                        'telefone_contato': dados_form.get(f'responsavel{i}_telefone_contato'),  # NOVO CAMPO
                         'cpf': dados_form.get(f'responsavel{i}_cpf'),
                         'rg': dados_form.get(f'responsavel{i}_rg'),
                         'email': dados_form.get(f'responsavel{i}_email')
@@ -281,19 +250,73 @@ class AlunoService:
                     'email': dados_form.get('transporte_email')
                 }
             
-            # Processar substituição de arquivos
+            # ===== Processar substituição de fotos e documentos =====
+            # Lista de campos que são fotos
+            campos_foto = [
+                'foto_aluno', 'foto_responsavel1', 'foto_responsavel2', 'foto_responsavel3',
+                'foto_terceiro1', 'foto_terceiro2', 'foto_terceiro3', 'foto_transporte'
+            ]
+            
+            # Lista de todos os campos de documentos (incluindo segundo responsável)
+            campos_documentos = [
+                'aluno_certidao', 'aluno_cpf', 'aluno_rg', 'aluno_vacinacao', 'aluno_laudos',
+                'resp_rg', 'resp_cpf', 'resp_comprovante',
+                'resp2_rg', 'resp2_cpf',
+                'terceiro_rg',
+                'transporte_rg', 'transporte_cpf', 'transporte_cnh'
+            ]
+            
             # Arquivos antigos que serão mantidos
             arquivos_manter = []
+            
+            print("\n🔄 Processando substituição de arquivos:")
+            
+            # Para cada novo arquivo, verifica se substitui algum antigo
+            for novo_arquivo in novos_arquivos:
+                campo = novo_arquivo['campo']
+                
+                # Procura arquivo antigo com o mesmo campo
+                arquivo_antigo = None
+                for i, arq in enumerate(aluno_original.get('arquivos', [])):
+                    if arq['campo'] == campo:
+                        arquivo_antigo = arq
+                        break
+                
+                if arquivo_antigo:
+                    # Se for foto ou documento, substitui
+                    print(f"   🔄 Substituindo {campo}: {arquivo_antigo['nome']} -> {novo_arquivo['nome']}")
+                    # Tenta excluir o arquivo físico antigo
+                    try:
+                        caminho_relativo = arquivo_antigo['caminho'].lstrip('/')
+                        caminho_completo = os.path.join('uploads', caminho_relativo.replace('uploads/', '', 1))
+                        if os.path.exists(caminho_completo):
+                            os.remove(caminho_completo)
+                            print(f"      ✅ Arquivo antigo excluído: {caminho_completo}")
+                    except Exception as e:
+                        print(f"      ⚠️ Erro ao excluir arquivo antigo: {e}")
+                else:
+                    # É um arquivo novo (não existia antes)
+                    if campo in campos_foto:
+                        print(f"   ➕ Adicionando nova foto: {novo_arquivo['nome']}")
+                    else:
+                        print(f"   ➕ Adicionando novo documento: {novo_arquivo['nome']}")
             
             # Identifica quais arquivos antigos NÃO foram substituídos
             for arquivo_antigo in aluno_original.get('arquivos', []):
                 campo = arquivo_antigo['campo']
+                # Verifica se este campo NÃO foi substituído por um novo
                 if campo not in [na['campo'] for na in novos_arquivos]:
                     arquivos_manter.append(arquivo_antigo)
+                    print(f"   ✅ Mantendo arquivo existente: {arquivo_antigo['nome']}")
             
-            # Lista final de arquivos
+            # Lista final de arquivos: mantidos + novos
             arquivos_finais = arquivos_manter + novos_arquivos
             aluno_atualizado['arquivos'] = arquivos_finais
+            
+            print(f"\n📊 RESUMO DOS ARQUIVOS APÓS ATUALIZAÇÃO:")
+            print(f"   📁 Arquivos mantidos: {len(arquivos_manter)}")
+            print(f"   📁 Novos arquivos: {len(novos_arquivos)}")
+            print(f"   📁 Total: {len(arquivos_finais)}")
             
             # Atualiza no banco
             result = self.collection.update_one(
@@ -313,7 +336,6 @@ class AlunoService:
             
         except Exception as e:
             print(f"❌ Erro ao atualizar aluno: {str(e)}")
-            traceback.print_exc()
             raise e
     
     def excluir_aluno(self, num_inscricao):
@@ -321,10 +343,12 @@ class AlunoService:
         try:
             print(f"🗑️ Excluindo aluno do banco: {num_inscricao}")
             
+            # Busca o aluno antes de excluir
             aluno = self.get_aluno_by_inscricao(num_inscricao)
             if not aluno:
                 raise Exception("Aluno não encontrado")
             
+            # Exclui do banco
             result = self.collection.delete_one({'num_inscricao': num_inscricao})
             
             if result.deleted_count > 0:
@@ -335,7 +359,6 @@ class AlunoService:
                 
         except Exception as e:
             print(f"❌ Erro ao excluir aluno: {str(e)}")
-            traceback.print_exc()
             raise e
     
     def buscar_alunos(self, filtro=None):
@@ -344,12 +367,14 @@ class AlunoService:
         
         try:
             alunos = list(self.collection.find(query).sort('data_cadastro', -1))
+            
+            # Converte ObjectId para string
             for aluno in alunos:
                 aluno['_id'] = str(aluno['_id'])
+            
             return alunos
         except Exception as e:
             print(f"Erro ao buscar alunos: {e}")
-            traceback.print_exc()
             return []
     
     def get_aluno_by_id(self, aluno_id):
@@ -359,8 +384,7 @@ class AlunoService:
             if aluno:
                 aluno['_id'] = str(aluno['_id'])
             return aluno
-        except Exception as e:
-            print(f"Erro ao buscar aluno por ID: {e}")
+        except:
             return None
     
     def get_aluno_by_inscricao(self, num_inscricao):
@@ -370,6 +394,5 @@ class AlunoService:
             if aluno:
                 aluno['_id'] = str(aluno['_id'])
             return aluno
-        except Exception as e:
-            print(f"Erro ao buscar aluno por inscrição: {e}")
+        except:
             return None
