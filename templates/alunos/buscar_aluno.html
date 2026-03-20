@@ -1204,14 +1204,15 @@
                                 </div>
                                 <div class="documentos-lista" id="documentos-lista-${alunoId}">
                                     ${fotos.map(foto => {
-                                        const fotoUrl = foto.data_url || foto.caminho;
-                                        return `<span class="doc-tag foto" onclick="event.stopPropagation(); window.open('${fotoUrl}', '_blank')">
+                                        // Usa a rota de visualização para abrir em nova aba
+                                        const visualizarUrl = `/api/visualizar/${foto.campo}/${aluno.num_inscricao}`;
+                                        return `<span class="doc-tag foto" onclick="event.stopPropagation(); window.open('${visualizarUrl}', '_blank')">
                                             📸 ${foto.campo.replace('foto_', '').replace(/_/g, ' ')}
                                         </span>`;
                                     }).join('')}
                                     ${documentos.map(doc => {
-                                        const docUrl = doc.data_url || doc.caminho;
-                                        return `<span class="doc-tag documento" onclick="event.stopPropagation(); window.open('${docUrl}', '_blank')">
+                                        const visualizarUrl = `/api/visualizar/${doc.campo}/${aluno.num_inscricao}`;
+                                        return `<span class="doc-tag documento" onclick="event.stopPropagation(); window.open('${visualizarUrl}', '_blank')">
                                             📄 ${doc.campo.replace(/_/g, ' ')}
                                         </span>`;
                                     }).join('')}
@@ -1376,8 +1377,8 @@
                     <h4 style="color: white;">📄 Documentos</h4>
                     <div class="documentos-tags">
                         ${arquivos.map(doc => {
-                            const docUrl = doc.data_url || doc.caminho;
-                            return `<span class="doc-tag" onclick="window.open('${docUrl}', '_blank')" style="cursor: pointer;">📎 ${doc.campo.replace(/_/g, ' ')}</span>`;
+                            const visualizarUrl = `/api/visualizar/${doc.campo}/${aluno.num_inscricao}`;
+                            return `<span class="doc-tag" onclick="window.open('${visualizarUrl}', '_blank')" style="cursor: pointer;">📎 ${doc.campo.replace(/_/g, ' ')}</span>`;
                         }).join('') || '<span class="doc-tag">Nenhum documento</span>'}
                     </div>
                 </div>

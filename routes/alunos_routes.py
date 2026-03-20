@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, render_template, send_file
+from flask import Blueprint, request, jsonify, render_template, send_file, redirect
 from services.aluno_service import AlunoService
 from werkzeug.utils import secure_filename
 import os
@@ -81,6 +81,59 @@ def save_uploaded_file(file, subfolder, campo):
             print(f"   ❌ Erro ao salvar arquivo: {e}")
             return None
     return None
+
+@alunos_bp.route('/api/visualizar/<campo>/<num_inscricao>', methods=['GET'])
+def visualizar_arquivo(campo, num_inscricao):
+    """Visualiza um arquivo salvo no MongoDB (Base64)"""
+    try:
+        # Busca o aluno
+        aluno = aluno_service.get_aluno_by_inscricao(num_inscricao)
+        if not aluno:
+            return jsonify({'erro': 'Aluno não encontrado'}), 404
+        
+        # Busca o arquivo pelo campo
+        arquivo = None
+        for arq in aluno.get('arquivos', []):
+            if arq.get('campo') == campo:
+                arquivo = arq
+                break
+        
+        if not arquivo:
+            return jsonify({'erro': 'Arquivo não encontrado'}), 404
+        
+        # Se tem dados em Base64, renderiza
+        if arquivo.get('dados'):
+            dados_bytes = base64.b64decode(arquivo['dados'])
+            
+            # Define o tipo MIME corretamente
+            if arquivo.get('tipo') in ['jpg', 'jpeg']:
+                mime_type = 'image/jpeg'
+            elif arquivo.get('tipo') == 'png':
+                mime_type = 'image/png'
+            elif arquivo.get('tipo') == 'gif':
+                mime_type = 'image/gif'
+            elif arquivo.get('tipo') == 'pdf':
+                mime_type = 'application/pdf'
+            else:
+                mime_type = 'application/octet-stream'
+            
+            return send_file(
+                BytesIO(dados_bytes),
+                mimetype=mime_type,
+                as_attachment=False,
+                download_name=arquivo.get('nome', 'arquivo')
+            )
+        
+        # Fallback para caminho
+        if arquivo.get('caminho'):
+            return redirect(arquivo['caminho'])
+        
+        return jsonify({'erro': 'Arquivo não encontrado'}), 404
+        
+    except Exception as e:
+        print(f"❌ Erro ao visualizar arquivo: {e}")
+        traceback.print_exc()
+        return jsonify({'erro': str(e)}), 500
 
 @alunos_bp.route('/api/alunos/proximo-numero', methods=['GET'])
 def proximo_numero():
@@ -434,7 +487,7 @@ def buscar_alunos():
             if aluno.get('arquivos'):
                 for arquivo in aluno['arquivos']:
                     if arquivo.get('dados'):
-                        # Criar data_url para exibição (consistente com aluno_service)
+                        # Criar data_url para exibição
                         tipo = arquivo.get('tipo', 'jpeg')
                         arquivo['data_url'] = f"data:image/{tipo};base64,{arquivo['dados']}"
         
