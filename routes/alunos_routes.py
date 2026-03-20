@@ -5,12 +5,22 @@ import os
 from datetime import datetime
 import uuid
 import traceback
+import sys
 
 alunos_bp = Blueprint('alunos', __name__)
 aluno_service = AlunoService()
 
-# Configurações de upload
-UPLOAD_FOLDER = 'uploads'
+# Detecta se está no Vercel
+IS_VERCEL = os.environ.get('VERCEL') == '1' or os.environ.get('NOW') is not None
+
+# Configurações de upload - usa /tmp no Vercel
+if IS_VERCEL:
+    UPLOAD_FOLDER = '/tmp/uploads'
+    print("📁 Modo Vercel - usando /tmp/uploads")
+else:
+    UPLOAD_FOLDER = 'uploads'
+    print("📁 Modo local - usando uploads/")
+
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}
 
 def allowed_file(filename):
@@ -27,20 +37,33 @@ def save_uploaded_file(file, subfolder, campo):
         
         # Caminho completo
         upload_path = os.path.join(UPLOAD_FOLDER, subfolder)
-        os.makedirs(upload_path, exist_ok=True)
+        
+        # Tenta criar a pasta, se falhar no Vercel, usa /tmp direto
+        try:
+            os.makedirs(upload_path, exist_ok=True)
+        except Exception as e:
+            print(f"⚠️ Não foi possível criar {upload_path}: {e}")
+            if IS_VERCEL:
+                upload_path = '/tmp'
+                print(f"📁 Usando fallback: {upload_path}")
+        
         filepath = os.path.join(upload_path, filename)
         
-        # Salva arquivo
-        file.save(filepath)
-        print(f"   ✅ Arquivo salvo em: {filepath}")
-        
-        return {
-            'campo': campo,
-            'nome': filename,
-            'caminho': f"/uploads/{subfolder}/{filename}",
-            'tipo': ext,
-            'tamanho': os.path.getsize(filepath)
-        }
+        try:
+            # Salva arquivo
+            file.save(filepath)
+            print(f"   ✅ Arquivo salvo em: {filepath}")
+            
+            return {
+                'campo': campo,
+                'nome': filename,
+                'caminho': f"/uploads/{subfolder}/{filename}",
+                'tipo': ext,
+                'tamanho': os.path.getsize(filepath) if os.path.exists(filepath) else 0
+            }
+        except Exception as e:
+            print(f"   ❌ Erro ao salvar arquivo: {e}")
+            return None
     return None
 
 @alunos_bp.route('/api/alunos/proximo-numero', methods=['GET'])
@@ -110,8 +133,11 @@ def cadastrar_aluno():
                 if file and file.filename:
                     print(f"\n📸 Salvando FOTO: {campo} -> pasta '{pasta}'")
                     print(f"   Nome original: {file.filename}")
-                    print(f"   Tamanho: {len(file.read())} bytes")
-                    file.seek(0)  # Volta ao início do arquivo
+                    # Não ler tamanho completo para não consumir memória
+                    file.seek(0, 2)  # vai para o fim
+                    size = file.tell()
+                    file.seek(0)
+                    print(f"   Tamanho: {size} bytes")
                     
                     info = save_uploaded_file(file, pasta, campo)
                     if info:
@@ -147,8 +173,10 @@ def cadastrar_aluno():
                 if file and file.filename:
                     print(f"\n📄 Salvando DOCUMENTO: {campo} -> pasta '{pasta}'")
                     print(f"   Nome original: {file.filename}")
-                    print(f"   Tamanho: {len(file.read())} bytes")
+                    file.seek(0, 2)
+                    size = file.tell()
                     file.seek(0)
+                    print(f"   Tamanho: {size} bytes")
                     
                     info = save_uploaded_file(file, pasta, campo)
                     if info:
@@ -246,8 +274,10 @@ def atualizar_aluno():
                 if file and file.filename:
                     print(f"\n📸 Salvando FOTO: {campo} -> pasta '{pasta}'")
                     print(f"   Nome original: {file.filename}")
-                    print(f"   Tamanho: {len(file.read())} bytes")
+                    file.seek(0, 2)
+                    size = file.tell()
                     file.seek(0)
+                    print(f"   Tamanho: {size} bytes")
                     
                     info = save_uploaded_file(file, pasta, campo)
                     if info:
@@ -283,8 +313,10 @@ def atualizar_aluno():
                 if file and file.filename:
                     print(f"\n📄 Salvando DOCUMENTO: {campo} -> pasta '{pasta}'")
                     print(f"   Nome original: {file.filename}")
-                    print(f"   Tamanho: {len(file.read())} bytes")
+                    file.seek(0, 2)
+                    size = file.tell()
                     file.seek(0)
+                    print(f"   Tamanho: {size} bytes")
                     
                     info = save_uploaded_file(file, pasta, campo)
                     if info:
@@ -365,7 +397,10 @@ def excluir_aluno():
                 try:
                     # Converte o caminho da URL para caminho do sistema
                     caminho_relativo = arquivo['caminho'].lstrip('/')
-                    caminho_completo = os.path.join(UPLOAD_FOLDER, caminho_relativo.replace('uploads/', '', 1))
+                    if IS_VERCEL:
+                        caminho_completo = os.path.join('/tmp', caminho_relativo.replace('uploads/', '', 1))
+                    else:
+                        caminho_completo = os.path.join(UPLOAD_FOLDER, caminho_relativo.replace('uploads/', '', 1))
                     
                     if os.path.exists(caminho_completo):
                         os.remove(caminho_completo)
