@@ -2,6 +2,7 @@ from database.mongo import db
 from datetime import datetime
 from bson.objectid import ObjectId
 import os
+import traceback
 
 class AlunoService:
     def __init__(self):
@@ -11,30 +12,48 @@ class AlunoService:
     def get_proximo_numero_inscricao(self):
         """Gera o próximo número de inscrição sequencial - VERSÃO SIMPLIFICADA"""
         try:
-            # Busca o último número de inscrição do ano atual
+            print("🔍 Buscando último aluno...")
             ano = datetime.now().year
-            ultimo_aluno = self.collection.find_one(
-                {'num_inscricao': {'$regex': f'-{ano}$'}},
-                sort=[('num_inscricao', -1)]
-            )
             
-            if ultimo_aluno and ultimo_aluno.get('num_inscricao'):
-                partes = ultimo_aluno['num_inscricao'].split('-')
-                valor = int(partes[0]) + 1
-                print(f"📌 Último número: {partes[0]}, próximo: {valor}")
+            # Busca todos os alunos do ano atual
+            alunos_ano = list(self.collection.find(
+                {'num_inscricao': {'$regex': f'-{ano}$'}}
+            ))
+            
+            print(f"📊 Encontrados {len(alunos_ano)} alunos no ano {ano}")
+            
+            if alunos_ano:
+                # Extrai os números e pega o maior
+                numeros = []
+                for aluno in alunos_ano:
+                    try:
+                        num = int(aluno['num_inscricao'].split('-')[0])
+                        numeros.append(num)
+                        print(f"   Número encontrado: {num}")
+                    except Exception as e:
+                        print(f"   Erro ao processar {aluno.get('num_inscricao')}: {e}")
+                        continue
+                
+                if numeros:
+                    valor = max(numeros) + 1
+                    print(f"📌 Último número: {max(numeros)}, próximo: {valor}")
+                else:
+                    valor = 1
+                    print("📌 Nenhum número válido, começando do 1")
             else:
                 valor = 1
                 print("📌 Nenhum aluno encontrado, começando do 1")
             
-            return f"{str(valor).zfill(3)}-{ano}"
+            numero = f"{str(valor).zfill(3)}-{ano}"
+            print(f"🎯 Número gerado: {numero}")
+            return numero
             
         except Exception as e:
             print(f"❌ Erro ao gerar número: {e}")
-            import traceback
             traceback.print_exc()
-            # Fallback: usar timestamp
+            # Fallback simples
             from datetime import datetime
-            return f"{datetime.now().strftime('%y%m%d%H%M%S')}-{ano}"
+            return f"001-{datetime.now().year}"
     
     def salvar_aluno(self, dados_form, arquivos):
         """Salva os dados do aluno no banco"""
@@ -263,11 +282,6 @@ class AlunoService:
                 }
             
             # Processar substituição de arquivos
-            campos_foto = [
-                'foto_aluno', 'foto_responsavel1', 'foto_responsavel2', 'foto_responsavel3',
-                'foto_terceiro1', 'foto_terceiro2', 'foto_terceiro3', 'foto_transporte'
-            ]
-            
             # Arquivos antigos que serão mantidos
             arquivos_manter = []
             
@@ -289,6 +303,8 @@ class AlunoService:
             
             if result.modified_count > 0:
                 print(f"✅ Aluno atualizado: {num_inscricao_original}")
+            else:
+                print(f"⚠️ Nenhuma alteração feita em: {num_inscricao_original}")
             
             return {
                 'num_inscricao': num_inscricao_original,
@@ -297,6 +313,7 @@ class AlunoService:
             
         except Exception as e:
             print(f"❌ Erro ao atualizar aluno: {str(e)}")
+            traceback.print_exc()
             raise e
     
     def excluir_aluno(self, num_inscricao):
@@ -318,6 +335,7 @@ class AlunoService:
                 
         except Exception as e:
             print(f"❌ Erro ao excluir aluno: {str(e)}")
+            traceback.print_exc()
             raise e
     
     def buscar_alunos(self, filtro=None):
@@ -331,6 +349,7 @@ class AlunoService:
             return alunos
         except Exception as e:
             print(f"Erro ao buscar alunos: {e}")
+            traceback.print_exc()
             return []
     
     def get_aluno_by_id(self, aluno_id):
@@ -340,7 +359,8 @@ class AlunoService:
             if aluno:
                 aluno['_id'] = str(aluno['_id'])
             return aluno
-        except:
+        except Exception as e:
+            print(f"Erro ao buscar aluno por ID: {e}")
             return None
     
     def get_aluno_by_inscricao(self, num_inscricao):
@@ -350,5 +370,6 @@ class AlunoService:
             if aluno:
                 aluno['_id'] = str(aluno['_id'])
             return aluno
-        except:
+        except Exception as e:
+            print(f"Erro ao buscar aluno por inscrição: {e}")
             return None
