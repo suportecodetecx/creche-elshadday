@@ -11,10 +11,5 @@
       "src": "/(.*)",
       "dest": "app.py"
     }
-  ],
-  "env": {
-    "MONGO_URI": "mongodb+srv://cadastro_db_user:0Vvl27ZcrYqaD8Kj@cluster0.6mtltjd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
-    "DB_NAME": "creche_el_shadday",
-    "SECRET_KEY": "sua-chave-secreta-aqui"
-  }
+  ]
 }
