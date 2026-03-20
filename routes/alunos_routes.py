@@ -4,6 +4,7 @@ from werkzeug.utils import secure_filename
 import os
 from datetime import datetime
 import uuid
+import traceback
 
 alunos_bp = Blueprint('alunos', __name__)
 aluno_service = AlunoService()
@@ -46,12 +47,16 @@ def save_uploaded_file(file, subfolder, campo):
 def proximo_numero():
     """Retorna o próximo número de inscrição"""
     try:
+        print("🔍 Buscando próximo número de inscrição...")
         num_inscricao = aluno_service.get_proximo_numero_inscricao()
+        print(f"✅ Número gerado: {num_inscricao}")
         return jsonify({
             'sucesso': True,
             'numero': num_inscricao
         })
     except Exception as e:
+        print(f"❌ Erro ao gerar número: {str(e)}")
+        traceback.print_exc()
         return jsonify({
             'sucesso': False,
             'erro': str(e)
@@ -124,7 +129,7 @@ def cadastrar_aluno():
             'aluno_cpf': 'documentos',
             'aluno_rg': 'documentos',
             'aluno_vacinacao': 'documentos',
-            'aluno_laudos': 'documentos',  # ← ADICIONADO (LAUDO)
+            'aluno_laudos': 'documentos',
             'resp_rg': 'documentos',
             'resp_cpf': 'documentos',
             'resp_comprovante': 'documentos',
@@ -177,7 +182,6 @@ def cadastrar_aluno():
         
     except Exception as e:
         print(f"\n❌ ERRO: {str(e)}")
-        import traceback
         traceback.print_exc()
         print("="*60)
         return jsonify({
@@ -243,7 +247,7 @@ def atualizar_aluno():
                     print(f"\n📸 Salvando FOTO: {campo} -> pasta '{pasta}'")
                     print(f"   Nome original: {file.filename}")
                     print(f"   Tamanho: {len(file.read())} bytes")
-                    file.seek(0)  # Volta ao início do arquivo
+                    file.seek(0)
                     
                     info = save_uploaded_file(file, pasta, campo)
                     if info:
@@ -261,7 +265,7 @@ def atualizar_aluno():
             'aluno_cpf': 'documentos',
             'aluno_rg': 'documentos',
             'aluno_vacinacao': 'documentos',
-            'aluno_laudos': 'documentos',  # ← ADICIONADO (LAUDO)
+            'aluno_laudos': 'documentos',
             'resp_rg': 'documentos',
             'resp_cpf': 'documentos',
             'resp_comprovante': 'documentos',
@@ -317,7 +321,6 @@ def atualizar_aluno():
         
     except Exception as e:
         print(f"\n❌ ERRO: {str(e)}")
-        import traceback
         traceback.print_exc()
         print("="*60)
         return jsonify({
@@ -387,7 +390,6 @@ def excluir_aluno():
         
     except Exception as e:
         print(f"\n❌ ERRO: {str(e)}")
-        import traceback
         traceback.print_exc()
         print("="*60)
         return jsonify({
@@ -451,7 +453,6 @@ def buscar_alunos():
         
     except Exception as e:
         print(f"❌ Erro na busca: {str(e)}")
-        import traceback
         traceback.print_exc()
         return jsonify({
             'sucesso': False,
