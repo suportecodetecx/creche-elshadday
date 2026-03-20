@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, render_template
+from flask import Blueprint, request, jsonify, render_template, send_file
 from services.aluno_service import AlunoService
 from werkzeug.utils import secure_filename
 import os
@@ -6,6 +6,8 @@ from datetime import datetime
 import uuid
 import traceback
 import sys
+import base64
+from io import BytesIO
 
 alunos_bp = Blueprint('alunos', __name__)
 aluno_service = AlunoService()
@@ -13,44 +15,58 @@ aluno_service = AlunoService()
 # Detecta se está no Vercel
 IS_VERCEL = os.environ.get('VERCEL') == '1' or os.environ.get('NOW') is not None
 
-# Configurações de upload - usa /tmp no Vercel
-if IS_VERCEL:
-    UPLOAD_FOLDER = '/tmp/uploads'
-    print("📁 Modo Vercel - usando /tmp/uploads")
-else:
-    UPLOAD_FOLDER = 'uploads'
-    print("📁 Modo local - usando uploads/")
-
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def save_uploaded_file(file, subfolder, campo):
-    """Salva um arquivo enviado e retorna informações"""
+def save_uploaded_file_to_db(file, campo):
+    """Salva um arquivo como Base64 no MongoDB"""
     if file and allowed_file(file.filename):
-        # Gera nome único
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         unique_id = str(uuid.uuid4())[:8]
         ext = file.filename.rsplit('.', 1)[1].lower()
         filename = f"{timestamp}_{unique_id}_{campo}.{ext}"
         
-        # Caminho completo
-        upload_path = os.path.join(UPLOAD_FOLDER, subfolder)
+        # Lê o arquivo e converte para Base64
+        file_data = file.read()
+        base64_data = base64.b64encode(file_data).decode('utf-8')
         
-        # Tenta criar a pasta, se falhar no Vercel, usa /tmp direto
+        print(f"   ✅ Arquivo convertido para Base64: {filename} ({len(file_data)} bytes)")
+        
+        return {
+            'campo': campo,
+            'nome': filename,
+            'dados': base64_data,
+            'tipo': ext,
+            'tamanho': len(file_data)
+        }
+    return None
+
+def save_uploaded_file(file, subfolder, campo):
+    """Salva um arquivo enviado (fallback para sistema de arquivos)"""
+    # Tenta salvar no MongoDB primeiro (para Vercel)
+    info_db = save_uploaded_file_to_db(file, campo)
+    if info_db:
+        return info_db
+    
+    # Fallback: salva no sistema de arquivos (local)
+    if file and allowed_file(file.filename):
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        unique_id = str(uuid.uuid4())[:8]
+        ext = file.filename.rsplit('.', 1)[1].lower()
+        filename = f"{timestamp}_{unique_id}_{campo}.{ext}"
+        
+        upload_path = os.path.join('uploads', subfolder)
         try:
             os.makedirs(upload_path, exist_ok=True)
         except Exception as e:
             print(f"⚠️ Não foi possível criar {upload_path}: {e}")
-            if IS_VERCEL:
-                upload_path = '/tmp'
-                print(f"📁 Usando fallback: {upload_path}")
+            upload_path = '/tmp'
         
         filepath = os.path.join(upload_path, filename)
         
         try:
-            # Salva arquivo
             file.save(filepath)
             print(f"   ✅ Arquivo salvo em: {filepath}")
             
@@ -81,7 +97,6 @@ def proximo_numero():
         print(f"❌ Erro ao gerar número: {str(e)}")
         traceback.print_exc()
         
-        # Fallback: busca direto no MongoDB
         try:
             from database.mongo import db
             ano = datetime.now().year
@@ -101,7 +116,6 @@ def proximo_numero():
         except Exception as e2:
             print(f"Fallback também falhou: {e2}")
         
-        # Último recurso
         from datetime import datetime
         numero_temp = f"001-{datetime.now().year}"
         print(f"📌 Usando número temporário: {numero_temp}")
@@ -118,7 +132,6 @@ def cadastrar_aluno():
         print("📥 RECEBENDO REQUISIÇÃO DE CADASTRO")
         print("="*60)
         
-        # ===== LOG DETALHADO DOS ARQUIVOS RECEBIDOS =====
         print("\n🔍 ARQUIVOS RECEBIDOS NO REQUEST:")
         arquivos_recebidos = []
         for key in request.files.keys():
@@ -134,12 +147,10 @@ def cadastrar_aluno():
         print(f"\n📦 DADOS DO FORMULÁRIO:")
         for key, value in request.form.items():
             print(f"   📝 {key}: {value[:30] if value else 'vazio'}")
-        # ================================================
         
-        # Processa os arquivos enviados
         arquivos_salvos = []
         
-        # ===== PRIORIDADE MÁXIMA: FOTOS =====
+        # ===== PROCESSANDO FOTOS =====
         print("\n📸 PROCESSANDO FOTOS...")
         fotos = {
             'foto_aluno': 'alunos',
@@ -156,24 +167,13 @@ def cadastrar_aluno():
             if campo in request.files:
                 file = request.files[campo]
                 if file and file.filename:
-                    print(f"\n📸 Salvando FOTO: {campo} -> pasta '{pasta}'")
-                    print(f"   Nome original: {file.filename}")
-                    # Não ler tamanho completo para não consumir memória
-                    file.seek(0, 2)  # vai para o fim
-                    size = file.tell()
-                    file.seek(0)
-                    print(f"   Tamanho: {size} bytes")
-                    
+                    print(f"\n📸 Processando FOTO: {campo}")
                     info = save_uploaded_file(file, pasta, campo)
                     if info:
                         arquivos_salvos.append(info)
-                        print(f"   ✅ FOTO salva: {info['nome']} ({info['tamanho']} bytes)")
-                else:
-                    print(f"   ⚠️ Campo {campo} presente mas sem arquivo válido")
-            else:
-                print(f"   ❌ Campo {campo} não encontrado no request")
+                        print(f"   ✅ Foto processada: {info['nome']}")
         
-        # ===== DOCUMENTOS =====
+        # ===== PROCESSANDO DOCUMENTOS =====
         print("\n📄 PROCESSANDO DOCUMENTOS...")
         documentos = {
             'aluno_certidao': 'documentos',
@@ -196,30 +196,12 @@ def cadastrar_aluno():
             if campo in request.files:
                 file = request.files[campo]
                 if file and file.filename:
-                    print(f"\n📄 Salvando DOCUMENTO: {campo} -> pasta '{pasta}'")
-                    print(f"   Nome original: {file.filename}")
-                    file.seek(0, 2)
-                    size = file.tell()
-                    file.seek(0)
-                    print(f"   Tamanho: {size} bytes")
-                    
+                    print(f"\n📄 Processando DOCUMENTO: {campo}")
                     info = save_uploaded_file(file, pasta, campo)
                     if info:
                         arquivos_salvos.append(info)
-                        print(f"   ✅ Documento salvo: {info['nome']} ({info['tamanho']} bytes)")
+                        print(f"   ✅ Documento processado: {info['nome']}")
         
-        # ===== RESUMO FINAL =====
-        print("\n" + "="*60)
-        print(f"📦 RESUMO DO CADASTRO:")
-        print(f"   Total de arquivos recebidos: {len(arquivos_recebidos)}")
-        print(f"   Total de arquivos salvos: {len(arquivos_salvos)}")
-        
-        if arquivos_salvos:
-            print("\n   📁 Arquivos salvos:")
-            for arq in arquivos_salvos:
-                print(f"      - {arq['campo']}: {arq['nome']} ({arq['tamanho']} bytes)")
-        
-        # Salva no banco de dados
         print("\n💾 Salvando dados no banco...")
         resultado = aluno_service.salvar_aluno(request.form, arquivos_salvos)
         print(f"✅ Cadastro realizado! Nº: {resultado['num_inscricao']}")
@@ -257,9 +239,7 @@ def atualizar_aluno():
             return jsonify({'sucesso': False, 'erro': 'Número de inscrição não fornecido'}), 400
             
         print(f"📌 Atualizando aluno: {num_inscricao_original}")
-        print("📸 Processando substituição de fotos...")
         
-        # ===== LOG DETALHADO DOS ARQUIVOS RECEBIDOS =====
         print("\n🔍 ARQUIVOS RECEBIDOS NO REQUEST:")
         arquivos_recebidos = []
         for key in request.files.keys():
@@ -275,12 +255,10 @@ def atualizar_aluno():
         print(f"\n📦 DADOS DO FORMULÁRIO:")
         for key, value in request.form.items():
             print(f"   📝 {key}: {value[:30] if value else 'vazio'}")
-        # ================================================
         
-        # Processa os arquivos enviados (apenas os novos)
         arquivos_salvos = []
         
-        # ===== PRIORIDADE MÁXIMA: FOTOS =====
+        # ===== PROCESSANDO FOTOS =====
         print("\n📸 PROCESSANDO FOTOS...")
         fotos = {
             'foto_aluno': 'alunos',
@@ -297,23 +275,13 @@ def atualizar_aluno():
             if campo in request.files:
                 file = request.files[campo]
                 if file and file.filename:
-                    print(f"\n📸 Salvando FOTO: {campo} -> pasta '{pasta}'")
-                    print(f"   Nome original: {file.filename}")
-                    file.seek(0, 2)
-                    size = file.tell()
-                    file.seek(0)
-                    print(f"   Tamanho: {size} bytes")
-                    
+                    print(f"\n📸 Processando FOTO: {campo}")
                     info = save_uploaded_file(file, pasta, campo)
                     if info:
                         arquivos_salvos.append(info)
-                        print(f"   ✅ FOTO salva: {info['nome']} ({info['tamanho']} bytes)")
-                else:
-                    print(f"   ⚠️ Campo {campo} presente mas sem arquivo válido")
-            else:
-                print(f"   ❌ Campo {campo} não encontrado no request")
+                        print(f"   ✅ Foto processada: {info['nome']}")
         
-        # ===== DOCUMENTOS =====
+        # ===== PROCESSANDO DOCUMENTOS =====
         print("\n📄 PROCESSANDO DOCUMENTOS...")
         documentos = {
             'aluno_certidao': 'documentos',
@@ -336,30 +304,12 @@ def atualizar_aluno():
             if campo in request.files:
                 file = request.files[campo]
                 if file and file.filename:
-                    print(f"\n📄 Salvando DOCUMENTO: {campo} -> pasta '{pasta}'")
-                    print(f"   Nome original: {file.filename}")
-                    file.seek(0, 2)
-                    size = file.tell()
-                    file.seek(0)
-                    print(f"   Tamanho: {size} bytes")
-                    
+                    print(f"\n📄 Processando DOCUMENTO: {campo}")
                     info = save_uploaded_file(file, pasta, campo)
                     if info:
                         arquivos_salvos.append(info)
-                        print(f"   ✅ Documento salvo: {info['nome']} ({info['tamanho']} bytes)")
+                        print(f"   ✅ Documento processado: {info['nome']}")
         
-        # ===== RESUMO FINAL =====
-        print("\n" + "="*60)
-        print(f"📦 RESUMO DA ATUALIZAÇÃO:")
-        print(f"   Total de arquivos recebidos: {len(arquivos_recebidos)}")
-        print(f"   Total de novos arquivos salvos: {len(arquivos_salvos)}")
-        
-        if arquivos_salvos:
-            print("\n   📁 Novos arquivos salvos:")
-            for arq in arquivos_salvos:
-                print(f"      - {arq['campo']}: {arq['nome']} ({arq['tamanho']} bytes)")
-        
-        # Atualiza no banco de dados
         print("\n💾 Atualizando dados no banco...")
         resultado = aluno_service.atualizar_aluno(
             num_inscricao_original, 
@@ -394,7 +344,6 @@ def excluir_aluno():
         print("🗑️ RECEBENDO REQUISIÇÃO DE EXCLUSÃO")
         print("="*60)
         
-        # Pega os dados do JSON
         dados = request.get_json()
         num_inscricao = dados.get('num_inscricao')
         
@@ -406,7 +355,6 @@ def excluir_aluno():
         
         print(f"📌 Excluindo aluno: {num_inscricao}")
         
-        # Busca o aluno antes de excluir (para pegar os arquivos)
         aluno = aluno_service.get_aluno_by_inscricao(num_inscricao)
         
         if not aluno:
@@ -415,28 +363,6 @@ def excluir_aluno():
                 'erro': 'Aluno não encontrado'
             }), 404
         
-        # Exclui os arquivos físicos (fotos e documentos)
-        if aluno.get('arquivos'):
-            arquivos_excluidos = 0
-            for arquivo in aluno['arquivos']:
-                try:
-                    # Converte o caminho da URL para caminho do sistema
-                    caminho_relativo = arquivo['caminho'].lstrip('/')
-                    if IS_VERCEL:
-                        caminho_completo = os.path.join('/tmp', caminho_relativo.replace('uploads/', '', 1))
-                    else:
-                        caminho_completo = os.path.join(UPLOAD_FOLDER, caminho_relativo.replace('uploads/', '', 1))
-                    
-                    if os.path.exists(caminho_completo):
-                        os.remove(caminho_completo)
-                        arquivos_excluidos += 1
-                        print(f"   ✅ Arquivo excluído: {caminho_completo}")
-                except Exception as e:
-                    print(f"   ⚠️ Erro ao excluir arquivo: {e}")
-            
-            print(f"   📦 Total de arquivos excluídos: {arquivos_excluidos}")
-        
-        # Exclui do banco de dados
         resultado = aluno_service.excluir_aluno(num_inscricao)
         
         print(f"✅ Aluno excluído: {num_inscricao}")
@@ -467,7 +393,6 @@ def cadastro_aluno():
         
         if num_inscricao:
             print(f"📝 Modo edição - buscando aluno: {num_inscricao}")
-            # Busca o aluno no banco de dados pelo número de inscrição
             aluno = aluno_service.get_aluno_by_inscricao(num_inscricao)
             if aluno:
                 aluno_data = aluno
@@ -485,7 +410,6 @@ def cadastro_aluno():
 def buscar_alunos():
     """Endpoint para buscar alunos"""
     try:
-        # Pega parâmetros de busca
         nome = request.args.get('nome', '')
         num_inscricao = request.args.get('num_inscricao', '')
         turma = request.args.get('turma', '')
@@ -504,6 +428,16 @@ def buscar_alunos():
             filtro['turma.unidade'] = unidade
         
         alunos = aluno_service.buscar_alunos(filtro)
+        
+        # Converter imagens para base64 para exibição
+        for aluno in alunos:
+            if aluno.get('arquivos'):
+                for arquivo in aluno['arquivos']:
+                    if arquivo.get('dados'):
+                        # Criar data_url para exibição (consistente com aluno_service)
+                        tipo = arquivo.get('tipo', 'jpeg')
+                        arquivo['data_url'] = f"data:image/{tipo};base64,{arquivo['dados']}"
+        
         print(f"✅ Encontrados {len(alunos)} alunos")
         
         return jsonify({
@@ -569,13 +503,11 @@ def estatisticas():
         
         total_alunos = len(alunos)
         
-        # Conta turmas únicas
         turmas = set()
         for aluno in alunos:
             if aluno.get('turma', {}).get('turma'):
                 turmas.add(aluno['turma']['turma'])
         
-        # Conta responsáveis
         total_responsaveis = 0
         for aluno in alunos:
             total_responsaveis += len(aluno.get('responsaveis', []))

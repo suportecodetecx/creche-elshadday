@@ -2,6 +2,7 @@ from database.mongo import db
 from datetime import datetime
 from bson.objectid import ObjectId
 import os
+import base64
 
 class AlunoService:
     def __init__(self):
@@ -31,6 +32,21 @@ class AlunoService:
         
         # Gera número de inscrição
         num_inscricao = self.get_proximo_numero_inscricao()
+        print(f"📌 Novo número de inscrição gerado: {num_inscricao}")
+        
+        # Processa arquivos para garantir que estão no formato correto
+        arquivos_processados = []
+        if arquivos:
+            print(f"📁 Processando {len(arquivos)} arquivos...")
+            for arq in arquivos:
+                # Se já tem dados em Base64, mantém
+                if arq.get('dados'):
+                    arquivos_processados.append(arq)
+                    print(f"   ✅ Arquivo em Base64: {arq['nome']} ({arq['tamanho']} bytes)")
+                elif arq.get('caminho'):
+                    # Fallback: mantém o caminho (para compatibilidade)
+                    arquivos_processados.append(arq)
+                    print(f"   ⚠️ Arquivo com caminho: {arq['nome']}")
         
         # Prepara o documento do aluno
         aluno = {
@@ -80,23 +96,23 @@ class AlunoService:
             'responsaveis': [],
             'terceiros': [],
             'transporte': None,
-            'arquivos': arquivos
+            'arquivos': arquivos_processados
         }
         
-        # Adiciona responsável principal (COM TELEFONE DE CONTATO)
+        # Adiciona responsável principal
         if dados_form.get('responsavel1_nome'):
             aluno['responsaveis'].append({
                 'tipo': 'principal',
                 'nome': dados_form.get('responsavel1_nome'),
                 'parentesco': dados_form.get('responsavel1_parentesco'),
                 'telefone': dados_form.get('responsavel1_telefone'),
-                'telefone_contato': dados_form.get('responsavel1_telefone_contato'),  # NOVO CAMPO
+                'telefone_contato': dados_form.get('responsavel1_telefone_contato'),
                 'cpf': dados_form.get('responsavel1_cpf'),
                 'rg': dados_form.get('responsavel1_rg'),
                 'email': dados_form.get('responsavel1_email')
             })
         
-        # Adiciona responsáveis adicionais (COM TELEFONE DE CONTATO)
+        # Adiciona responsáveis adicionais
         for i in range(2, 5):
             if dados_form.get(f'responsavel{i}_nome'):
                 aluno['responsaveis'].append({
@@ -104,7 +120,7 @@ class AlunoService:
                     'nome': dados_form.get(f'responsavel{i}_nome'),
                     'parentesco': dados_form.get(f'responsavel{i}_parentesco'),
                     'telefone': dados_form.get(f'responsavel{i}_telefone'),
-                    'telefone_contato': dados_form.get(f'responsavel{i}_telefone_contato'),  # NOVO CAMPO
+                    'telefone_contato': dados_form.get(f'responsavel{i}_telefone_contato'),
                     'cpf': dados_form.get(f'responsavel{i}_cpf'),
                     'rg': dados_form.get(f'responsavel{i}_rg'),
                     'email': dados_form.get(f'responsavel{i}_email')
@@ -134,6 +150,7 @@ class AlunoService:
         
         # Insere no banco
         result = self.collection.insert_one(aluno)
+        print(f"✅ Aluno salvo com ID: {result.inserted_id}")
         
         return {
             'id': str(result.inserted_id),
@@ -141,7 +158,7 @@ class AlunoService:
         }
     
     def atualizar_aluno(self, num_inscricao_original, dados_form, novos_arquivos):
-        """Atualiza os dados de um aluno existente com substituição de fotos"""
+        """Atualiza os dados de um aluno existente com substituição de arquivos"""
         try:
             print(f"📝 Atualizando aluno: {num_inscricao_original}")
             
@@ -150,7 +167,18 @@ class AlunoService:
             if not aluno_original:
                 raise Exception("Aluno não encontrado")
             
-            # Prepara os dados atualizados (mesma estrutura do salvar_aluno)
+            # Processa novos arquivos
+            novos_arquivos_processados = []
+            if novos_arquivos:
+                for arq in novos_arquivos:
+                    if arq.get('dados'):
+                        novos_arquivos_processados.append(arq)
+                        print(f"   ✅ Novo arquivo em Base64: {arq['nome']}")
+                    elif arq.get('caminho'):
+                        novos_arquivos_processados.append(arq)
+                        print(f"   ⚠️ Novo arquivo com caminho: {arq['nome']}")
+            
+            # Prepara os dados atualizados
             aluno_atualizado = {
                 'num_inscricao': num_inscricao_original,
                 'data_cadastro': aluno_original.get('data_cadastro', datetime.now()),
@@ -201,20 +229,20 @@ class AlunoService:
                 'transporte': None
             }
             
-            # Adiciona responsável principal (COM TELEFONE DE CONTATO)
+            # Adiciona responsável principal
             if dados_form.get('responsavel1_nome'):
                 aluno_atualizado['responsaveis'].append({
                     'tipo': 'principal',
                     'nome': dados_form.get('responsavel1_nome'),
                     'parentesco': dados_form.get('responsavel1_parentesco'),
                     'telefone': dados_form.get('responsavel1_telefone'),
-                    'telefone_contato': dados_form.get('responsavel1_telefone_contato'),  # NOVO CAMPO
+                    'telefone_contato': dados_form.get('responsavel1_telefone_contato'),
                     'cpf': dados_form.get('responsavel1_cpf'),
                     'rg': dados_form.get('responsavel1_rg'),
                     'email': dados_form.get('responsavel1_email')
                 })
             
-            # Adiciona responsáveis adicionais (COM TELEFONE DE CONTATO)
+            # Adiciona responsáveis adicionais
             for i in range(2, 5):
                 if dados_form.get(f'responsavel{i}_nome'):
                     aluno_atualizado['responsaveis'].append({
@@ -222,7 +250,7 @@ class AlunoService:
                         'nome': dados_form.get(f'responsavel{i}_nome'),
                         'parentesco': dados_form.get(f'responsavel{i}_parentesco'),
                         'telefone': dados_form.get(f'responsavel{i}_telefone'),
-                        'telefone_contato': dados_form.get(f'responsavel{i}_telefone_contato'),  # NOVO CAMPO
+                        'telefone_contato': dados_form.get(f'responsavel{i}_telefone_contato'),
                         'cpf': dados_form.get(f'responsavel{i}_cpf'),
                         'rg': dados_form.get(f'responsavel{i}_rg'),
                         'email': dados_form.get(f'responsavel{i}_email')
@@ -250,72 +278,24 @@ class AlunoService:
                     'email': dados_form.get('transporte_email')
                 }
             
-            # ===== Processar substituição de fotos e documentos =====
-            # Lista de campos que são fotos
-            campos_foto = [
-                'foto_aluno', 'foto_responsavel1', 'foto_responsavel2', 'foto_responsavel3',
-                'foto_terceiro1', 'foto_terceiro2', 'foto_terceiro3', 'foto_transporte'
-            ]
-            
-            # Lista de todos os campos de documentos (incluindo segundo responsável)
-            campos_documentos = [
-                'aluno_certidao', 'aluno_cpf', 'aluno_rg', 'aluno_vacinacao', 'aluno_laudos',
-                'resp_rg', 'resp_cpf', 'resp_comprovante',
-                'resp2_rg', 'resp2_cpf',
-                'terceiro_rg',
-                'transporte_rg', 'transporte_cpf', 'transporte_cnh'
-            ]
-            
+            # Processar substituição de arquivos
             # Arquivos antigos que serão mantidos
             arquivos_manter = []
-            
-            print("\n🔄 Processando substituição de arquivos:")
-            
-            # Para cada novo arquivo, verifica se substitui algum antigo
-            for novo_arquivo in novos_arquivos:
-                campo = novo_arquivo['campo']
-                
-                # Procura arquivo antigo com o mesmo campo
-                arquivo_antigo = None
-                for i, arq in enumerate(aluno_original.get('arquivos', [])):
-                    if arq['campo'] == campo:
-                        arquivo_antigo = arq
-                        break
-                
-                if arquivo_antigo:
-                    # Se for foto ou documento, substitui
-                    print(f"   🔄 Substituindo {campo}: {arquivo_antigo['nome']} -> {novo_arquivo['nome']}")
-                    # Tenta excluir o arquivo físico antigo
-                    try:
-                        caminho_relativo = arquivo_antigo['caminho'].lstrip('/')
-                        caminho_completo = os.path.join('uploads', caminho_relativo.replace('uploads/', '', 1))
-                        if os.path.exists(caminho_completo):
-                            os.remove(caminho_completo)
-                            print(f"      ✅ Arquivo antigo excluído: {caminho_completo}")
-                    except Exception as e:
-                        print(f"      ⚠️ Erro ao excluir arquivo antigo: {e}")
-                else:
-                    # É um arquivo novo (não existia antes)
-                    if campo in campos_foto:
-                        print(f"   ➕ Adicionando nova foto: {novo_arquivo['nome']}")
-                    else:
-                        print(f"   ➕ Adicionando novo documento: {novo_arquivo['nome']}")
             
             # Identifica quais arquivos antigos NÃO foram substituídos
             for arquivo_antigo in aluno_original.get('arquivos', []):
                 campo = arquivo_antigo['campo']
-                # Verifica se este campo NÃO foi substituído por um novo
-                if campo not in [na['campo'] for na in novos_arquivos]:
+                if campo not in [na['campo'] for na in novos_arquivos_processados]:
                     arquivos_manter.append(arquivo_antigo)
-                    print(f"   ✅ Mantendo arquivo existente: {arquivo_antigo['nome']}")
+                    print(f"   ✅ Mantendo arquivo: {arquivo_antigo['nome']}")
             
-            # Lista final de arquivos: mantidos + novos
-            arquivos_finais = arquivos_manter + novos_arquivos
+            # Lista final de arquivos
+            arquivos_finais = arquivos_manter + novos_arquivos_processados
             aluno_atualizado['arquivos'] = arquivos_finais
             
             print(f"\n📊 RESUMO DOS ARQUIVOS APÓS ATUALIZAÇÃO:")
             print(f"   📁 Arquivos mantidos: {len(arquivos_manter)}")
-            print(f"   📁 Novos arquivos: {len(novos_arquivos)}")
+            print(f"   📁 Novos arquivos: {len(novos_arquivos_processados)}")
             print(f"   📁 Total: {len(arquivos_finais)}")
             
             # Atualiza no banco
@@ -336,6 +316,8 @@ class AlunoService:
             
         except Exception as e:
             print(f"❌ Erro ao atualizar aluno: {str(e)}")
+            import traceback
+            traceback.print_exc()
             raise e
     
     def excluir_aluno(self, num_inscricao):
@@ -368,13 +350,23 @@ class AlunoService:
         try:
             alunos = list(self.collection.find(query).sort('data_cadastro', -1))
             
-            # Converte ObjectId para string
+            # Converte ObjectId para string e prepara imagens para exibição
             for aluno in alunos:
                 aluno['_id'] = str(aluno['_id'])
+                
+                # Converte arquivos em Base64 para data URL
+                if aluno.get('arquivos'):
+                    for arquivo in aluno['arquivos']:
+                        if arquivo.get('dados'):
+                            # Cria a data URL para exibição no card
+                            tipo = arquivo.get('tipo', 'jpeg')
+                            arquivo['data_url'] = f"data:image/{tipo};base64,{arquivo['dados']}"
             
             return alunos
         except Exception as e:
             print(f"Erro ao buscar alunos: {e}")
+            import traceback
+            traceback.print_exc()
             return []
     
     def get_aluno_by_id(self, aluno_id):
@@ -383,8 +375,16 @@ class AlunoService:
             aluno = self.collection.find_one({'_id': ObjectId(aluno_id)})
             if aluno:
                 aluno['_id'] = str(aluno['_id'])
+                
+                # Converte arquivos em Base64 para data URL
+                if aluno.get('arquivos'):
+                    for arquivo in aluno['arquivos']:
+                        if arquivo.get('dados'):
+                            tipo = arquivo.get('tipo', 'jpeg')
+                            arquivo['data_url'] = f"data:image/{tipo};base64,{arquivo['dados']}"
             return aluno
-        except:
+        except Exception as e:
+            print(f"Erro ao buscar aluno por ID: {e}")
             return None
     
     def get_aluno_by_inscricao(self, num_inscricao):
@@ -393,6 +393,14 @@ class AlunoService:
             aluno = self.collection.find_one({'num_inscricao': num_inscricao})
             if aluno:
                 aluno['_id'] = str(aluno['_id'])
+                
+                # Converte arquivos em Base64 para data URL
+                if aluno.get('arquivos'):
+                    for arquivo in aluno['arquivos']:
+                        if arquivo.get('dados'):
+                            tipo = arquivo.get('tipo', 'jpeg')
+                            arquivo['data_url'] = f"data:image/{tipo};base64,{arquivo['dados']}"
             return aluno
-        except:
+        except Exception as e:
+            print(f"Erro ao buscar aluno por inscrição: {e}")
             return None

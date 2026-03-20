@@ -1024,7 +1024,7 @@
             }
         }
 
-        // Função para buscar foto
+        // Função para buscar foto (CORRIGIDA PARA USAR DATA_URL)
         function getFotoUrl(aluno, tipo) {
             if (!aluno || !aluno.arquivos || aluno.arquivos.length === 0) return null;
             
@@ -1041,7 +1041,10 @@
             const campoFoto = campoMap[tipo];
             if (campoFoto) {
                 const arquivoFoto = aluno.arquivos.find(a => a.campo === campoFoto);
-                if (arquivoFoto) return arquivoFoto.caminho;
+                if (arquivoFoto) {
+                    // Prioriza data_url (Base64), fallback para caminho
+                    return arquivoFoto.data_url || arquivoFoto.caminho || null;
+                }
             }
             return null;
         }
@@ -1170,12 +1173,12 @@
                 html += `
                     <!-- Card do Aluno -->
                     <div class="card-aluno" onclick="verDetalhes(${alunoJson})">
-    <div class="card-header">
-        <img src="${fotoAluno}" class="foto-pessoa" alt="Foto do aluno" onerror="this.src='${AVATAR_SVG}'">
-        <div class="status-badge">RA: ${dadosPessoais.ra || '---'}</div>
-        <h3>${dadosPessoais.nome || 'Sem nome'}</h3>
-        <p class="subtitulo">${turma.turma || '---'} • ${turma.unidade || '---'}</p>
-    </div>
+                        <div class="card-header">
+                            <img src="${fotoAluno}" class="foto-pessoa" alt="Foto do aluno" onerror="this.src='${AVATAR_SVG}'">
+                            <div class="status-badge">RA: ${dadosPessoais.ra || '---'}</div>
+                            <h3>${dadosPessoais.nome || 'Sem nome'}</h3>
+                            <p class="subtitulo">${turma.turma || '---'} • ${turma.unidade || '---'}</p>
+                        </div>
                         <div class="card-body">
                             <div class="info-item">
                                 <div class="info-icon">📅</div>
@@ -1200,16 +1203,18 @@
                                     </button>
                                 </div>
                                 <div class="documentos-lista" id="documentos-lista-${alunoId}">
-                                    ${fotos.map(foto => `
-                                        <span class="doc-tag foto" onclick="event.stopPropagation(); window.open('${foto.caminho}', '_blank')">
+                                    ${fotos.map(foto => {
+                                        const fotoUrl = foto.data_url || foto.caminho;
+                                        return `<span class="doc-tag foto" onclick="event.stopPropagation(); window.open('${fotoUrl}', '_blank')">
                                             📸 ${foto.campo.replace('foto_', '').replace(/_/g, ' ')}
-                                        </span>
-                                    `).join('')}
-                                    ${documentos.map(doc => `
-                                        <span class="doc-tag documento" onclick="event.stopPropagation(); window.open('${doc.caminho}', '_blank')">
+                                        </span>`;
+                                    }).join('')}
+                                    ${documentos.map(doc => {
+                                        const docUrl = doc.data_url || doc.caminho;
+                                        return `<span class="doc-tag documento" onclick="event.stopPropagation(); window.open('${docUrl}', '_blank')">
                                             📄 ${doc.campo.replace(/_/g, ' ')}
-                                        </span>
-                                    `).join('')}
+                                        </span>`;
+                                    }).join('')}
                                     ${arquivos.length === 0 ? '<span class="doc-tag">Nenhum documento</span>' : ''}
                                 </div>
                             </div>
@@ -1370,7 +1375,10 @@
                 <div class="cards-section">
                     <h4 style="color: white;">📄 Documentos</h4>
                     <div class="documentos-tags">
-                        ${arquivos.map(doc => `<span class="doc-tag" onclick="window.open('${doc.caminho}', '_blank')" style="cursor: pointer;">📎 ${doc.campo.replace(/_/g, ' ')}</span>`).join('') || '<span class="doc-tag">Nenhum documento</span>'}
+                        ${arquivos.map(doc => {
+                            const docUrl = doc.data_url || doc.caminho;
+                            return `<span class="doc-tag" onclick="window.open('${docUrl}', '_blank')" style="cursor: pointer;">📎 ${doc.campo.replace(/_/g, ' ')}</span>`;
+                        }).join('') || '<span class="doc-tag">Nenhum documento</span>'}
                     </div>
                 </div>
             `;
