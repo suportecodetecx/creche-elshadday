@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha de Saúde da Criança - Creche El Shadday</title>
+    <style>
+        /* CONFIGURAÇÃO ULTRARRÁPIDA PARA A4 */
+        @page {
+            size: A4;
+            margin: 1.5cm 1.5cm 1.5cm 1.5cm;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: white;
+            color: #000;
+            line-height: 1.3;
+            width: 100%;
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 0;
+        }
+
+        .documento {
+            width: 100%;
+            padding: 0;
+        }
+
+        /* CABEÇALHO */
+        .cabecalho {
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .cabecalho h1 {
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .cabecalho h2 {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 2px 0;
+        }
+
+        .cabecalho p {
+            font-size: 11px;
+            margin: 2px 0;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #000;
+            margin: 6px 0;
+        }
+
+        /* NÚMERO DO TERMO */
+        .numero-termo {
+            text-align: center;
+            font-weight: bold;
+            font-size: 11px;
+            margin: 5px 0 10px 0;
+            padding: 4px;
+            border: 1px solid #000;
+            background: #f5f5f5;
+        }
+
+        /* SEÇÕES */
+        .secao {
+            margin-bottom: 12px;
+        }
+
+        .secao-titulo {
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #000;
+            padding-bottom: 2px;
+        }
+
+        /* LINHAS DE DADOS */
+        .dados-linha {
+            display: flex;
+            margin-bottom: 4px;
+            font-size: 11px;
+            border-bottom: 1px dotted #ccc;
+            padding-bottom: 2px;
+        }
+
+        .dados-label {
+            font-weight: bold;
+            width: 140px;
+            font-size: 11px;
+        }
+
+        .dados-valor {
+            flex: 1;
+            font-size: 11px;
+        }
+
+        /* INFO BOX - DESTAQUE PARA SAÚDE */
+        .info-box {
+            background: #f9f9f9;
+            padding: 8px;
+            border-left: 3px solid #000;
+            margin-bottom: 8px;
+        }
+
+        /* ALERGIAS - DESTAQUE */
+        .alergia-box {
+            background: #fff3e0;
+            padding: 6px;
+            border-left: 3px solid #ff9800;
+            margin: 5px 0;
+        }
+
+        .medicamento-box {
+            background: #e8f5e8;
+            padding: 6px;
+            border-left: 3px solid #4caf50;
+            margin: 5px 0;
+        }
+
+        .restricao-box {
+            background: #ffebee;
+            padding: 6px;
+            border-left: 3px solid #f44336;
+            margin: 5px 0;
+        }
+
+        /* GRADE 2 COLUNAS */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        /* CONTATOS DE EMERGÊNCIA */
+        .emergencia-card {
+            background: #f0f7ff;
+            padding: 6px;
+            border: 1px solid #000;
+            margin-bottom: 5px;
+        }
+
+        .emergencia-nome {
+            font-weight: bold;
+            font-size: 11px;
+            border-bottom: 1px dotted #999;
+            margin-bottom: 3px;
+            padding-bottom: 2px;
+        }
+
+        /* AUTORIZAÇÕES */
+        .autorizacao-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 5px 0;
+        }
+
+        .check-box {
+            width: 16px;
+            height: 16px;
+            border: 1px solid #000;
+            background: white;
+            display: inline-block;
+        }
+
+        .check-marcado {
+            background: #000;
+            position: relative;
+        }
+
+        .check-marcado::after {
+            content: "✓";
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        /* ASSINATURAS */
+        .assinaturas {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0 10px;
+        }
+
+        .assinatura-item {
+            width: 48%;
+            text-align: center;
+        }
+
+        .linha-assinatura {
+            border-bottom: 1px solid #000;
+            height: 22px;
+            margin-bottom: 3px;
+        }
+
+        .assinatura-nome {
+            font-weight: bold;
+            font-size: 10px;
+        }
+
+        .assinatura-info {
+            font-size: 8px;
+            color: #333;
+        }
+
+        .data-local {
+            text-align: right;
+            font-size: 10px;
+            margin: 5px 0;
+        }
+
+        /* RODAPÉ */
+        .rodape {
+            text-align: center;
+            font-size: 8px;
+            border-top: 1px solid #999;
+            padding-top: 4px;
+            margin-top: 8px;
+            line-height: 1.2;
+        }
+
+        .rodape p {
+            margin: 1px 0;
+        }
+
+        /* OBSERVAÇÃO */
+        .observacao {
+            background: #fef9e7;
+            padding: 6px;
+            border-left: 3px solid #f39c12;
+            margin: 8px 0;
+            font-size: 10px;
+        }
+
+        /* BOTÃO DE IMPRESSÃO */
+        .print-button-container {
+            text-align: center;
+            margin: 20px 0 10px 0;
+        }
+
+        .print-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .print-button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+
+        .print-button:active {
+            transform: translateY(0);
+        }
+
+        @media print {
+            .print-button-container {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="documento">
+        <!-- BOTÃO DE IMPRESSÃO (visível apenas na tela) -->
+        <div class="print-button-container">
+            <button class="print-button" onclick="window.print()">
+                🖨️ Imprimir Ficha de Saúde
+            </button>
+            <p style="font-size: 10px; color: #666; margin-top: 5px;">Clique no botão para imprimir (ou use Ctrl+P)</p>
+        </div>
+
+        <!-- CABEÇALHO -->
+        <div class="cabecalho">
+            <h1>CRECHE EL SHADDAY</h1>
+            <h2>FICHA DE SAÚDE DA CRIANÇA</h2>
+            <p>Informações Médicas e Autorizações</p>
+        </div>
+        <hr>
+
+        <!-- NÚMERO DO TERMO -->
+        <div class="numero-termo">
+            REGISTRO Nº {{ aluno.num_inscricao or '_________' }} - {{ data_atual or '___/___/_____' }}
+        </div>
+
+        <!-- DADOS DO ALUNO -->
+        <div class="secao">
+            <div class="secao-titulo">📋 DADOS DO ALUNO</div>
+            <div class="dados-linha">
+                <span class="dados-label">Nome:</span>
+                <span class="dados-valor"><strong>{{ aluno.dados_pessoais.nome or '________________________' }}</strong></span>
+            </div>
+            <div class="dados-linha">
+                <span class="dados-label">Data Nasc.:</span>
+                <span class="dados-valor">
+                    {% if aluno.dados_pessoais.data_nasc %}
+                        {% set data = aluno.dados_pessoais.data_nasc.split('-') %}
+                        {{ data[2] }}/{{ data[1] }}/{{ data[0] }}
+                    {% else %}
+                        ___/___/_____
+                    {% endif %}
+                </span>
+                <span style="margin-left: 15px; font-weight: bold;">Turma:</span>
+                <span>{{ aluno.turma.turma or '______' }}</span>
+            </div>
+            <div class="dados-linha">
+                <span class="dados-label">Unidade:</span>
+                <span class="dados-valor">{{ aluno.turma.unidade or 'CEIC El Shadday' }}</span>
+                <span style="margin-left: 15px; font-weight: bold;">Período:</span>
+                <span>{{ aluno.turma.periodo or '______' }}</span>
+            </div>
+        </div>
+
+        <!-- DADOS DO RESPONSÁVEL -->
+        {% set resp_principal = aluno.responsaveis|selectattr("tipo", "equalto", "principal")|first %}
+        <div class="secao">
+            <div class="secao-titulo">👪 RESPONSÁVEL LEGAL</div>
+            <div class="dados-linha">
+                <span class="dados-label">Nome:</span>
+                <span class="dados-valor"><strong>{{ resp_principal.nome or '________________________' }}</strong></span>
+            </div>
+            <div class="dados-linha">
+                <span class="dados-label">Telefone:</span>
+                <span class="dados-valor">{{ resp_principal.telefone or '______________' }}</span>
+                <span style="margin-left: 15px; font-weight: bold;">CPF:</span>
+                <span>{{ resp_principal.cpf or '______________' }}</span>
+            </div>
+            <div class="dados-linha">
+                <span class="dados-label">E-mail:</span>
+                <span class="dados-valor">{{ resp_principal.email or '____________________' }}</span>
+            </div>
+        </div>
+
+        <!-- INFORMAÇÕES DE SAÚDE -->
+        <div class="secao">
+            <div class="secao-titulo">🩺 INFORMAÇÕES DE SAÚDE</div>
+            
+            <div class="grid-2">
+                <div class="dados-linha">
+                    <span class="dados-label">Tipo Sanguíneo:</span>
+                    <span class="dados-valor"><strong>{{ aluno.saude.tipo_sanguineo or '_______' }}</strong></span>
+                </div>
+                <div class="dados-linha">
+                    <span class="dados-label">Plano de Saúde:</span>
+                    <span class="dados-valor">{{ aluno.saude.plano_saude or '______________' }}</span>
+                </div>
+            </div>
+
+            <!-- ALERGIAS -->
+            {% if aluno.saude.alergias %}
+            <div class="alergia-box">
+                <strong>⚠️ ALERGIAS:</strong> {{ aluno.saude.alergias }}
+            </div>
+            {% else %}
+            <div class="dados-linha">
+                <span class="dados-label">Alergias:</span>
+                <span class="dados-valor">Nenhuma alergia informada</span>
+            </div>
+            {% endif %}
+
+            <!-- MEDICAMENTOS -->
+            {% if aluno.saude.medicamentos %}
+            <div class="medicamento-box">
+                <strong>💊 MEDICAMENTOS DE USO CONTÍNUO:</strong> {{ aluno.saude.medicamentos }}
+            </div>
+            {% else %}
+            <div class="dados-linha">
+                <span class="dados-label">Medicamentos:</span>
+                <span class="dados-valor">Nenhum medicamento informado</span>
+            </div>
+            {% endif %}
+
+            <!-- RESTRIÇÕES -->
+            {% if aluno.saude.restricoes %}
+            <div class="restricao-box">
+                <strong>🚫 RESTRIÇÕES ALIMENTARES:</strong> {{ aluno.saude.restricoes }}
+            </div>
+            {% else %}
+            <div class="dados-linha">
+                <span class="dados-label">Restrições:</span>
+                <span class="dados-valor">Nenhuma restrição informada</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- PEDIATRA / CONTATO DE EMERGÊNCIA -->
+        <div class="secao">
+            <div class="secao-titulo">👨‍⚕️ PEDIATRA / CONTATO DE EMERGÊNCIA</div>
+            <div class="emergencia-card">
+                <div class="dados-linha">
+                    <span class="dados-label">Nome do Pediatra:</span>
+                    <span class="dados-valor">{{ aluno.saude.pediatra or '____________________' }}</span>
+                </div>
+                <div class="dados-linha">
+                    <span class="dados-label">Telefone:</span>
+                    <span class="dados-valor">{{ aluno.saude.contato_pediatra or '______________' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- AUTORIZAÇÕES -->
+        <div class="secao">
+            <div class="secao-titulo">✅ AUTORIZAÇÕES</div>
+            
+            <div class="autorizacao-item">
+                <span class="check-box check-marcado"></span>
+                <span style="font-size: 10px;">Autorizo a administração de medicamentos mediante receita médica.</span>
+            </div>
+            
+            <div class="autorizacao-item">
+                <span class="check-box check-marcado"></span>
+                <span style="font-size: 10px;">Autorizo o encaminhamento para atendimento médico em caso de emergência.</span>
+            </div>
+            
+            <div class="autorizacao-item">
+                <span class="check-box"></span>
+                <span style="font-size: 10px;">Autorizo o compartilhamento de informações de saúde com profissionais.</span>
+            </div>
+        </div>
+
+        <!-- INFORMAÇÕES ADICIONAIS -->
+        <div class="secao">
+            <div class="secao-titulo">📝 OBSERVAÇÕES ADICIONAIS</div>
+            <div style="border: 1px solid #000; height: 40px; padding: 3px; font-size: 9px;">
+                _________________________________________________________________________________
+            </div>
+        </div>
+
+        <!-- DECLARAÇÃO -->
+        <div class="observacao">
+            <p><strong>DECLARAÇÃO DO RESPONSÁVEL:</strong></p>
+            <p style="font-size: 9px;">Declaro que as informações prestadas são verdadeiras e autorizo a Creche El Shadday a proceder conforme as orientações acima em caso de emergência.</p>
+        </div>
+
+        <!-- ASSINATURAS -->
+        <div class="assinaturas">
+            <div class="assinatura-item">
+                <div class="linha-assinatura"></div>
+                <div class="assinatura-nome">{{ resp_principal.nome or '____________________' }}</div>
+                <div class="assinatura-info">Responsável Legal</div>
+            </div>
+            <div class="assinatura-item">
+                <div class="linha-assinatura"></div>
+                <div class="assinatura-nome">Creche El Shadday</div>
+                <div class="assinatura-info">Representante Legal</div>
+            </div>
+        </div>
+
+        <!-- DATA -->
+        <div class="data-local">
+            Mogi das Cruzes, ______ de ____________________ de 20____.
+        </div>
+
+        <!-- RODAPÉ -->
+        <div class="rodape">
+            <p>Documento confidencial - Lei nº 13.709/2018 (LGPD) - Creche El Shadday - CNPJ: 03.067.526/0001-87</p>
+            <p>Rua Francisco Vilani Bicudo, 470 - Vila Nova Aparecida - Mogi das Cruzes/SP - CEP: 08830-000</p>
+        </div>
+    </div>
+
+    <script>
+        // Opcional: Auto-impressão ao carregar a página (descomente se quiser)
+        // window.onload = function() {
+        //     setTimeout(() => {
+        //         window.print();
+        //     }, 500);
+        // };
+    </script>
+</body>
+</html>

@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termo de Autorização para Terceiros - Creche El Shadday</title>
+    <style>
+        /* CONFIGURAÇÃO ULTRARRÁPIDA PARA A4 */
+        @page {
+            size: A4;
+            margin: 1.5cm 1.5cm 1.5cm 1.5cm;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: white;
+            color: #000;
+            line-height: 1.25;
+            width: 100%;
+            max-width: 210mm;
+            margin: 0 auto;
+        }
+
+        .documento {
+            width: 100%;
+            padding: 0;
+        }
+
+        /* BOTÃO DE IMPRESSÃO */
+        .print-button-container {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .print-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .print-button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+
+        .print-button:active {
+            transform: translateY(0);
+        }
+
+        @media print {
+            .print-button-container {
+                display: none;
+            }
+        }
+
+        /* CABEÇALHO */
+        .cabecalho {
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .cabecalho h1 {
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .cabecalho h2 {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 2px 0;
+        }
+
+        .cabecalho p {
+            font-size: 11px;
+            margin: 1px 0;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #000;
+            margin: 5px 0;
+        }
+
+        /* NÚMERO DO TERMO */
+        .numero-termo {
+            text-align: center;
+            font-weight: bold;
+            font-size: 11px;
+            margin: 5px 0 8px 0;
+            padding: 4px;
+            border: 1px solid #000;
+            background: #f5f5f5;
+        }
+
+        /* SEÇÕES */
+        .secao {
+            margin-bottom: 8px;
+        }
+
+        .secao-titulo {
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 3px;
+            border-bottom: 1px solid #000;
+            padding-bottom: 2px;
+        }
+
+        /* LINHAS DE DADOS - COMPACTAS */
+        .dados-linha {
+            display: flex;
+            margin-bottom: 3px;
+            font-size: 11px;
+            border-bottom: 1px dotted #ccc;
+            padding-bottom: 2px;
+            align-items: baseline;
+        }
+
+        .dados-label {
+            font-weight: bold;
+            width: 130px;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        .dados-valor {
+            flex: 1;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .inline-label {
+            font-weight: bold;
+            margin-left: 15px;
+            white-space: nowrap;
+        }
+
+        .inline-value {
+            font-weight: bold;
+            margin-left: 3px;
+        }
+
+        /* CARD DE TERCEIRO */
+        .terceiro-card {
+            background: #f9f9f9;
+            padding: 5px;
+            border: 1px solid #000;
+            margin-bottom: 5px;
+        }
+
+        .terceiro-nome {
+            font-weight: bold;
+            font-size: 12px;
+            border-bottom: 1px dotted #999;
+            margin-bottom: 3px;
+            padding-bottom: 2px;
+        }
+
+        .terceiro-dados {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 10px;
+        }
+
+        .terceiro-dados span {
+            display: flex;
+            align-items: center;
+        }
+
+        /* CLÁUSULAS */
+        .clausulas {
+            margin: 3px 0 3px 18px;
+            font-size: 10px;
+            line-height: 1.2;
+        }
+
+        .clausulas li {
+            margin-bottom: 2px;
+        }
+
+        /* OBSERVAÇÃO */
+        .observacao {
+            background: #fef9e7;
+            padding: 4px;
+            border-left: 3px solid #f39c12;
+            margin: 5px 0;
+            font-size: 10px;
+        }
+
+        /* AUTORIZAÇÃO DO TERCEIRO - COMPACTA */
+        .autorizacao-terceiro-box {
+            background: #f0f7ff;
+            padding: 6px;
+            border: 1px solid #000;
+            margin: 5px 0;
+            font-size: 9px;
+            line-height: 1.2;
+            text-align: justify;
+        }
+
+        .autorizacao-terceiro-box p {
+            margin-bottom: 3px;
+        }
+
+        .autorizacao-terceiro-box strong {
+            font-size: 10px;
+        }
+
+        /* ASSINATURAS */
+        .assinaturas {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0 5px;
+        }
+
+        .assinatura-item {
+            width: 48%;
+            text-align: center;
+        }
+
+        .linha-assinatura {
+            border-bottom: 1px solid #000;
+            height: 22px;
+            margin-bottom: 3px;
+        }
+
+        .assinatura-nome {
+            font-weight: bold;
+            font-size: 10px;
+        }
+
+        .assinatura-info {
+            font-size: 8px;
+            color: #333;
+        }
+
+        .data-local {
+            text-align: right;
+            font-size: 10px;
+            margin: 5px 0;
+        }
+
+        /* ASSINATURA TERCEIROS */
+        .assinatura-terceiro {
+            text-align: center;
+            margin-top: 5px;
+            border-top: 1px dotted #999;
+            padding-top: 5px;
+        }
+
+        .linha-terceiro {
+            border-bottom: 1px solid #000;
+            width: 250px;
+            margin: 5px auto;
+            height: 20px;
+        }
+
+        /* REVOGAÇÃO - COMPACTA */
+        .revogacao-box {
+            border: 1px solid #000;
+            padding: 6px;
+            margin: 8px 0 5px;
+            background: #f9f9f9;
+        }
+
+        .revogacao-titulo {
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 4px;
+            text-align: center;
+        }
+
+        .revogacao-linha {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+            font-size: 9px;
+        }
+
+        .revogacao-linha span {
+            width: 80px;
+            font-weight: bold;
+        }
+
+        .linha-preenchimento {
+            flex: 1;
+            border-bottom: 1px dotted #000;
+            height: 14px;
+            margin-left: 5px;
+        }
+
+        .check-revogacao {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 4px 0;
+            font-size: 9px;
+        }
+
+        .check-box {
+            width: 14px;
+            height: 14px;
+            border: 1px solid #000;
+            background: white;
+            display: inline-block;
+        }
+
+        .check-marcado {
+            background: #000;
+            position: relative;
+        }
+
+        .check-marcado::after {
+            content: "✓";
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        /* RODAPÉ */
+        .rodape {
+            text-align: center;
+            font-size: 8px;
+            border-top: 1px solid #999;
+            padding-top: 3px;
+            margin-top: 5px;
+            line-height: 1.1;
+        }
+
+        .rodape p {
+            margin: 1px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="documento">
+        <!-- BOTÃO DE IMPRESSÃO -->
+        <div class="print-button-container">
+            <button class="print-button" onclick="window.print()">
+                🖨️ Imprimir Termo
+            </button>
+        </div>
+
+        <!-- CABEÇALHO -->
+        <div class="cabecalho">
+            <h1>CRECHE EL SHADDAY</h1>
+            <h2>TERMO DE AUTORIZAÇÃO PARA TERCEIROS</h2>
+            <p>Autorização para Busca e Acompanhamento</p>
+        </div>
+        <hr>
+
+        <!-- NÚMERO DO TERMO -->
+        <div class="numero-termo">
+            TERMO Nº {{ numero_termo or '_________' }} - {{ data_atual or '___/___/_____' }}
+        </div>
+
+        <!-- DADOS DO ALUNO - COMPACTADO EM 3 LINHAS -->
+        <div class="secao">
+            <div class="secao-titulo">📋 DADOS DO ALUNO</div>
+            <!-- Linha 1: Nome -->
+            <div class="dados-linha">
+                <span class="dados-label">Nome:</span>
+                <span class="dados-valor"><strong>{{ aluno.dados_pessoais.nome or '________________________' }}</strong></span>
+            </div>
+            <!-- Linha 2: Data Nasc. e Turma -->
+            <div class="dados-linha">
+                <span class="dados-label">Data Nasc.:</span>
+                {% if aluno.dados_pessoais.data_nasc %}
+                    {% set data = aluno.dados_pessoais.data_nasc.split('-') %}
+                    <span class="dados-valor"><strong>{{ data[2] }}/{{ data[1] }}/{{ data[0] }}</strong></span>
+                {% else %}
+                    <span class="dados-valor"><strong>___/___/_____</strong></span>
+                {% endif %}
+                <span class="inline-label">Turma:</span>
+                <span class="inline-value"><strong>{{ aluno.turma.turma or '______' }}</strong></span>
+            </div>
+            <!-- Linha 3: Unidade e Matrícula -->
+            <div class="dados-linha">
+                <span class="dados-label">Unidade:</span>
+                <span class="dados-valor"><strong>{{ aluno.turma.unidade or 'CEIC El Shadday' }}</strong></span>
+                <span class="inline-label">Matrícula:</span>
+                <span class="inline-value"><strong>{{ aluno.num_inscricao or '______________' }}</strong></span>
+            </div>
+        </div>
+
+        <!-- DADOS DO RESPONSÁVEL - UMA ÚNICA LINHA -->
+        {% set resp_principal = aluno.responsaveis|selectattr("tipo", "equalto", "principal")|first %}
+        <div class="secao">
+            <div class="secao-titulo">👪 RESPONSÁVEL LEGAL</div>
+            <div class="dados-linha">
+                <span class="dados-label">Nome:</span>
+                <span class="dados-valor"><strong>{{ resp_principal.nome or '________________________' }}</strong></span>
+                <span class="inline-label">CPF:</span>
+                <span class="inline-value"><strong>{{ resp_principal.cpf or '______________' }}</strong></span>
+                <span class="inline-label">Tel:</span>
+                <span class="inline-value"><strong>{{ resp_principal.telefone or '______________' }}</strong></span>
+            </div>
+        </div>
+
+        <!-- DADOS DOS TERCEIROS AUTORIZADOS -->
+        <div class="secao">
+            <div class="secao-titulo">👥 TERCEIROS AUTORIZADOS</div>
+            
+            {% if aluno.terceiros and aluno.terceiros|length > 0 %}
+                {% for terc in aluno.terceiros %}
+                <div class="terceiro-card">
+                    <div class="terceiro-nome"><strong>{{ terc.nome }}</strong></div>
+                    <div class="terceiro-dados">
+                        <span><strong>Tel:</strong> {{ terc.telefone }}</span>
+                        <span><strong>CPF:</strong> {{ terc.cpf }}</span>
+                        {% if terc.rg %}<span><strong>RG:</strong> {{ terc.rg }}</span>{% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="observacao">
+                    <p><strong>⚠️ Nenhum terceiro autorizado cadastrado.</strong></p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- CLÁUSULAS DE AUTORIZAÇÃO -->
+        <div class="secao">
+            <div class="secao-titulo">📜 AUTORIZAÇÃO DO RESPONSÁVEL</div>
+            <p style="font-size: 10px; margin-bottom: 3px;">Eu, <strong>{{ resp_principal.nome or '____________________' }}</strong>, autorizo os terceiros acima a:</p>
+            <ul class="clausulas">
+                <li>Buscar o aluno na creche no horário regular;</li>
+                <li>Acompanhar em atividades externas e eventos;</li>
+                <li>Representar o responsável em reuniões;</li>
+                <li>Tomar decisões emergenciais em caso de acidente/saúde.</li>
+            </ul>
+            <p style="font-size: 9px; font-style: italic;">Validade enquanto durar o vínculo do aluno, podendo ser revogado.</p>
+        </div>
+
+        <!-- RESPONSABILIDADES -->
+        <div class="secao">
+            <div class="secao-titulo">⚖️ RESPONSABILIDADES</div>
+            <ul class="clausulas">
+                <li>Apresentar documento com foto ao buscar o aluno;</li>
+                <li>Comunicar alterações nos dados cadastrais;</li>
+                <li>Responsabilizar-se pela integridade do aluno.</li>
+            </ul>
+        </div>
+
+        <!-- AUTORIZAÇÃO DO TERCEIRO (ACEITE) - COMPACTA -->
+        <div class="secao">
+            <div class="secao-titulo">✅ AUTORIZAÇÃO DO TERCEIRO</div>
+            <div class="autorizacao-terceiro-box">
+                <p>Eu, <strong>{{ aluno.terceiros[0].nome if aluno.terceiros else '____________________' }}</strong>, CPF <strong>{{ aluno.terceiros[0].cpf if aluno.terceiros else '______________' }}</strong>, autorizo a Creche El Shadday a utilizar meus dados para fins de cadastro e controle de acesso, conforme Lei nº 13.709/2018.</p>
+            </div>
+        </div>
+
+        <!-- ASSINATURA PRINCIPAL -->
+        <div class="assinaturas">
+            <div class="assinatura-item">
+                <div class="linha-assinatura"></div>
+                <div class="assinatura-nome">{{ resp_principal.nome or '____________________' }}</div>
+                <div class="assinatura-info">Responsável Legal</div>
+            </div>
+            <div class="assinatura-item">
+                <div class="linha-assinatura"></div>
+                <div class="assinatura-nome">Creche El Shadday</div>
+                <div class="assinatura-info">Representante Legal</div>
+            </div>
+        </div>
+
+        <!-- ASSINATURA DOS TERCEIROS -->
+        {% if aluno.terceiros and aluno.terceiros|length > 0 %}
+        <div class="assinatura-terceiro">
+            <div style="font-size: 10px; font-weight: bold; margin-bottom: 3px;">TERCEIROS AUTORIZADOS:</div>
+            {% for terc in aluno.terceiros %}
+            <div style="margin: 5px 0;">
+                <div class="linha-terceiro"></div>
+                <div class="assinatura-nome">{{ terc.nome }}</div>
+                <div class="assinatura-info">CPF: {{ terc.cpf }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- DATA -->
+        <div class="data-local">
+            {{ aluno.turma.unidade or 'CEIC El Shadday' }}, ______ de ____________________ de 20____.
+        </div>
+
+        <!-- ===== SEÇÃO DE REVOGAÇÃO ===== -->
+        <div class="revogacao-box">
+            <div class="revogacao-titulo">🔄 TERMO DE REVOGAÇÃO</div>
+            
+            <div class="check-revogacao">
+                <span class="check-box"></span>
+                <span>Desejo revogar a autorização a partir de: _____/_____/_____</span>
+            </div>
+            
+            <div class="revogacao-linha">
+                <span>Motivo:</span>
+                <div class="linha-preenchimento"></div>
+            </div>
+            
+            <div style="margin-top: 5px;">
+                <div class="assinaturas" style="margin: 3px 0 0;">
+                    <div class="assinatura-item" style="width: 48%;">
+                        <div class="linha-assinatura" style="height: 18px;"></div>
+                        <div class="assinatura-info">Assinatura do Responsável</div>
+                    </div>
+                    <div class="assinatura-item" style="width: 48%;">
+                        <div class="linha-assinatura" style="height: 18px;"></div>
+                        <div class="assinatura-info">Assinatura da Creche</div>
+                    </div>
+                </div>
+                <div class="data-local" style="margin: 2px 0; text-align: center;">
+                    Data da revogação: _____/_____/_____
+                </div>
+            </div>
+        </div>
+
+        <!-- RODAPÉ -->
+        <div class="rodape">
+            <p>Documento conforme Lei nº 13.709/2018 (LGPD) - Creche El Shadday - CNPJ: 03.067.526/0001-87</p>
+            <p>Rua Francisco Vilani Bicudo, 470 - Vila Nova Aparecida - Mogi das Cruzes/SP - CEP: 08830-000</p>
+        </div>
+    </div>
+</body>
+</html>

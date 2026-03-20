@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regulamento Interno - {{ unidade.nome }}</title>
+    <style>
+        /* CONFIGURAÇÃO OTIMIZADA PARA A4 */
+        @page {
+            size: A4;
+            margin: 1.5cm 1.5cm 1.5cm 1.5cm;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background: white;
+            color: #000;
+            line-height: 1.2;
+            width: 100%;
+            max-width: 210mm;
+            margin: 0 auto;
+        }
+
+        .documento {
+            width: 100%;
+            padding: 0;
+        }
+
+        /* BOTÃO DE IMPRESSÃO */
+        .print-button-container {
+            text-align: center;
+            margin: 20px 0 15px 0;
+        }
+
+        .print-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .print-button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+
+        .print-button:active {
+            transform: translateY(0);
+        }
+
+        @media print {
+            .print-button-container {
+                display: none;
+            }
+        }
+
+        /* CABEÇALHO */
+        .cabecalho {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .cabecalho h1 {
+            font-size: 22px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 0;
+            letter-spacing: 1px;
+        }
+
+        .cabecalho h2 {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 3px 0;
+            text-transform: uppercase;
+        }
+
+        .cabecalho h3 {
+            font-size: 14px;
+            font-weight: normal;
+            margin: 2px 0;
+            font-style: italic;
+        }
+
+        .cabecalho p {
+            font-size: 11px;
+            margin: 2px 0;
+        }
+
+        hr {
+            border: none;
+            border-top: 2px solid #000;
+            margin: 8px 0;
+        }
+
+        .data-versao {
+            text-align: right;
+            font-size: 11px;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        /* ARTIGOS */
+        .artigo {
+            margin-bottom: 12px;
+        }
+
+        .artigo h2 {
+            font-size: 15px;
+            font-weight: bold;
+            border-bottom: 1px solid #000;
+            padding-bottom: 3px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .artigo-numero {
+            font-weight: bold;
+            font-size: 12px;
+            margin-top: 6px;
+            margin-bottom: 2px;
+            font-style: italic;
+        }
+
+        .paragrafo {
+            font-size: 11px;
+            margin-bottom: 4px;
+            line-height: 1.3;
+            text-align: justify;
+        }
+
+        .paragrafo ul {
+            margin: 2px 0 2px 20px;
+        }
+
+        .paragrafo li {
+            font-size: 11px;
+            margin-bottom: 1px;
+        }
+
+        /* DESTAQUE (CIÊNCIA) - AZUL CLARO */
+        .destaque {
+            border: 1px solid #3498DB;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 12px;
+            line-height: 1.5;
+            background: #F0F8FF;  /* Azul claro */
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(52, 152, 219, 0.2);
+        }
+
+        .destaque p {
+            margin-bottom: 8px;
+        }
+
+        .destaque strong {
+            font-size: 13px;
+            text-transform: uppercase;
+            color: #2C3E50;
+        }
+
+        /* ASSINATURAS - ESTILO PROFISSIONAL (SEM TESTEMUNHAS) */
+        .assinaturas-container {
+            margin: 25px 0 15px;
+            border-top: 2px solid #000;
+            padding-top: 20px;
+        }
+
+        .assinaturas-titulo {
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .assinaturas-grid {
+            display: flex;
+            justify-content: space-between;
+            gap: 40px;
+            margin-bottom: 10px;
+        }
+
+        .assinatura-coluna {
+            flex: 1;
+        }
+
+        .assinatura-cargo {
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            border-bottom: 1px dotted #999;
+            padding-bottom: 3px;
+        }
+
+        .linha-assinatura {
+            border-bottom: 1px solid #000;
+            height: 40px;
+            margin: 15px 0 8px;
+        }
+
+        .assinatura-nome {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .assinatura-funcao {
+            font-size: 10px;
+            color: #333;
+            font-style: italic;
+        }
+
+        .dados-assinante {
+            margin-top: 15px;
+            border-top: 1px dashed #999;
+            padding-top: 10px;
+        }
+
+        .linha-dado {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 11px;
+        }
+
+        .linha-dado span {
+            font-weight: bold;
+            width: 40px;
+        }
+
+        .linha-preenchimento {
+            flex: 1;
+            border-bottom: 1px dotted #000;
+            height: 16px;
+            margin-left: 5px;
+        }
+
+        .data-local {
+            text-align: right;
+            font-size: 11px;
+            margin: 20px 0 15px;
+            font-style: italic;
+        }
+
+        .data-local strong {
+            font-style: normal;
+        }
+
+        /* RODAPÉ */
+        .rodape {
+            text-align: center;
+            font-size: 9px;
+            border-top: 1px solid #999;
+            padding-top: 8px;
+            margin-top: 20px;
+            line-height: 1.2;
+            color: #333;
+        }
+
+        .rodape p {
+            margin: 2px 0;
+        }
+
+        .email-destaque {
+            font-weight: bold;
+            color: #000;
+        }
+
+        /* QUEBRA DE PÁGINA */
+        .page-break {
+            page-break-before: always;
+        }
+    </style>
+</head>
+<body>
+    <div class="documento">
+        <!-- BOTÃO DE IMPRESSÃO -->
+        <div class="print-button-container">
+            <button class="print-button" onclick="window.print()">
+                🖨️ Imprimir Regulamento
+            </button>
+        </div>
+
+        <!-- ===== PÁGINA 1 ===== -->
+        <!-- CABEÇALHO -->
+        <div class="cabecalho">
+            <h1>CRECHE EL SHADDAY</h1>
+            <h2>REGULAMENTO INTERNO</h2>
+            <h3 id="subtitulo-unidade">{{ unidade.tipo }}</h3>
+            <p>CNPJ: {{ unidade.cnpj }} | Autorização de Funcionamento nº 000/2026</p>
+        </div>
+        <hr>
+
+        <div class="data-versao">
+            Versão atualizada - Março/2026
+        </div>
+
+        <!-- I. FINALIDADES -->
+        <div class="artigo">
+            <h2>I. FINALIDADES</h2>
+            
+            <div class="artigo-numero">Artigo 1º</div>
+            <div class="paragrafo">
+                O <strong>{{ unidade.nome }}</strong> ({{ unidade.tipo }}) tem por finalidade prestar serviços à criança, oferecendo guarda, educação, cuidados com alimentação, higiene e desenvolvimento integral, em conformidade com a Base Nacional Comum Curricular (BNCC – Lei nº 13.005/2014) e as diretrizes estabelecidas pelo Termo Educacional Municipal de Mogi das Cruzes.
+            </div>
+            
+            <div class="paragrafo">
+                A Creche atende crianças de famílias que trabalham e de famílias que não trabalham e que não dispõem de local seguro para deixar seus filhos.
+            </div>
+            
+            <div class="paragrafo">
+                Caso a família decida desligar a criança, deve comunicar formalmente à direção, sob pena da vaga ser concedida a outra criança da lista de espera.
+            </div>
+            
+            <div class="paragrafo">
+                Todas as normas aqui estabelecidas devem ser rigorosamente observadas por toda a comunidade escolar.
+            </div>
+        </div>
+
+        <!-- II. HORÁRIO E FREQUÊNCIA -->
+        <div class="artigo">
+            <h2>II. HORÁRIO E FREQUÊNCIA</h2>
+            
+            <div class="artigo-numero">Artigo 2º</div>
+            <div class="paragrafo">
+                <strong>Horário de funcionamento:</strong> A unidade escolar funciona de segunda a sexta-feira, não funcionando aos sábados, domingos, feriados, reuniões pedagógicas ou outras datas previstas no calendário escolar municipal.
+            </div>
+            <div class="paragrafo">
+                <strong>Entrada:</strong> das 7h30 às 8h.
+            </div>
+            <div class="paragrafo">
+                <strong>Saída:</strong> das 16h45 às 17h, sendo que o transporte escolar inicia a saída às 16h40.
+            </div>
+            <div class="paragrafo">
+                Mudanças de endereço, telefone, documentos ou dados da família devem ser imediatamente comunicadas à Creche.
+            </div>
+
+            <div class="artigo-numero">Artigo 3º</div>
+            <div class="paragrafo">
+                Toda criança passará diariamente por triagem para verificação de sua integridade física.
+            </div>
+
+            <div class="artigo-numero">Artigo 4º – Faltas</div>
+            <div class="paragrafo">
+                Em caso de doença, o responsável deverá apresentar atestado médico, declaração ou comunicar por escrito à secretaria da Creche.
+            </div>
+            <div class="paragrafo">
+                Os responsáveis devem estar atentos a bilhetes e comunicados para evitar prejuízos à rotina da criança.
+            </div>
+
+            <div class="artigo-numero">Artigo 5º – Saúde da Criança</div>
+            <div class="paragrafo">
+                Crianças doentes não devem ser trazidas à Creche; os responsáveis devem procurar atendimento médico imediato.
+            </div>
+            <div class="paragrafo">
+                A manutenção do calendário vacinal é de responsabilidade dos pais.
+            </div>
+
+            <div class="artigo-numero">Artigo 6º – Roupas e Objetos</div>
+            <div class="paragrafo">
+                Cada criança deve trazer na mochila uma troca completa de roupa e um pente ou escova de cabelo, todos identificados com o nome da criança.
+            </div>
+            <div class="paragrafo">
+                A Creche não se responsabiliza por itens não identificados que se percam.
+            </div>
+
+            <div class="artigo-numero">Artigo 7º – Desligamento da Criança</div>
+            <div class="paragrafo">
+                O desligamento ocorrerá quando:
+                <ul>
+                    <li>a criança atingir a faixa etária limite;</li>
+                    <li>por decisão da família;</li>
+                    <li>ausência não justificada superior a 15 dias consecutivos.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- III. PROIBIÇÕES -->
+        <div class="artigo">
+            <h2>III. PROIBIÇÕES</h2>
+            
+            <div class="artigo-numero">Artigo 8º</div>
+            <div class="paragrafo">
+                É proibida a administração de medicamentos sem prescrição médica; medicamentos de uso contínuo ou de 12 em 12 horas devem ser ministrados em casa.
+            </div>
+
+            <div class="artigo-numero">Artigo 9º</div>
+            <div class="paragrafo">
+                Em caso de pediculose, o responsável será notificado e deverá providenciar tratamento imediato. Após a terceira notificação sem solução, o Conselho Tutelar poderá ser acionado por negligência.
+            </div>
+            <div class="paragrafo">
+                Crianças com doenças transmissíveis que coloquem em risco outras crianças não poderão permanecer na Creche.
+            </div>
+            <div class="paragrafo">
+                Recomenda-se que cabelos estejam presos, unhas cortadas e higiene diária mantida.
+            </div>
+
+            <div class="artigo-numero">Artigo 10º</div>
+            <div class="paragrafo">
+                Não é permitido trazer lanches, doces ou brinquedos sem autorização da Creche.
+            </div>
+        </div>
+
+        <!-- IV. RESPONSABILIDADES DOS PAIS/RESPONSÁVEIS -->
+        <div class="artigo">
+            <h2>IV. RESPONSABILIDADES DOS PAIS/RESPONSÁVEIS</h2>
+            
+            <div class="artigo-numero">Artigo 11º</div>
+            <div class="paragrafo">
+                Os responsáveis devem participar das reuniões periódicas ou enviar representante previamente comunicado à direção.
+            </div>
+
+            <div class="artigo-numero">Artigo 12º – Eventos promovidos pela Creche</div>
+            <div class="paragrafo">
+                Os responsáveis deverão participar dos eventos promovidos pela Creche, contribuindo para o desenvolvimento social da criança.
+            </div>
+            <div class="paragrafo">
+                Podem colaborar com serviços voluntários de forma gratuita e espontânea.
+            </div>
+            <div class="paragrafo">
+                Mensalmente poderá ser enviado envelope de colaboração espontânea, cuja participação é de grande importância para a manutenção da Creche.
+            </div>
+        </div>
+
+        <!-- ===== PÁGINA 2 ===== -->
+        <div class="page-break"></div>
+
+        <!-- V. DISPOSIÇÕES GERAIS -->
+        <div class="artigo">
+            <h2>V. DISPOSIÇÕES GERAIS</h2>
+            
+            <div class="artigo-numero">Artigo 13º</div>
+            <div class="paragrafo">
+                É direito dos responsáveis apresentar queixas ou críticas construtivas à coordenadora administrativa ou à direção pedagógica, evitando tumultos ou detratações.
+            </div>
+            <div class="paragrafo">
+                Recomenda-se ser breve ao conversar com educadoras e tratar todos com respeito.
+            </div>
+            <div class="paragrafo">
+                Ao matricular o filho, o responsável concorda com este regulamento.
+            </div>
+
+            <div class="artigo-numero">Artigo 14º</div>
+            <div class="paragrafo">
+                Durante licença maternidade, a criança poderá frequentar a Creche em período parcial.
+            </div>
+
+            <div class="artigo-numero">Artigo 15º</div>
+            <div class="paragrafo">
+                Situações não previstas neste regulamento serão resolvidas em primeira instância pela coordenadora administrativa e direção pedagógica da Creche.
+            </div>
+
+            <div class="artigo-numero">Artigo 16º – Recesso</div>
+            <div class="paragrafo">
+                A Creche terá período de recesso em janeiro, conforme calendário anual.
+            </div>
+
+            <div class="artigo-numero">Artigo 17º – Proteção de Dados Pessoais</div>
+            <div class="paragrafo">
+                Todas as informações pessoais, imagens e dados de saúde da criança serão tratadas de acordo com a Lei nº 13.709/2018 (LGPD), garantindo segurança, sigilo e utilização apenas para fins educacionais, administrativos e legais.
+            </div>
+            <div class="paragrafo">
+                O tratamento será feito de forma transparente, e o responsável poderá revogar o consentimento a qualquer momento, conforme previsto na lei.
+            </div>
+        </div>
+
+        <!-- CIÊNCIA DO RESPONSÁVEL -->
+        <div class="destaque">
+            <p><strong>CIÊNCIA DO RESPONSÁVEL</strong></p>
+            <p>Declaro ter recebido, lido e estar ciente de todas as normas estabelecidas neste Regulamento Interno, comprometendo-me a cumpri-las e a orientar meu(minha) filho(a) <strong>{{ aluno.dados_pessoais.nome }}</strong> quanto às regras de convivência na Creche El Shadday.</p>
+        </div>
+
+        <!-- ASSINATURAS -->
+        <div class="assinaturas-container">
+            <div class="assinaturas-titulo">TERMO DE CIÊNCIA E RESPONSABILIDADE</div>
+            
+            <div class="assinaturas-grid">
+                <!-- Coluna do Responsável -->
+                <div class="assinatura-coluna">
+                    <div class="assinatura-cargo">RESPONSÁVEL LEGAL</div>
+                    <div class="linha-assinatura"></div>
+                    <div class="assinatura-nome">{{ aluno.responsaveis[0].nome if aluno.responsaveis else '__________________________' }}</div>
+                    <div class="assinatura-funcao">{{ aluno.responsaveis[0].parentesco if aluno.responsaveis else 'Responsável pelo aluno' }}</div>
+                    
+                    <div class="dados-assinante">
+                        <div class="linha-dado">
+                            <span>CPF:</span>
+                            <div class="linha-preenchimento">{{ aluno.responsaveis[0].cpf if aluno.responsaveis else '' }}</div>
+                        </div>
+                        <div class="linha-dado">
+                            <span>RG:</span>
+                            <div class="linha-preenchimento">{{ aluno.responsaveis[0].rg if aluno.responsaveis else '' }}</div>
+                        </div>
+                        <div class="linha-dado">
+                            <span>Data:</span>
+                            <div class="linha-preenchimento">{{ data_atual }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Coluna da Creche -->
+                <div class="assinatura-coluna">
+                    <div class="assinatura-cargo">{{ unidade.nome }}</div>
+                    <div class="linha-assinatura"></div>
+                    <div class="assinatura-nome">REPRESENTANTE LEGAL</div>
+                    <div class="assinatura-funcao">Diretoria / Coordenação</div>
+                    
+                    <div class="dados-assinante">
+                        <div class="linha-dado">
+                            <span>Nome:</span>
+                            <div class="linha-preenchimento"></div>
+                        </div>
+                        <div class="linha-dado">
+                            <span>Data:</span>
+                            <div class="linha-preenchimento">{{ data_atual }}</div>
+                        </div>
+                        <div class="linha-dado">
+                            <span>Carimbo:</span>
+                            <div class="linha-preenchimento"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DATA LOCAL -->
+        <div class="data-local">
+            {{ unidade.cidade }}/{{ unidade.uf }}, {{ data_atual }}
+        </div>
+
+        <!-- RODAPÉ -->
+        <div class="rodape">
+            <p>{{ unidade.nome }} - {{ unidade.tipo }} - CNPJ: {{ unidade.cnpj }}</p>
+            <p>{{ unidade.endereco }} - {{ unidade.bairro }} - {{ unidade.cidade }}/{{ unidade.uf }} - CEP: {{ unidade.cep }}</p>
+            <p>Telefone: {{ unidade.telefone }} | E-mail: <span class="email-destaque">{{ unidade.email }}</span></p>
+            <p>Este regulamento está em conformidade com a BNCC (Lei nº 13.005/2014) e as diretrizes municipais de {{ unidade.cidade }}.</p>
+        </div>
+    </div>
+</body>
+</html>

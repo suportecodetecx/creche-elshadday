@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha Cadastral do Aluno - Creche El Shadday</title>
+    <style>
+        /* CONFIGURAÇÃO EXATA PARA A4 */
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: white;
+            color: #000;
+            width: 210mm;
+            height: 297mm;
+            margin: 0 auto;
+            padding: 0;
+        }
+
+        .ficha {
+            width: 100%;
+            height: 100%;
+            padding: 8mm 10mm 5mm 10mm;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* BOTÃO DE IMPRESSÃO */
+        .print-button-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .print-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .print-button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+
+        .print-button:active {
+            transform: translateY(0);
+        }
+
+        @media print {
+            .print-button-container {
+                display: none;
+            }
+        }
+
+        /* CABEÇALHO SEM FOTO - CENTRALIZADO */
+        .cabecalho {
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .cabecalho h1 {
+            font-size: 22px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .cabecalho h2 {
+            font-size: 14px;
+            font-weight: normal;
+            margin: 2px 0;
+        }
+
+        .cabecalho p {
+            font-size: 10px;
+            margin: 2px 0;
+        }
+
+        .linha-simples {
+            border-bottom: 1px solid #000;
+            margin: 5px 0;
+        }
+
+        /* TÍTULO PRINCIPAL */
+        .titulo {
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            text-transform: uppercase;
+            border: 1px solid #000;
+            padding: 4px;
+            margin: 5px 0 8px 0;
+            background: #f0f0f0;
+        }
+
+        /* LINHA TURMA E RA */
+        .turma-ra {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        /* DADOS EM LINHAS SIMPLES */
+        .dados-linha {
+            display: flex;
+            margin-bottom: 4px;
+            font-size: 11px;
+            border-bottom: 1px dotted #aaa;
+            padding-bottom: 2px;
+        }
+
+        .dados-label {
+            font-weight: bold;
+            width: 110px;
+        }
+
+        .dados-valor {
+            flex: 1;
+        }
+
+        /* SEÇÃO DE SAÚDE */
+        .saude-section {
+            border: 1px solid #000;
+            padding: 5px;
+            margin: 6px 0;
+        }
+
+        .saude-titulo {
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 3px;
+            background: #f0f0f0;
+            padding: 2px 5px;
+            border-bottom: 1px solid #000;
+        }
+
+        .saude-item {
+            margin-bottom: 3px;
+            font-size: 10px;
+        }
+
+        .saude-label {
+            font-weight: bold;
+        }
+
+        /* ENDEREÇO */
+        .endereco-box {
+            border: 1px solid #000;
+            padding: 5px;
+            margin: 6px 0;
+        }
+
+        /* DECLARAÇÃO */
+        .declaracao {
+            border: 1px solid #000;
+            padding: 5px;
+            margin: 6px 0;
+            text-align: center;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        /* DATA E ASSINATURAS */
+        .data-local {
+            text-align: right;
+            font-size: 11px;
+            margin: 4px 0;
+        }
+
+        /* REMATRÍCULA - FORMATO TABELA */
+        .rematricula {
+            border: 1px solid #000;
+            margin: 6px 0;
+        }
+
+        .rematricula-titulo {
+            font-size: 13px;
+            font-weight: bold;
+            padding: 4px 6px;
+            border-bottom: 1px solid #000;
+            background: #f0f0f0;
+        }
+
+        .rematricula-header {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.5fr;
+            background: #e0e0e0;
+            font-weight: bold;
+            font-size: 10px;
+            padding: 4px 6px;
+            border-bottom: 1px solid #000;
+        }
+
+        .rematricula-linha {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.5fr;
+            padding: 4px 6px;
+            border-bottom: 1px solid #000;
+            align-items: center;
+        }
+
+        .rematricula-linha:last-child {
+            border-bottom: none;
+        }
+
+        .campo-nome, .campo-turma, .campo-assinatura {
+            width: 100%;
+            padding-right: 5px;
+        }
+
+        .campo-ano {
+            font-size: 10px;
+            text-align: left;
+        }
+
+        .linha-preenchimento {
+            border-bottom: 1px solid #000;
+            height: 18px;
+            width: 100%;
+        }
+
+        /* LGPD - VERSÃO MELHORADA */
+        .lgpd-box {
+            border: 1px solid #000;
+            padding: 8px;
+            margin: 8px 0;
+            font-size: 8px;
+            line-height: 1.3;
+            text-align: justify;
+            background: #fff;
+            border-radius: 4px;
+        }
+
+        .lgpd-box p {
+            margin: 0 0 5px 0;
+        }
+
+        .lgpd-destaque {
+            font-weight: bold;
+            color: #2C3E50;
+            text-transform: uppercase;
+            font-size: 9px;
+            border-bottom: 1px dotted #999;
+            padding-bottom: 3px;
+            margin-bottom: 5px;
+        }
+
+        /* RODAPÉ MELHORADO */
+        .rodape {
+            display: flex;
+            justify-content: space-between;
+            font-size: 7px;
+            border-top: 1px solid #000;
+            padding-top: 4px;
+            margin-top: 5px;
+            color: #333;
+        }
+
+        .rodape-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .rodape-telefone {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="ficha">
+        <!-- BOTÃO DE IMPRESSÃO (visível apenas na tela) -->
+        <div class="print-button-container">
+            <button class="print-button" onclick="window.print()">
+                🖨️ Imprimir Ficha Cadastral
+            </button>
+        </div>
+
+        <!-- CABEÇALHO -->
+        <div class="cabecalho">
+            <h1>CRECHE EL SHADDAY</h1>
+            <h2>Educação Infantil</h2>
+            <p>{{ unidade.nome }} - CNPJ: {{ unidade.cnpj }} - {{ unidade.cidade }}/{{ unidade.uf }}</p>
+        </div>
+        <div class="linha-simples"></div>
+
+        <!-- TÍTULO -->
+        <div class="titulo">FICHA CADASTRAL DO ALUNO - EDUCAÇÃO INFANTIL</div>
+
+        <!-- TURMA E RA -->
+        <div class="turma-ra">
+            <span>Turma: {{ aluno.turma.turma or '_________________' }}</span>
+            <span>RGM°: {{ aluno.num_inscricao or aluno.dados_pessoais.ra or '___________' }}</span>
+        </div>
+
+        <!-- DADOS DO ALUNO -->
+        <div class="dados-linha">
+            <span class="dados-label">Nome:</span>
+            <span class="dados-valor">{{ aluno.dados_pessoais.nome or '________________________________________' }}</span>
+        </div>
+        <div class="dados-linha">
+            <span class="dados-label">Cor:</span>
+            <span class="dados-valor">{{ aluno.dados_pessoais.raca or '____________________' }}</span>
+        </div>
+        <div class="dados-linha">
+            <span class="dados-label">Natural de:</span>
+            <span class="dados-valor">{{ aluno.dados_pessoais.naturalidade or '____________________' }}</span>
+            <span style="margin-left: 15px; font-weight: bold;">Sexo:</span>
+            <span>{{ 'Masculino' if aluno.dados_pessoais.sexo == 'M' else 'Feminino' if aluno.dados_pessoais.sexo == 'F' else '_________' }}</span>
+        </div>
+        <div class="dados-linha">
+            <span class="dados-label">Certidão Nasc.:</span>
+            <span class="dados-valor">{% if aluno.arquivos and aluno.arquivos|selectattr('campo', 'equalto', 'aluno_certidao')|list %}ANEXADA{% else %}___________________________________{% endif %}</span>
+            <span style="margin-left: 15px; font-weight: bold;">U.F.:</span>
+            <span>{{ aluno.endereco.uf or '___' }}</span>
+        </div>
+        <div class="dados-linha">
+            <span class="dados-label">RG n° / CIN:</span>
+            <span class="dados-valor">{% if aluno.arquivos and aluno.arquivos|selectattr('campo', 'equalto', 'aluno_rg')|list %}ANEXADO{% else %}___________________________________{% endif %}</span>
+            <span style="margin-left: 15px; font-weight: bold;">Nacionalidade:</span>
+            <span>{{ aluno.dados_pessoais.nacionalidade or 'Brasileiro' }}</span>
+        </div>
+        <div class="dados-linha">
+            <span class="dados-label">Data de Nasc:</span>
+            <span class="dados-valor">
+                {% if aluno.dados_pessoais.data_nasc %}
+                    {% set data = aluno.dados_pessoais.data_nasc.split('-') %}
+                    {{ data[2] }}/{{ data[1] }}/{{ data[0] }}
+                {% else %}
+                    ___/___/_____
+                {% endif %}
+            </span>
+            <!-- CAMPO ORGÃO EXPEDIDO REMOVIDO -->
+        </div>
+
+        <!-- PAIS -->
+        <div class="dados-linha">
+            <span class="dados-label">Nome do pai:</span>
+            <span class="dados-valor">{% for resp in aluno.responsaveis %}{% if resp.parentesco == 'pai' %}{{ resp.nome }}{% endif %}{% endfor %}</span>
+            <span style="margin-left: 15px; font-weight: bold;">Telefone:</span>
+            <span>{% for resp in aluno.responsaveis %}{% if resp.parentesco == 'pai' %}{{ resp.telefone }}{% endif %}{% endfor %}</span>
+        </div>
+        
+        <!-- TELEFONE DE CONTATO DO PAI -->
+        {% for resp in aluno.responsaveis %}
+            {% if resp.parentesco == 'pai' and resp.telefone_contato %}
+            <div class="dados-linha">
+                <span class="dados-label"></span>
+                <span class="dados-valor"></span>
+                <span style="margin-left: 125px; font-weight: bold;">Tel. Contato:</span>
+                <span>{{ resp.telefone_contato }}</span>
+            </div>
+            {% endif %}
+        {% endfor %}
+
+        <div class="dados-linha">
+            <span class="dados-label">Nome da mãe:</span>
+            <span class="dados-valor">{% for resp in aluno.responsaveis %}{% if resp.parentesco == 'mae' %}{{ resp.nome }}{% endif %}{% endfor %}</span>
+            <span style="margin-left: 15px; font-weight: bold;">Telefone:</span>
+            <span>{% for resp in aluno.responsaveis %}{% if resp.parentesco == 'mae' %}{{ resp.telefone }}{% endif %}{% endfor %}</span>
+        </div>
+
+        <!-- TELEFONE DE CONTATO DA MÃE -->
+        {% for resp in aluno.responsaveis %}
+            {% if resp.parentesco == 'mae' and resp.telefone_contato %}
+            <div class="dados-linha">
+                <span class="dados-label"></span>
+                <span class="dados-valor"></span>
+                <span style="margin-left: 125px; font-weight: bold;">Tel. Contato:</span>
+                <span>{{ resp.telefone_contato }}</span>
+            </div>
+            {% endif %}
+        {% endfor %}
+
+        <!-- ENDEREÇO -->
+        <div class="endereco-box">
+            <div class="dados-linha" style="border-bottom: none;">
+                <span class="dados-label">Endereço:</span>
+                <span class="dados-valor">{{ aluno.endereco.logradouro or '_________________________________' }}</span>
+                <span style="margin-left: 15px; font-weight: bold;">Número:</span>
+                <span>{{ aluno.endereco.numero or '___' }}</span>
+            </div>
+            <div class="dados-linha" style="border-bottom: none;">
+                <span class="dados-label">Bairro:</span>
+                <span class="dados-valor">{{ aluno.endereco.bairro or '______________________' }}</span>
+                <span style="margin-left: 15px; font-weight: bold;">Cidade:</span>
+                <span>{{ aluno.endereco.cidade or '________________' }}</span>
+                <span style="margin-left: 15px; font-weight: bold;">Complemento:</span>
+                <span>{{ aluno.endereco.complemento or '__________' }}</span>
+            </div>
+            <div class="dados-linha" style="border-bottom: none;">
+                <span class="dados-label">CEP:</span>
+                <span class="dados-valor">{{ aluno.endereco.cep or '___________' }}</span>
+            </div>
+        </div>
+
+        <!-- SAÚDE -->
+        {% if aluno.saude.tipo_sanguineo or aluno.saude.plano_saude or aluno.saude.alergias or aluno.saude.medicamentos or aluno.saude.restricoes or aluno.saude.deficiencia %}
+        <div class="saude-section">
+            <div class="saude-titulo">SAÚDE DA CRIANÇA</div>
+            
+            {% if aluno.saude.tipo_sanguineo %}
+            <div class="saude-item">
+                <span class="saude-label">Tipo Sanguíneo:</span> {{ aluno.saude.tipo_sanguineo }}
+            </div>
+            {% endif %}
+            
+            {% if aluno.saude.plano_saude %}
+            <div class="saude-item">
+                <span class="saude-label">Plano de Saúde:</span> {{ aluno.saude.plano_saude }}
+            </div>
+            {% endif %}
+            
+            <!-- SÓ MOSTRA SE TIVER CONTEÚDO E NÃO FOR "não" -->
+            {% if aluno.saude.alergias and aluno.saude.alergias.lower() != 'não' and aluno.saude.alergias.lower() != 'nao' %}
+            <div class="saude-item">
+                <span class="saude-label">Alergias:</span> {{ aluno.saude.alergias }}
+            </div>
+            {% endif %}
+            
+            {% if aluno.saude.medicamentos and aluno.saude.medicamentos.lower() != 'não' and aluno.saude.medicamentos.lower() != 'nao' %}
+            <div class="saude-item">
+                <span class="saude-label">Medicamentos de uso contínuo:</span> {{ aluno.saude.medicamentos }}
+            </div>
+            {% endif %}
+            
+            {% if aluno.saude.restricoes and aluno.saude.restricoes.lower() != 'não' and aluno.saude.restricoes.lower() != 'nao' %}
+            <div class="saude-item">
+                <span class="saude-label">Restrições alimentares:</span> {{ aluno.saude.restricoes }}
+            </div>
+            {% endif %}
+            
+            <!-- DEFICIÊNCIA - SÓ MOSTRA SE TIVER DESCRIÇÃO -->
+            {% if aluno.saude.deficiencia and aluno.saude.deficiencia_desc %}
+            <div class="saude-item">
+                <span class="saude-label">Deficiência:</span> {{ aluno.saude.deficiencia_desc }}
+            </div>
+            
+            <!-- LAUDO MÉDICO - SÓ APARECE SE TIVER DEFICIÊNCIA -->
+            {% if aluno.arquivos and aluno.arquivos|selectattr('campo', 'equalto', 'aluno_laudos')|list %}
+            <div class="saude-item">
+                <span class="saude-label">Laudo Médico:</span> LAUDADO
+            </div>
+            {% else %}
+            <div class="saude-item">
+                <span class="saude-label">Laudo Médico:</span> NÃO LAUDADO
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- DECLARAÇÃO -->
+        <div class="declaracao">
+            DECLARO HAVER RECEBIDO O REGIMENTO ESCOLAR NESTA DATA, E ACATAR AS NORMAS REGIMENTAIS DESTE ESTABELECIMENTO DE ENSINO.
+        </div>
+
+        <!-- DATA E ASSINATURA 1 -->
+        <div class="data-local">
+            Mogi das Cruzes, _____/_____/__________ , Assinatura do responsável: ______________________________
+        </div>
+
+        <!-- DATA E ASSINATURA 2 -->
+        <div class="data-local">
+            Deslocamento em _____/_____/__________ , Assinatura do responsável: ______________________________
+        </div>
+
+        <!-- REMATRÍCULA -->
+        <div class="rematricula">
+            <div class="rematricula-titulo">Remátricula</div>
+            
+            <!-- Cabeçalho -->
+            <div class="rematricula-header">
+                <span>Nome do Responsável Legal</span>
+                <span>Turma</span>
+                <span>Ano</span>
+                <span>Assinatura</span>
+            </div>
+
+            <!-- Linhas 1 a 5 -->
+            {% for i in range(5) %}
+            <div class="rematricula-linha">
+                <div class="campo-nome"><div class="linha-preenchimento"></div></div>
+                <div class="campo-turma"><div class="linha-preenchimento"></div></div>
+                <div class="campo-ano">202___</div>
+                <div class="campo-assinatura"><div class="linha-preenchimento"></div></div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- LGPD - VERSÃO MELHORADA -->
+        <div class="lgpd-box">
+            <div class="lgpd-destaque">TERMO DE CONSENTIMENTO LGPD</div>
+            <p>Autorizo a <strong>ASSOCIAÇÃO BENEFICENTE VILA NOVA APARECIDA - CRECHE EL SHADDAY</strong> a coletar e tratar os dados pessoais do(a) menor e de seus responsáveis, exclusivamente para fins de cadastro, organização do prontuário escolar e cumprimento das obrigações legais junto à Secretaria Municipal de Educação.</p>
+            <p>Este consentimento abrange o uso de nome, endereço, telefones, documentos e informações de saúde, e pode ser revogado a qualquer momento, conforme a <strong>Lei Geral de Proteção de Dados (Lei nº 13.709/2018)</strong>.</p>
+        </div>
+
+        <!-- RODAPÉ MELHORADO -->
+        <div class="rodape">
+            <div class="rodape-info">
+                <span>{{ unidade.nome }}</span>
+                <span>{{ unidade.endereco }} - {{ unidade.bairro }} - CEP: {{ unidade.cep }}</span>
+            </div>
+            <div class="rodape-telefone">
+                <span>📞 {{ unidade.telefone }}</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

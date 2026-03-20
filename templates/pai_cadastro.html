@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Upload - Pai</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #10B981;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .teste-card {
+            background: #F9FAFB;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #E5E7EB;
+        }
+        .camera-section {
+            border: 2px dashed #10B981;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            background: white;
+        }
+        .camera-preview {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            border-radius: 12px;
+            margin: 16px auto;
+            display: none;
+            border: 2px solid #10B981;
+        }
+        .camera-preview.active {
+            display: block;
+        }
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #10B981;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: #E5E7EB;
+            color: #4B5563;
+        }
+        .btn-secondary:hover {
+            background: #D1D5DB;
+        }
+        .foto-capturada {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 12px;
+            margin: 20px auto;
+            border: 4px solid #10B981;
+            display: none;
+        }
+        .foto-capturada.active {
+            display: block;
+        }
+        .resultados {
+            background: #F3F4F6;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #E5E7EB;
+            border-top-color: #10B981;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📸 TESTE DE UPLOAD DE FOTOS</h1>
+        
+        <!-- Teste com Câmera -->
+        <div class="teste-card">
+            <h2 style="margin-bottom: 20px;">📷 Teste com Câmera</h2>
+            
+            <div class="camera-section">
+                <label style="font-weight: 600; color: #374151;">Foto do Aluno (câmera)</label>
+                <div class="camera-controls">
+                    <button class="btn btn-secondary" onclick="abrirCamera('aluno')">📷 Abrir Câmera</button>
+                    <button class="btn btn-primary" onclick="capturarFoto('aluno')">📸 Capturar</button>
+                </div>
+                <video id="aluno_video" class="camera-preview" autoplay></video>
+                <canvas id="aluno_canvas" style="display: none;"></canvas>
+                <img id="aluno_img" class="foto-capturada">
+            </div>
+            
+            <div class="camera-section">
+                <label style="font-weight: 600; color: #374151;">Foto do Responsável (câmera)</label>
+                <div class="camera-controls">
+                    <button class="btn btn-secondary" onclick="abrirCamera('resp')">📷 Abrir Câmera</button>
+                    <button class="btn btn-primary" onclick="capturarFoto('resp')">📸 Capturar</button>
+                </div>
+                <video id="resp_video" class="camera-preview" autoplay></video>
+                <canvas id="resp_canvas" style="display: none;"></canvas>
+                <img id="resp_img" class="foto-capturada">
+            </div>
+        </div>
+        
+        <!-- Teste com Arquivo -->
+        <div class="teste-card">
+            <h2 style="margin-bottom: 20px;">📁 Teste com Arquivo</h2>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="font-weight: 600; color: #374151;">Selecione uma imagem:</label>
+                <input type="file" id="arquivo_teste" accept="image/*" style="margin-top: 10px; display: block;">
+            </div>
+            
+            <img id="preview_arquivo" class="foto-capturada">
+        </div>
+        
+        <!-- Botão Enviar -->
+        <button class="btn btn-primary" onclick="enviarTeste()" style="width: 100%; margin: 20px 0;">
+            🚀 ENVIAR PARA TESTE
+        </button>
+        
+        <!-- Resultados -->
+        <div class="resultados" id="resultados">
+            Aguardando envio...
+        </div>
+    </div>
+
+    <script>
+        let cameraStreams = {};
+
+        // Abrir câmera
+        async function abrirCamera(tipo) {
+            fecharCamera(tipo);
+            const video = document.getElementById(tipo + '_video');
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                video.classList.add('active');
+                cameraStreams[tipo] = stream;
+                console.log(`✅ Câmera ${tipo} aberta`);
+            } catch (err) {
+                alert('Erro ao acessar câmera: ' + err.message);
+            }
+        }
+
+        // Capturar foto
+        function capturarFoto(tipo) {
+            const video = document.getElementById(tipo + '_video');
+            const canvas = document.getElementById(tipo + '_canvas');
+            const img = document.getElementById(tipo + '_img');
+            
+            if (!video.classList.contains('active')) {
+                alert('Abra a câmera primeiro!');
+                return;
+            }
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            img.src = canvas.toDataURL('image/jpeg');
+            img.classList.add('active');
+            
+            console.log(`📸 Foto ${tipo} capturada, tamanho: ${img.src.length}`);
+            
+            fecharCamera(tipo);
+        }
+
+        function fecharCamera(tipo) {
+            const video = document.getElementById(tipo + '_video');
+            if (cameraStreams[tipo]) {
+                cameraStreams[tipo].getTracks().forEach(track => track.stop());
+                delete cameraStreams[tipo];
+            }
+            if (video) {
+                video.classList.remove('active');
+                video.srcObject = null;
+            }
+        }
+
+        // Preview de arquivo
+        document.getElementById('arquivo_teste').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('preview_arquivo');
+                    img.src = e.target.result;
+                    img.classList.add('active');
+                    console.log('📁 Arquivo carregado, tamanho:', e.target.result.length);
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Converter dataURL para Blob
+        function dataURLToBlob(dataURL) {
+            const parts = dataURL.split(';base64,');
+            const contentType = parts[0].split(':')[1];
+            const raw = window.atob(parts[1]);
+            const rawLength = raw.length;
+            const array = new Uint8Array(new ArrayBuffer(rawLength));
+            
+            for (let i = 0; i < rawLength; i++) {
+                array[i] = raw.charCodeAt(i);
+            }
+            
+            return new Blob([array], { type: contentType });
+        }
+
+        // Enviar para teste
+        async function enviarTeste() {
+            const resultados = document.getElementById('resultados');
+            resultados.innerHTML = '<span class="loading"></span> Enviando...';
+            
+            const formData = new FormData();
+            
+            // Adiciona foto da câmera do aluno
+            const imgAluno = document.getElementById('aluno_img');
+            if (imgAluno.classList.contains('active') && imgAluno.src) {
+                try {
+                    const blob = dataURLToBlob(imgAluno.src);
+                    const file = new File([blob], 'foto_aluno_camera.jpg', { type: 'image/jpeg' });
+                    formData.append('foto_aluno_camera', file);
+                    console.log('✅ Foto aluno adicionada');
+                } catch (e) {
+                    console.error('Erro foto aluno:', e);
+                }
+            }
+            
+            // Adiciona foto da câmera do responsável
+            const imgResp = document.getElementById('resp_img');
+            if (imgResp.classList.contains('active') && imgResp.src) {
+                try {
+                    const blob = dataURLToBlob(imgResp.src);
+                    const file = new File([blob], 'foto_responsavel_camera.jpg', { type: 'image/jpeg' });
+                    formData.append('foto_responsavel_camera', file);
+                    console.log('✅ Foto responsável adicionada');
+                } catch (e) {
+                    console.error('Erro foto resp:', e);
+                }
+            }
+            
+            // Adiciona arquivo selecionado
+            const arquivoInput = document.getElementById('arquivo_teste');
+            if (arquivoInput.files.length > 0) {
+                formData.append('arquivo_teste', arquivoInput.files[0]);
+                console.log('✅ Arquivo adicionado:', arquivoInput.files[0].name);
+            }
+            
+            console.log('📦 Enviando FormData com', [...formData.keys()].length, 'arquivos');
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                resultados.innerHTML = JSON.stringify(data, null, 2);
+                
+                if (data.sucesso) {
+                    alert('✅ Teste concluído! Verifique o resultado abaixo.');
+                }
+            } catch (error) {
+                resultados.innerHTML = '❌ ERRO: ' + error.message;
+                console.error('Erro:', error);
+            }
+        }
+    </script>
+</body>
+</html>
