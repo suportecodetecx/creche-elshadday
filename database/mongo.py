@@ -1,3 +1,4 @@
+# database/mongo.py
 from pymongo import MongoClient
 import os
 from dotenv import load_dotenv
@@ -44,6 +45,19 @@ class MongoDB:
         return cls._instance
     
     def get_collection(self, name):
+        """Retorna uma coleção do banco de dados"""
+        return self.db[name]
+    
+    def list_collection_names(self):
+        """Lista os nomes das coleções"""
+        try:
+            return self.db.list_collection_names()
+        except Exception as e:
+            print(f"Erro ao listar coleções: {e}")
+            return []
+    
+    def __getattr__(self, name):
+        """Permite acesso direto às coleções (ex: db.usuarios)"""
         return self.db[name]
 
 # Instância global
