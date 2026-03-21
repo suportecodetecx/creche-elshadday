@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Carregamento de Fotos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f0f0f;
+            color: white;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .foto-area {
+            margin: 20px 0;
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .foto-capturada {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 10px;
+            display: none;
+            margin: 10px auto;
+            border: 2px solid #E50914;
+        }
+        .foto-capturada.active {
+            display: block;
+        }
+        .log-area {
+            background: #000;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { color: #00ff00; }
+        .error { color: #ff0000; }
+        .warning { color: #ffff00; }
+        .info { color: #00ffff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste de Carregamento de Fotos</h1>
+        
+        <div class="foto-area">
+            <h3>📸 Foto do Aluno</h3>
+            <img id="aluno_foto_img" class="foto-capturada" alt="Foto do aluno">
+        </div>
+        
+        <div class="foto-area">
+            <h3>📄 Documentos</h3>
+            <div id="certidao-card" style="display: inline-block; background: #333; padding: 5px 10px; margin: 5px; border-radius: 5px;">Certidão</div>
+            <div id="rg-card" style="display: inline-block; background: #333; padding: 5px 10px; margin: 5px; border-radius: 5px;">RG</div>
+        </div>
+        
+        <div class="log-area" id="logArea">
+            <strong>📋 LOGS:</strong><br>
+            Aguardando...
+        </div>
+        
+        <button onclick="executarTeste()" style="background: #E50914; color: white; border: none; padding: 10px 20px; margin-top: 10px; cursor: pointer;">▶️ Executar Teste</button>
+    </div>
+    
+    <script>
+        // Dados simulados do aluno
+        const aluno = {
+            num_inscricao: "005-2026",
+            dados_pessoais: { nome: "Marcio Rodrigues" },
+            arquivos: [
+                {
+                    campo: "foto_aluno",
+                    nome: "foto_aluno.jpg",
+                    tipo: "jpg",
+                    dados: "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+                    data_url: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                },
+                {
+                    campo: "aluno_certidao",
+                    nome: "certidao.pdf",
+                    tipo: "pdf",
+                    dados: "JVBERi0xLjQKJcOkw7zD"
+                },
+                {
+                    campo: "aluno_rg",
+                    nome: "rg.jpg",
+                    tipo: "jpg",
+                    dados: "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                }
+            ]
+        };
+        
+        function adicionarLog(mensagem, cor = 'info') {
+            const logArea = document.getElementById('logArea');
+            const timestamp = new Date().toLocaleTimeString();
+            const corClasse = cor === 'success' ? 'success' : cor === 'error' ? 'error' : cor === 'warning' ? 'warning' : 'info';
+            logArea.innerHTML += `<br><span class="${corClasse}">[${timestamp}] ${mensagem}</span>`;
+            logArea.scrollTop = logArea.scrollHeight;
+            console.log(mensagem);
+        }
+        
+        function limparLogs() {
+            document.getElementById('logArea').innerHTML = '<strong>📋 LOGS:</strong><br>';
+        }
+        
+        function executarTeste() {
+            limparLogs();
+            adicionarLog('🧪 INICIANDO TESTE', 'info');
+            adicionarLog(`📁 Aluno: ${aluno.dados_pessoais.nome} - ${aluno.num_inscricao}`, 'info');
+            adicionarLog(`📁 Total de arquivos: ${aluno.arquivos.length}`, 'info');
+            
+            // ===== LISTAR ARQUIVOS =====
+            adicionarLog('📋 LISTA DE ARQUIVOS:', 'info');
+            for (let i = 0; i < aluno.arquivos.length; i++) {
+                const arq = aluno.arquivos[i];
+                adicionarLog(`   ${i + 1}. campo: "${arq.campo}"`, 'info');
+                adicionarLog(`      data_url: ${arq.data_url ? '✅ SIM' : '❌ NÃO'}`, arq.data_url ? 'success' : 'warning');
+                adicionarLog(`      dados: ${arq.dados ? '✅ SIM' : '❌ NÃO'}`, arq.dados ? 'success' : 'error');
+                adicionarLog(`      tipo: ${arq.tipo}`, 'info');
+            }
+            
+            // ===== CARREGAR FOTOS =====
+            adicionarLog('📸 CARREGANDO FOTOS...', 'info');
+            let fotosCarregadas = 0;
+            
+            for (let i = 0; i < aluno.arquivos.length; i++) {
+                const arquivo = aluno.arquivos[i];
+                const campo = arquivo.campo;
+                
+                adicionarLog(`   🔍 Processando: ${campo}`, 'info');
+                
+                // Se for foto do aluno
+                if (campo === 'foto_aluno') {
+                    const imgElement = document.getElementById('aluno_foto_img');
+                    if (imgElement) {
+                        if (arquivo.data_url) {
+                            imgElement.src = arquivo.data_url;
+                            imgElement.classList.add('active');
+                            fotosCarregadas++;
+                            adicionarLog(`      ✅ FOTO CARREGADA!`, 'success');
+                            adicionarLog(`      → URL: ${arquivo.data_url.substring(0, 50)}...`, 'info');
+                        } else {
+                            adicionarLog(`      ❌ SEM DATA_URL!`, 'error');
+                            adicionarLog(`      → dados existe: ${!!arquivo.dados}`, 'warning');
+                        }
+                    } else {
+                        adicionarLog(`      ❌ Elemento IMG não encontrado!`, 'error');
+                    }
+                }
+                
+                // Se for documento
+                if (campo === 'aluno_certidao') {
+                    const card = document.getElementById('certidao-card');
+                    if (card) {
+                        card.style.background = '#E50914';
+                        card.style.border = '2px solid white';
+                        adicionarLog(`      ✅ Documento marcado: ${campo}`, 'success');
+                    }
+                }
+                
+                if (campo === 'aluno_rg') {
+                    const card = document.getElementById('rg-card');
+                    if (card) {
+                        card.style.background = '#E50914';
+                        card.style.border = '2px solid white';
+                        adicionarLog(`      ✅ Documento marcado: ${campo}`, 'success');
+                    }
+                }
+            }
+            
+            adicionarLog('', 'info');
+            adicionarLog(`📊 RESUMO FINAL:`, 'info');
+            adicionarLog(`   ✅ ${fotosCarregadas} fotos carregadas`, fotosCarregadas > 0 ? 'success' : 'warning');
+            adicionarLog(`   ✅ ${aluno.arquivos.length} arquivos processados`, 'success');
+            
+            if (fotosCarregadas === 0) {
+                adicionarLog(`   ⚠️ NENHUMA FOTO FOI CARREGADA!`, 'error');
+                adicionarLog(`   → Verifique se o arquivo tem 'data_url'`, 'warning');
+            }
+        }
+        
+        // Executar automaticamente
+        window.onload = function() {
+            setTimeout(() => {
+                executarTeste();
+            }, 500);
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Creche El Shadday</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            min-height: 100vh;
+            color: white;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .bg-decoration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(229, 9, 20, 0.1) 0%, transparent 70%);
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .bg-circle-1 { width: 500px; height: 500px; top: -200px; right: -200px; animation-delay: 0s; }
+        .bg-circle-2 { width: 400px; height: 400px; bottom: -150px; left: -150px; animation-delay: 5s; }
+        .bg-circle-3 { width: 300px; height: 300px; top: 50%; left: 50%; transform: translate(-50%, -50%); animation-delay: 10s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+            50% { transform: translate(30px, -30px) scale(1.1); opacity: 0.8; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            color: #E50914;
+            letter-spacing: -0.5px;
+        }
+        
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .user-info span {
+            font-size: 1rem;
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .logout-btn {
+            background: rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            color: white;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .logout-btn:hover {
+            background: #E50914;
+            border-color: #E50914;
+            transform: translateY(-2px);
+        }
+        
+        .header p {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.9rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            border-color: #E50914;
+            transform: translateY(-3px);
+        }
+        
+        .stat-card i {
+            font-size: 2rem;
+            color: #E50914;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card p {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.8rem;
+        }
+        
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .card {
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 30px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .card:hover::before { left: 100%; }
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: #E50914;
+            box-shadow: 0 20px 40px -10px rgba(229, 9, 20, 0.2);
+        }
+        
+        .card i { font-size: 2.5rem; color: #E50914; margin-bottom: 20px; }
+        .card h3 { font-size: 1.3rem; margin-bottom: 10px; font-weight: 600; }
+        .card p { color: rgba(255,255,255, 0.6); font-size: 0.9rem; line-height: 1.5; }
+        .card-badge { margin-top: 20px; font-size: 0.75rem; color: rgba(255,255,255, 0.4); display: flex; align-items: center; gap: 5px; }
+        
+        .footer {
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
+            color: rgba(255,255,255,0.4);
+            font-size: 0.8rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container { padding: 15px; }
+            .user-info { flex-direction: column; align-items: flex-start; }
+            .cards-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        
+        @media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="bg-circle bg-circle-1"></div>
+        <div class="bg-circle bg-circle-2"></div>
+        <div class="bg-circle bg-circle-3"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="user-info">
+                <h1>Creche El Shadday</h1>
+                <div>
+                    <span><i class="fas fa-user-circle"></i> Olá, {{ user_name }} ({{ user_profile }})</span>
+                    <a href="/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair</a>
+                </div>
+            </div>
+            <p><i class="fas fa-graduation-cap"></i> Sistema de Gestão Educacional</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="fas fa-users"></i>
+                <h3 id="totalAlunos">0</h3>
+                <p>Alunos Cadastrados</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-chalkboard-user"></i>
+                <h3 id="totalTurmas">0</h3>
+                <p>Turmas Ativas</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-user-tie"></i>
+                <h3 id="totalResponsaveis">0</h3>
+                <p>Responsáveis</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-calendar-alt"></i>
+                <h3 id="anoAtual">2026</h3>
+                <p>Ano Letivo</p>
+            </div>
+        </div>
+
+        <div class="cards-grid">
+            {% for item in menu %}
+            <a href="{{ item.url }}" class="card">
+                <i class="{{ item.icon }}"></i>
+                <h3>{{ item.nome }}</h3>
+                <p>Clique para acessar</p>
+                <div class="card-badge"><i class="fas fa-arrow-right"></i> Acessar</div>
+            </a>
+            {% endfor %}
+        </div>
+
+        <div class="footer">
+            <p>© 2026 Creche El Shadday - Organização Não Governamental</p>
+            <p>Rua Francisco Vilani Bicudo, 470 - Vila Nova Aparecida, Mogi das Cruzes/SP</p>
+        </div>
+    </div>
+
+    <script>
+        function carregarEstatisticas() {
+            fetch('/api/alunos/estatisticas')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sucesso) {
+                        document.getElementById('totalAlunos').textContent = data.estatisticas.total_alunos || 0;
+                        document.getElementById('totalTurmas').textContent = data.estatisticas.total_turmas || 0;
+                        document.getElementById('totalResponsaveis').textContent = data.estatisticas.total_responsaveis || 0;
+                    }
+                })
+                .catch(error => console.error('Erro ao carregar estatísticas:', error));
+        }
+        carregarEstatisticas();
+        setInterval(carregarEstatisticas, 30000);
+    </script>
+</body>
+</html>

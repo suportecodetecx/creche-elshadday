@@ -1,0 +1,33 @@
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if session.get('user_logged'):
+        return redirect(url_for('index'))
+    
+    if request.method == 'POST':
+        email = request.form.get('email')
+        senha = request.form.get('password')
+        remember = request.form.get('remember') == '1'
+        perfil_selecionado = request.form.get('perfil', 'pedagogico')
+        
+        usuario_model = Usuario()
+        usuario = usuario_model.autenticar(email, senha)
+        
+        if usuario:
+            # Verifica se o perfil selecionado corresponde ao perfil do usuário
+            if usuario['perfil'] != perfil_selecionado:
+                return jsonify({'success': False, 'error': f'Perfil incorreto. Este usuário é do tipo {usuario["perfil"]}'}), 401
+            
+            session['user_logged'] = True
+            session['user_id'] = str(usuario['_id'])
+            session['user_email'] = usuario['email']
+            session['user_name'] = usuario['nome']
+            session['user_profile'] = usuario['perfil']
+            
+            if remember:
+                session.permanent = True
+            
+            return jsonify({'success': True, 'redirect': url_for('index')})
+        else:
+            return jsonify({'success': False, 'error': 'E-mail ou senha incorretos'}), 401
+    
+    return render_template('login.html')
