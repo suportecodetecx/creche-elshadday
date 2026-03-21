@@ -8,8 +8,13 @@
   ],
   "routes": [
     {
+      "src": "/(.*)/",
+      "dest": "/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "app.py"
     }
-  ]
+  ],
+  "trailingSlash": false
 }

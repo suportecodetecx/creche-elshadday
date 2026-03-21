@@ -231,22 +231,6 @@ def pai_cadastro():
 # ==================== ROTA DE TESTE PARA DIAGNÓSTICO ====================
 
 @app.route('/api/test', methods=['GET'])
-def test_api():
-    """Rota de teste para diagnóstico"""
-    try:
-        from database.mongo import db
-        collections = db.list_collection_names()
-        return jsonify({
-            'status': 'ok',
-            'mongodb': 'connected',
-            'collections': collections
-        })
-    except Exception as e:
-        logger.error(f"Erro no teste: {e}")
-        return jsonify({
-            'status': 'error',
-            'error': str(e)
-        }), 500
 
 
 # ==================== CONTEXTO GLOBAL PARA TEMPLATES ====================

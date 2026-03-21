@@ -1302,11 +1302,30 @@ function mostrarSistemaLogado() {
             }
         }
 
-        function getFotoUrl(aluno, tipo) {
-            if (!aluno || !aluno.arquivos || aluno.arquivos.length === 0) return null;
-            const arquivoFoto = aluno.arquivos.find(a => a.campo === 'foto_aluno');
-            return arquivoFoto ? arquivoFoto.caminho : null;
+      function getFotoUrl(aluno, tipo) {
+    if (!aluno || !aluno.arquivos || aluno.arquivos.length === 0) return null;
+    
+    // Mapeamento dos campos de foto
+    const campoMap = {
+        'aluno': 'foto_aluno',
+        'responsavel1': 'foto_responsavel1',
+        'responsavel2': 'foto_responsavel2',
+        'responsavel3': 'foto_responsavel3',
+        'terceiro1': 'foto_terceiro1',
+        'terceiro2': 'foto_terceiro2',
+        'transporte': 'foto_transporte'
+    };
+    
+    const campoFoto = campoMap[tipo];
+    if (campoFoto) {
+        const arquivoFoto = aluno.arquivos.find(a => a.campo === campoFoto);
+        if (arquivoFoto) {
+            // CORREÇÃO: Prioriza data_url (Base64), depois caminho
+            return arquivoFoto.data_url || arquivoFoto.caminho || null;
         }
+    }
+    return null;
+}
 
         function handleImageError(img) {
             img.style.display = 'none';
