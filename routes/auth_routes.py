@@ -65,7 +65,7 @@ def login():
         session['user_email'] = user.get('email')
         session['user_name'] = user.get('nome', user.get('email'))
         session['user_profile'] = user.get('perfil', 'pedagogico')
-        session['user_unidade'] = user.get('unidade', '')  # Adiciona a unidade na sessão
+        session['user_unidade'] = user.get('unidade', '')
         session.permanent = True
         
         return jsonify({
@@ -76,7 +76,7 @@ def login():
                 'nome': user.get('nome', user.get('email')),
                 'email': user.get('email'),
                 'perfil': user.get('perfil', 'pedagogico'),
-                'unidade': user.get('unidade', '')  # Retorna a unidade
+                'unidade': user.get('unidade', '')
             }
         })
     except Exception as e:
@@ -120,7 +120,6 @@ def trocar_senha():
             if not bcrypt.checkpw(senha_atual.encode('utf-8'), user.get('senha', b'')):
                 return jsonify({'sucesso': False, 'mensagem': 'Senha atual incorreta'}), 401
         except Exception as e:
-            # Se a senha estiver em texto puro (para testes)
             if user.get('senha') != senha_atual:
                 return jsonify({'sucesso': False, 'mensagem': 'Senha atual incorreta'}), 401
         
@@ -236,7 +235,6 @@ def criar_usuario_teste():
                 'usuarios': usuarios_criados
             })
         else:
-            # Listar usuários existentes
             usuarios = usuario_model.listar_usuarios()
             return jsonify({
                 'sucesso': True,
@@ -281,20 +279,17 @@ def criar_usuario():
         senha = dados.get('senha')
         perfil = dados.get('perfil')
         nome = dados.get('nome')
-        unidade = dados.get('unidade', '')  # Adiciona campo unidade
+        unidade = dados.get('unidade', '')
         
         if not all([email, senha, perfil, nome]):
             return jsonify({'erro': 'Todos os campos são obrigatórios'}), 400
         
-        # Criar usuário com unidade
         from database.mongo import db
         import bcrypt
         
-        # Verificar se já existe
         if db.get_collection('usuarios').find_one({'email': email}):
             return jsonify({'erro': 'E-mail já cadastrado'}), 400
         
-        # Criptografar senha
         senha_hash = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt())
         
         novo_usuario = {
@@ -330,7 +325,6 @@ def atualizar_usuario(user_id):
         
         dados = request.get_json()
         
-        # Se tiver senha, faz o hash
         if 'senha' in dados and dados['senha']:
             import bcrypt
             dados['senha'] = bcrypt.hashpw(dados['senha'].encode('utf-8'), bcrypt.gensalt())
