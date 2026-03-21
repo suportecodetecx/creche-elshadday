@@ -1,30 +1,35 @@
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
-.env
+*.so
+.Python
 venv/
 env/
-ENV/
-.venv
+.env
 
-# Flask
-instance/
-.generated_terms/
-
-# Uploads
+# Uploads e arquivos gerados
 uploads/
 generated_terms/
+teste_uploads/
+atestado/
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
+# Arquivos de teste
+*test*.py
+test_*.py
+*_test.py
+atualizar_contador.py
+corrigir_deficiencia.py
+iniciar_contador.py
+pai.py
+resetar.py
 
-# OS
+# Config
+config.py
+
+# Sistema
 .DS_Store
 Thumbs.db
-
-# Logs
 *.log
+*.bak
+.env
+.env.local

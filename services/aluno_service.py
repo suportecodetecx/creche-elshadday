@@ -3,11 +3,126 @@ from datetime import datetime
 from bson.objectid import ObjectId
 import os
 import base64
+import re
 
 class AlunoService:
     def __init__(self):
         self.collection = db.get_collection('alunos')
         self.contador_collection = db.get_collection('contadores')
+    
+    def _converter_data_url_para_base64(self, data_url):
+        """Converte uma data URL para dados Base64 puros"""
+        if not data_url or not data_url.startswith('data:'):
+            return None
+        
+        try:
+            # Extrai o tipo e os dados
+            match = re.match(r'data:([^;]+);base64,(.+)', data_url)
+            if match:
+                mime_type = match.group(1)
+                dados_base64 = match.group(2)
+                
+                # Extrai a extensão do tipo MIME
+                if 'image/jpeg' in mime_type or 'image/jpg' in mime_type:
+                    tipo = 'jpg'
+                elif 'image/png' in mime_type:
+                    tipo = 'png'
+                elif 'image/gif' in mime_type:
+                    tipo = 'gif'
+                elif 'application/pdf' in mime_type:
+                    tipo = 'pdf'
+                else:
+                    tipo = 'jpg'
+                
+                return {
+                    'dados': dados_base64,
+                    'tipo': tipo,
+                    'mime_type': mime_type
+                }
+        except Exception as e:
+            print(f"❌ Erro ao converter data_url: {e}")
+        
+        return None
+    
+    def _processar_arquivos_frontend(self, request_files, request_form):
+        """Processa arquivos vindos do frontend (pode ser data_url ou arquivo real)"""
+        arquivos_processados = []
+        
+        # Mapeamento dos campos de foto
+        campos_foto = [
+            'foto_aluno',
+            'foto_responsavel1', 'foto_responsavel2', 'foto_responsavel3',
+            'foto_terceiro1', 'foto_terceiro2', 'foto_terceiro3',
+            'foto_transporte'
+        ]
+        
+        # Primeiro, processa arquivos reais (enviados como File)
+        for campo in campos_foto:
+            if campo in request_files:
+                file = request_files[campo]
+                if file and file.filename:
+                    try:
+                        file_data = file.read()
+                        base64_data = base64.b64encode(file_data).decode('utf-8')
+                        ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else 'jpg'
+                        
+                        arquivos_processados.append({
+                            'campo': campo,  # <--- IMPORTANTE: campo definido
+                            'nome': f"{campo}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}",
+                            'dados': base64_data,
+                            'tipo': ext,
+                            'tamanho': len(file_data)
+                        })
+                        print(f"   ✅ Arquivo real processado: {campo}")
+                    except Exception as e:
+                        print(f"   ❌ Erro ao processar arquivo {campo}: {e}")
+        
+        # Depois, processa data_urls que podem vir do formulário
+        for campo in campos_foto:
+            data_url_key = f"{campo}_data_url"
+            if data_url_key in request_form and request_form[data_url_key]:
+                data_url = request_form[data_url_key]
+                converted = self._converter_data_url_para_base64(data_url)
+                if converted:
+                    arquivos_processados.append({
+                        'campo': campo,  # <--- IMPORTANTE: campo definido
+                        'nome': f"{campo}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{converted['tipo']}",
+                        'dados': converted['dados'],
+                        'tipo': converted['tipo'],
+                        'tamanho': len(converted['dados'])
+                    })
+                    print(f"   ✅ Data URL processada: {campo}")
+        
+        # Processa documentos (arquivos PDF, etc)
+        campos_documento = [
+            'aluno_certidao', 'aluno_rg', 'aluno_vacinacao', 'aluno_laudos',
+            'resp_rg', 'resp_cpf', 'resp_comprovante',
+            'resp2_rg', 'resp2_cpf',
+            'terceiro_rg',
+            'transporte_rg', 'transporte_cpf', 'transporte_cnh'
+        ]
+        
+        for campo in campos_documento:
+            if campo in request_files:
+                file = request_files[campo]
+                if file and file.filename:
+                    try:
+                        file_data = file.read()
+                        base64_data = base64.b64encode(file_data).decode('utf-8')
+                        ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else 'pdf'
+                        
+                        arquivos_processados.append({
+                            'campo': campo,  # <--- IMPORTANTE: campo definido
+                            'nome': f"{campo}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}",
+                            'dados': base64_data,
+                            'tipo': ext,
+                            'tamanho': len(file_data)
+                        })
+                        print(f"   ✅ Documento processado: {campo}")
+                    except Exception as e:
+                        print(f"   ❌ Erro ao processar documento {campo}: {e}")
+        
+        return arquivos_processados
     
     def get_proximo_numero_inscricao(self):
         """Gera o próximo número de inscrição sequencial"""
@@ -34,19 +149,24 @@ class AlunoService:
         num_inscricao = self.get_proximo_numero_inscricao()
         print(f"📌 Novo número de inscrição gerado: {num_inscricao}")
         
-        # Processa arquivos para garantir que estão no formato correto
+        # Processa arquivos - GARANTINDO QUE TODOS TENHAM O CAMPO 'campo'
         arquivos_processados = []
         if arquivos:
             print(f"📁 Processando {len(arquivos)} arquivos...")
-            for arq in arquivos:
+            for idx, arq in enumerate(arquivos):
+                # VERIFICAÇÃO CRÍTICA: Garantir que tem o campo 'campo'
+                if not arq.get('campo'):
+                    print(f"   ❌ Arquivo #{idx+1} NÃO TEM CAMPO! Conteúdo: {arq}")
+                    continue
+                
                 # Se já tem dados em Base64, mantém
                 if arq.get('dados'):
                     arquivos_processados.append(arq)
-                    print(f"   ✅ Arquivo em Base64: {arq['nome']} ({arq['tamanho']} bytes)")
+                    print(f"   ✅ Arquivo em Base64: {arq['campo']} - {arq.get('nome', 'sem_nome')}")
                 elif arq.get('caminho'):
                     # Fallback: mantém o caminho (para compatibilidade)
                     arquivos_processados.append(arq)
-                    print(f"   ⚠️ Arquivo com caminho: {arq['nome']}")
+                    print(f"   ⚠️ Arquivo com caminho: {arq['campo']} - {arq.get('nome', 'sem_nome')}")
         
         # Prepara o documento do aluno
         aluno = {
@@ -158,7 +278,7 @@ class AlunoService:
         }
     
     def atualizar_aluno(self, num_inscricao_original, dados_form, novos_arquivos):
-        """Atualiza os dados de um aluno existente com substituição de arquivos"""
+        """Atualiza os dados de um aluno existente"""
         try:
             print(f"📝 Atualizando aluno: {num_inscricao_original}")
             
@@ -167,16 +287,18 @@ class AlunoService:
             if not aluno_original:
                 raise Exception("Aluno não encontrado")
             
-            # Processa novos arquivos
+            # Processa novos arquivos - GARANTINDO QUE TODOS TENHAM O CAMPO 'campo'
             novos_arquivos_processados = []
             if novos_arquivos:
-                for arq in novos_arquivos:
+                for idx, arq in enumerate(novos_arquivos):
+                    # VERIFICAÇÃO CRÍTICA: Garantir que tem o campo 'campo'
+                    if not arq.get('campo'):
+                        print(f"   ❌ Novo arquivo #{idx+1} NÃO TEM CAMPO! Conteúdo: {arq}")
+                        continue
+                    
                     if arq.get('dados'):
                         novos_arquivos_processados.append(arq)
-                        print(f"   ✅ Novo arquivo em Base64: {arq['nome']}")
-                    elif arq.get('caminho'):
-                        novos_arquivos_processados.append(arq)
-                        print(f"   ⚠️ Novo arquivo com caminho: {arq['nome']}")
+                        print(f"   ✅ Novo arquivo: {arq['campo']} - {arq.get('nome', 'sem_nome')}")
             
             # Prepara os dados atualizados
             aluno_atualizado = {
@@ -278,16 +400,21 @@ class AlunoService:
                     'email': dados_form.get('transporte_email')
                 }
             
-            # Processar substituição de arquivos
-            # Arquivos antigos que serão mantidos
+            # ===== PROCESSAMENTO DE ARQUIVOS NA EDIÇÃO =====
+            # Mantém arquivos antigos que NÃO foram substituídos
             arquivos_manter = []
+            campos_substituidos = [arq['campo'] for arq in novos_arquivos_processados]
             
-            # Identifica quais arquivos antigos NÃO foram substituídos
             for arquivo_antigo in aluno_original.get('arquivos', []):
-                campo = arquivo_antigo['campo']
-                if campo not in [na['campo'] for na in novos_arquivos_processados]:
+                # Verifica se o arquivo antigo tem campo
+                if not arquivo_antigo.get('campo'):
+                    print(f"   ⚠️ Arquivo antigo sem campo! Será mantido: {arquivo_antigo}")
                     arquivos_manter.append(arquivo_antigo)
-                    print(f"   ✅ Mantendo arquivo: {arquivo_antigo['nome']}")
+                elif arquivo_antigo.get('campo') not in campos_substituidos:
+                    arquivos_manter.append(arquivo_antigo)
+                    print(f"   ✅ Mantendo arquivo: {arquivo_antigo['campo']} - {arquivo_antigo.get('nome', 'sem_nome')}")
+                else:
+                    print(f"   🔄 Substituindo arquivo: {arquivo_antigo.get('campo')}")
             
             # Lista final de arquivos
             arquivos_finais = arquivos_manter + novos_arquivos_processados
@@ -350,17 +477,9 @@ class AlunoService:
         try:
             alunos = list(self.collection.find(query).sort('data_cadastro', -1))
             
-            # Converte ObjectId para string e prepara imagens para exibição
+            # Converte ObjectId para string
             for aluno in alunos:
                 aluno['_id'] = str(aluno['_id'])
-                
-                # Converte arquivos em Base64 para data URL
-                if aluno.get('arquivos'):
-                    for arquivo in aluno['arquivos']:
-                        if arquivo.get('dados'):
-                            # Cria a data URL para exibição no card
-                            tipo = arquivo.get('tipo', 'jpeg')
-                            arquivo['data_url'] = f"data:image/{tipo};base64,{arquivo['dados']}"
             
             return alunos
         except Exception as e:
@@ -375,13 +494,6 @@ class AlunoService:
             aluno = self.collection.find_one({'_id': ObjectId(aluno_id)})
             if aluno:
                 aluno['_id'] = str(aluno['_id'])
-                
-                # Converte arquivos em Base64 para data URL
-                if aluno.get('arquivos'):
-                    for arquivo in aluno['arquivos']:
-                        if arquivo.get('dados'):
-                            tipo = arquivo.get('tipo', 'jpeg')
-                            arquivo['data_url'] = f"data:image/{tipo};base64,{arquivo['dados']}"
             return aluno
         except Exception as e:
             print(f"Erro ao buscar aluno por ID: {e}")
@@ -393,13 +505,11 @@ class AlunoService:
             aluno = self.collection.find_one({'num_inscricao': num_inscricao})
             if aluno:
                 aluno['_id'] = str(aluno['_id'])
-                
-                # Converte arquivos em Base64 para data URL
+                # LOG para debug - mostra quantos arquivos tem
                 if aluno.get('arquivos'):
-                    for arquivo in aluno['arquivos']:
-                        if arquivo.get('dados'):
-                            tipo = arquivo.get('tipo', 'jpeg')
-                            arquivo['data_url'] = f"data:image/{tipo};base64,{arquivo['dados']}"
+                    print(f"📁 Aluno {num_inscricao} tem {len(aluno['arquivos'])} arquivos")
+                    for arq in aluno['arquivos']:
+                        print(f"   - {arq.get('campo')}: dados={bool(arq.get('dados'))}, tipo={arq.get('tipo')}")
             return aluno
         except Exception as e:
             print(f"Erro ao buscar aluno por inscrição: {e}")

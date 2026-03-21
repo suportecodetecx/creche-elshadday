@@ -293,23 +293,33 @@ def atualizar_aluno():
             
         print(f"📌 Atualizando aluno: {num_inscricao_original}")
         
+        # Buscar aluno existente para manter arquivos que não foram substituídos
+        aluno_existente = aluno_service.get_aluno_by_inscricao(num_inscricao_original)
+        
         print("\n🔍 ARQUIVOS RECEBIDOS NO REQUEST:")
-        arquivos_recebidos = []
         for key in request.files.keys():
             file = request.files[key]
             if file and file.filename:
-                arquivos_recebidos.append({
-                    'campo': key,
-                    'nome': file.filename,
-                    'tipo': file.content_type
-                })
-                print(f"   📁 {key}: {file.filename} ({file.content_type})")
+                print(f"   📁 {key}: {file.filename}")
         
         print(f"\n📦 DADOS DO FORMULÁRIO:")
         for key, value in request.form.items():
             print(f"   📝 {key}: {value[:30] if value else 'vazio'}")
         
         arquivos_salvos = []
+        
+        # Manter arquivos existentes que não foram substituídos
+        if aluno_existente and aluno_existente.get('arquivos'):
+            for arq in aluno_existente['arquivos']:
+                campo = arq.get('campo')
+                # Verifica se este campo foi enviado novamente no request
+                if campo in request.files and request.files[campo] and request.files[campo].filename:
+                    # Será substituído, não manter
+                    print(f"   🔄 Campo {campo} será substituído")
+                else:
+                    # Manter arquivo existente
+                    arquivos_salvos.append(arq)
+                    print(f"   📌 Mantendo arquivo existente: {campo}")
         
         # ===== PROCESSANDO FOTOS =====
         print("\n📸 PROCESSANDO FOTOS...")
@@ -328,11 +338,13 @@ def atualizar_aluno():
             if campo in request.files:
                 file = request.files[campo]
                 if file and file.filename:
-                    print(f"\n📸 Processando FOTO: {campo}")
+                    print(f"\n📸 Processando nova FOTO: {campo}")
                     info = save_uploaded_file(file, pasta, campo)
                     if info:
+                        # Remover o arquivo antigo da lista se existir
+                        arquivos_salvos = [a for a in arquivos_salvos if a.get('campo') != campo]
                         arquivos_salvos.append(info)
-                        print(f"   ✅ Foto processada: {info['nome']}")
+                        print(f"   ✅ Nova foto processada: {info['nome']}")
         
         # ===== PROCESSANDO DOCUMENTOS =====
         print("\n📄 PROCESSANDO DOCUMENTOS...")
@@ -357,11 +369,13 @@ def atualizar_aluno():
             if campo in request.files:
                 file = request.files[campo]
                 if file and file.filename:
-                    print(f"\n📄 Processando DOCUMENTO: {campo}")
+                    print(f"\n📄 Processando novo DOCUMENTO: {campo}")
                     info = save_uploaded_file(file, pasta, campo)
                     if info:
+                        # Remover o documento antigo da lista se existir
+                        arquivos_salvos = [a for a in arquivos_salvos if a.get('campo') != campo]
                         arquivos_salvos.append(info)
-                        print(f"   ✅ Documento processado: {info['nome']}")
+                        print(f"   ✅ Novo documento processado: {info['nome']}")
         
         print("\n💾 Atualizando dados no banco...")
         resultado = aluno_service.atualizar_aluno(
@@ -436,10 +450,10 @@ def excluir_aluno():
             'erro': str(e)
         }), 500
 
-# ===== ROTA PARA PÁGINA DE CADASTRO COM EDIÇÃO =====
+# ===== ROTA PARA PÁGINA DE CADASTRO COM EDIÇÃO - CORRIGIDA =====
 @alunos_bp.route('/alunos/cadastro')
 def cadastro_aluno():
-    """Rota para página de cadastro com suporte a edição"""
+    """Rota para página de cadastro com suporte a edição - CARREGA TODOS OS ARQUIVOS"""
     try:
         num_inscricao = request.args.get('editar')
         aluno_data = None
@@ -448,6 +462,30 @@ def cadastro_aluno():
             print(f"📝 Modo edição - buscando aluno: {num_inscricao}")
             aluno = aluno_service.get_aluno_by_inscricao(num_inscricao)
             if aluno:
+                # Converter ObjectId para string para JSON
+                if '_id' in aluno:
+                    aluno['_id'] = str(aluno['_id'])
+                
+                # Preparar os arquivos para exibição no formulário
+                if aluno.get('arquivos'):
+                    print(f"📁 Encontrados {len(aluno['arquivos'])} arquivos")
+                    
+                    # Criar um dicionário para fácil acesso no template
+                    arquivos_dict = {}
+                    for arquivo in aluno['arquivos']:
+                        campo = arquivo.get('campo')
+                        arquivos_dict[campo] = arquivo
+                        
+                        # Se for imagem, adicionar data_url para exibição
+                        if arquivo.get('dados') and arquivo.get('tipo') in ['jpg', 'jpeg', 'png', 'gif']:
+                            arquivo['data_url'] = f"data:image/{arquivo['tipo']};base64,{arquivo['dados']}"
+                            print(f"   ✅ Imagem {campo} preparada para exibição")
+                        elif arquivo.get('dados') and arquivo.get('tipo') == 'pdf':
+                            arquivo['data_url'] = f"data:application/pdf;base64,{arquivo['dados']}"
+                            print(f"   ✅ PDF {campo} preparado para download")
+                    
+                    aluno['arquivos_dict'] = arquivos_dict
+                
                 aluno_data = aluno
                 print(f"✅ Aluno encontrado: {aluno_data['dados_pessoais']['nome']}")
             else:
@@ -457,6 +495,7 @@ def cadastro_aluno():
         
     except Exception as e:
         print(f"❌ Erro ao carregar página de cadastro: {str(e)}")
+        traceback.print_exc()
         return render_template('alunos/cadastro_aluno.html', aluno=None)
 
 @alunos_bp.route('/api/alunos/buscar', methods=['GET'])
@@ -489,7 +528,8 @@ def buscar_alunos():
                     if arquivo.get('dados'):
                         # Criar data_url para exibição
                         tipo = arquivo.get('tipo', 'jpeg')
-                        arquivo['data_url'] = f"data:image/{tipo};base64,{arquivo['dados']}"
+                        if tipo in ['jpg', 'jpeg', 'png', 'gif']:
+                            arquivo['data_url'] = f"data:image/{tipo};base64,{arquivo['dados']}"
         
         print(f"✅ Encontrados {len(alunos)} alunos")
         
