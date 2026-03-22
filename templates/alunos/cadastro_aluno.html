@@ -1088,13 +1088,13 @@ function preencherFormulario(aluno) {
 
     // ===== SAÚDE =====
     if (aluno.saude) {
-        setValue('tipo_sanguineo', aluno.saude.tipo_sanguineo);
-        setValue('plano_saude', aluno.saude.plano_saude);
-        setValue('alergias', aluno.saude.alergias);
-        setValue('medicamentos', aluno.saude.medicamentos);
-        setValue('restricoes', aluno.saude.restricoes);
-        setValue('pediatra', aluno.saude.pediatra);
-        setValue('contato_pediatra', aluno.saude.contato_pediatra);
+    setValue('tipo_sanguineo', aluno.saude.tipo_sanguineo);
+    setValue('plano_saude', aluno.saude.plano_saude);
+    setValue('alergias', aluno.saude.alergias);
+    setValue('medicamentos', aluno.saude.medicamentos);
+    setValue('restricoes', aluno.saude.restricoes);
+    setValue('pediatra', aluno.saude.pediatra);
+    setValue('contato_pediatra', aluno.saude.contato_pediatra);
         
         if (aluno.saude.deficiencia) {
             setValue('deficiencia', 'sim');
@@ -1551,9 +1551,10 @@ function preencherFormulario(aluno) {
                             </div>
 
                             <div class="input-wrapper health-full">
-                                <label for="restricoes">Restrições alimentares</label>
-                                <textarea id="restricoes" name="restricoes" rows="2" placeholder="Descreva restrições alimentares" class="textarea-moderno"></textarea>
-                            </div>
+        <label for="restricoes">Restrições Alimentares</label>
+        <textarea id="restricoes" name="restricoes" rows="2" placeholder="Descreva as restrições alimentares (ex: lactose, glúten, alergias a alimentos, etc.)" class="textarea-moderno"></textarea>
+        <small class="small-text">Informe alergias alimentares, intolerâncias ou restrições dietéticas</small>
+    </div>
 
                             <div class="input-wrapper">
                                 <label for="pediatra">Nome do Pediatra</label>
@@ -1973,26 +1974,31 @@ function preencherFormulario(aluno) {
                             </div>
 
                             <!-- Resumo Saúde -->
-                            <div class="summary-card">
-                                <div class="edit-button" onclick="irParaPasso(1)">Editar</div>
-                                <h4>Saúde da Criança</h4>
-                                <div class="summary-item">
-                                    <span class="summary-label">Tipo Sanguíneo:</span>
-                                    <span class="summary-value" id="review-tipo-sanguineo">-</span>
-                                </div>
-                                <div class="summary-item">
-                                    <span class="summary-label">Plano de Saúde:</span>
-                                    <span class="summary-value" id="review-plano-saude">-</span>
-                                </div>
-                                <div class="summary-item">
-                                    <span class="summary-label">Alergias:</span>
-                                    <span class="summary-value" id="review-alergias">-</span>
-                                </div>
-                                <div class="summary-item">
-                                    <span class="summary-label">Deficiência:</span>
-                                    <span class="summary-value" id="review-deficiencia">-</span>
-                                </div>
-                            </div>
+<div class="summary-card">
+    <div class="edit-button" onclick="irParaPasso(1)">Editar</div>
+    <h4>Saúde da Criança</h4>
+    <div class="summary-item">
+        <span class="summary-label">Tipo Sanguíneo:</span>
+        <span class="summary-value" id="review-tipo-sanguineo">-</span>
+    </div>
+    <div class="summary-item">
+        <span class="summary-label">Plano de Saúde:</span>
+        <span class="summary-value" id="review-plano-saude">-</span>
+    </div>
+    <div class="summary-item">
+        <span class="summary-label">Alergias:</span>
+        <span class="summary-value" id="review-alergias">-</span>
+    </div>
+    <!-- ADICIONADO: Restrições Alimentares -->
+    <div class="summary-item">
+        <span class="summary-label">Restrições Alimentares:</span>
+        <span class="summary-value" id="review-restricoes">-</span>
+    </div>
+    <div class="summary-item">
+        <span class="summary-label">Deficiência:</span>
+        <span class="summary-value" id="review-deficiencia">-</span>
+    </div>
+</div>
 
                             <!-- Resumo Responsável Principal -->
                             <div class="summary-card">
@@ -2749,40 +2755,47 @@ function preencherFormulario(aluno) {
         return docs;
     }
 
-    function atualizarResumo() {
-        document.getElementById('review-nome').textContent = document.getElementById('nome').value || '-';
-        document.getElementById('review-data').textContent = document.getElementById('data_nasc').value || '-';
-        document.getElementById('review-ra').textContent = document.getElementById('ra').value || 'Não informado';
-        document.getElementById('review-endereco').textContent = 
-            `${document.getElementById('endereco').value || ''}, ${document.getElementById('numero').value || ''} - ${document.getElementById('bairro').value || ''}`;
-        document.getElementById('review-turma').textContent = document.getElementById('turma').value || '-';
-        document.getElementById('review-unidade').textContent = document.getElementById('unidade').value || '-';
-        
-        document.getElementById('review-tipo-sanguineo').textContent = document.getElementById('tipo_sanguineo').value || '-';
-        document.getElementById('review-plano-saude').textContent = document.getElementById('plano_saude').value || '-';
-        document.getElementById('review-alergias').textContent = document.getElementById('alergias').value || '-';
-        
-        const deficiencia = document.getElementById('deficiencia').value;
-        document.getElementById('review-deficiencia').textContent = deficiencia === 'sim' ? 'Sim' : 'Não';
-        
-        document.getElementById('review-resp-nome').textContent = document.querySelector('input[name="responsavel1_nome"]').value || '-';
-        document.getElementById('review-resp-parentesco').textContent = document.querySelector('select[name="responsavel1_parentesco"]').value || '-';
-        document.getElementById('review-resp-telefone').textContent = document.querySelector('input[name="responsavel1_telefone"]').value || '-';
-        document.getElementById('review-resp-telefone-contato').textContent = document.querySelector('input[name="responsavel1_telefone_contato"]').value || '-';
-        document.getElementById('review-resp-cpf').textContent = document.querySelector('input[name="responsavel1_cpf"]').value || '-';
-        
-        const docs = contarDocumentosAnexados();
-        
-        const docsAlunoEl = document.getElementById('review-docs-aluno');
-        const docsRespEl = document.getElementById('review-docs-resp');
-        const docsTerceirosEl = document.getElementById('review-docs-terceiros');
-        const docsTransporteEl = document.getElementById('review-docs-transporte');
-        
-        if (docsAlunoEl) docsAlunoEl.textContent = docs.aluno.length > 0 ? docs.aluno.join(', ') : 'Nenhum';
-        if (docsRespEl) docsRespEl.textContent = docs.responsavel.length > 0 ? docs.responsavel.join(', ') : 'Nenhum';
-        if (docsTerceirosEl) docsTerceirosEl.textContent = docs.terceiros.length > 0 ? docs.terceiros.join(', ') : 'Nenhum';
-        if (docsTransporteEl) docsTransporteEl.textContent = docs.transporte.length > 0 ? docs.transporte.join(', ') : 'Nenhum';
+   function atualizarResumo() {
+    document.getElementById('review-nome').textContent = document.getElementById('nome').value || '-';
+    document.getElementById('review-data').textContent = document.getElementById('data_nasc').value || '-';
+    document.getElementById('review-ra').textContent = document.getElementById('ra').value || 'Não informado';
+    document.getElementById('review-endereco').textContent = 
+        `${document.getElementById('endereco').value || ''}, ${document.getElementById('numero').value || ''} - ${document.getElementById('bairro').value || ''}`;
+    document.getElementById('review-turma').textContent = document.getElementById('turma').value || '-';
+    document.getElementById('review-unidade').textContent = document.getElementById('unidade').value || '-';
+    
+    document.getElementById('review-tipo-sanguineo').textContent = document.getElementById('tipo_sanguineo').value || '-';
+    document.getElementById('review-plano-saude').textContent = document.getElementById('plano_saude').value || '-';
+    document.getElementById('review-alergias').textContent = document.getElementById('alergias').value || '-';
+    
+    // ADICIONADO: Restrições alimentares
+    const restricoes = document.getElementById('restricoes');
+    const reviewRestricoes = document.getElementById('review-restricoes');
+    if (reviewRestricoes) {
+        reviewRestricoes.textContent = (restricoes && restricoes.value) ? restricoes.value : 'Nenhuma restrição informada';
     }
+    
+    const deficiencia = document.getElementById('deficiencia').value;
+    document.getElementById('review-deficiencia').textContent = deficiencia === 'sim' ? 'Sim' : 'Não';
+    
+    document.getElementById('review-resp-nome').textContent = document.querySelector('input[name="responsavel1_nome"]').value || '-';
+    document.getElementById('review-resp-parentesco').textContent = document.querySelector('select[name="responsavel1_parentesco"]').value || '-';
+    document.getElementById('review-resp-telefone').textContent = document.querySelector('input[name="responsavel1_telefone"]').value || '-';
+    document.getElementById('review-resp-telefone-contato').textContent = document.querySelector('input[name="responsavel1_telefone_contato"]').value || '-';
+    document.getElementById('review-resp-cpf').textContent = document.querySelector('input[name="responsavel1_cpf"]').value || '-';
+    
+    const docs = contarDocumentosAnexados();
+    
+    const docsAlunoEl = document.getElementById('review-docs-aluno');
+    const docsRespEl = document.getElementById('review-docs-resp');
+    const docsTerceirosEl = document.getElementById('review-docs-terceiros');
+    const docsTransporteEl = document.getElementById('review-docs-transporte');
+    
+    if (docsAlunoEl) docsAlunoEl.textContent = docs.aluno.length > 0 ? docs.aluno.join(', ') : 'Nenhum';
+    if (docsRespEl) docsRespEl.textContent = docs.responsavel.length > 0 ? docs.responsavel.join(', ') : 'Nenhum';
+    if (docsTerceirosEl) docsTerceirosEl.textContent = docs.terceiros.length > 0 ? docs.terceiros.join(', ') : 'Nenhum';
+    if (docsTransporteEl) docsTransporteEl.textContent = docs.transporte.length > 0 ? docs.transporte.join(', ') : 'Nenhum';
+}
 
     function limparFormulario() {
         document.querySelectorAll('input:not([readonly]), select, textarea').forEach(campo => {
