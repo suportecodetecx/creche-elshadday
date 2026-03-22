@@ -413,61 +413,73 @@
             </div>
         </div>
 
-        <!-- SAÚDE -->
-        {% if aluno.saude.tipo_sanguineo or aluno.saude.plano_saude or aluno.saude.alergias or aluno.saude.medicamentos or aluno.saude.restricoes or aluno.saude.deficiencia %}
-        <div class="saude-section">
-            <div class="saude-titulo">SAÚDE DA CRIANÇA</div>
-            
-            {% if aluno.saude.tipo_sanguineo %}
-            <div class="saude-item">
-                <span class="saude-label">Tipo Sanguíneo:</span> {{ aluno.saude.tipo_sanguineo }}
-            </div>
-            {% endif %}
-            
-            {% if aluno.saude.plano_saude %}
-            <div class="saude-item">
-                <span class="saude-label">Plano de Saúde:</span> {{ aluno.saude.plano_saude }}
-            </div>
-            {% endif %}
-            
-            <!-- SÓ MOSTRA SE TIVER CONTEÚDO E NÃO FOR "não" -->
-            {% if aluno.saude.alergias and aluno.saude.alergias.lower() != 'não' and aluno.saude.alergias.lower() != 'nao' %}
-            <div class="saude-item">
-                <span class="saude-label">Alergias:</span> {{ aluno.saude.alergias }}
-            </div>
-            {% endif %}
-            
-            {% if aluno.saude.medicamentos and aluno.saude.medicamentos.lower() != 'não' and aluno.saude.medicamentos.lower() != 'nao' %}
-            <div class="saude-item">
-                <span class="saude-label">Medicamentos de uso contínuo:</span> {{ aluno.saude.medicamentos }}
-            </div>
-            {% endif %}
-            
-            {% if aluno.saude.restricoes and aluno.saude.restricoes.lower() != 'não' and aluno.saude.restricoes.lower() != 'nao' %}
-            <div class="saude-item">
-                <span class="saude-label">Restrições alimentares:</span> {{ aluno.saude.restricoes }}
-            </div>
-            {% endif %}
-            
-            <!-- DEFICIÊNCIA - SÓ MOSTRA SE TIVER DESCRIÇÃO -->
-            {% if aluno.saude.deficiencia and aluno.saude.deficiencia_desc %}
-            <div class="saude-item">
-                <span class="saude-label">Deficiência:</span> {{ aluno.saude.deficiencia_desc }}
-            </div>
-            
-            <!-- LAUDO MÉDICO - SÓ APARECE SE TIVER DEFICIÊNCIA -->
+ <!-- SAÚDE - VERSÃO COM CORES DE DESTAQUE E APENAS CAMPOS PREENCHIDOS -->
+{% if aluno.saude.tipo_sanguineo or aluno.saude.plano_saude or aluno.saude.alergias or aluno.saude.medicamentos or aluno.saude.restricoes or (aluno.saude.deficiencia and aluno.saude.deficiencia_desc) %}
+<div class="saude-section" {% if aluno.saude.alergias or aluno.saude.medicamentos or aluno.saude.restricoes or (aluno.saude.deficiencia and aluno.saude.deficiencia_desc) %}style="background: #fff3cd; border-left: 4px solid #ff9800;"{% endif %}>
+    <div class="saude-titulo">SAÚDE DA CRIANÇA</div>
+    
+    <!-- Tipo Sanguíneo - só aparece se tiver -->
+    {% if aluno.saude.tipo_sanguineo %}
+    <div class="saude-item">
+        <span class="saude-label">Tipo Sanguíneo:</span>
+        <span class="saude-valor">{{ aluno.saude.tipo_sanguineo }}</span>
+    </div>
+    {% endif %}
+    
+    <!-- Plano de Saúde - só aparece se tiver -->
+    {% if aluno.saude.plano_saude %}
+    <div class="saude-item">
+        <span class="saude-label">Plano de Saúde:</span>
+        <span class="saude-valor">{{ aluno.saude.plano_saude }}</span>
+    </div>
+    {% endif %}
+    
+    <!-- Alergias - COM DESTAQUE SE TIVER -->
+    {% if aluno.saude.alergias %}
+    <div class="saude-item" style="background: #ffebee; padding: 2px 5px; border-radius: 3px;">
+        <span class="saude-label">Alergias:</span>
+        <span class="saude-valor" style="font-weight: bold; color: #c62828;">{{ aluno.saude.alergias }}</span>
+    </div>
+    {% endif %}
+    
+    <!-- Medicamentos - COM DESTAQUE SE TIVER -->
+    {% if aluno.saude.medicamentos %}
+    <div class="saude-item" style="background: #ffebee; padding: 2px 5px; border-radius: 3px;">
+        <span class="saude-label">Medicamentos de uso contínuo:</span>
+        <span class="saude-valor" style="font-weight: bold; color: #c62828;">{{ aluno.saude.medicamentos }}</span>
+    </div>
+    {% endif %}
+    
+    <!-- Restrições Alimentares - COM DESTAQUE SE TIVER -->
+    {% if aluno.saude.restricoes %}
+    <div class="saude-item" style="background: #ffebee; padding: 2px 5px; border-radius: 3px;">
+        <span class="saude-label">Restrições Alimentares:</span>
+        <span class="saude-valor" style="font-weight: bold; color: #c62828;">{{ aluno.saude.restricoes }}</span>
+    </div>
+    {% endif %}
+    
+    <!-- Deficiência - COM DESTAQUE SE TIVER -->
+    {% if aluno.saude.deficiencia and aluno.saude.deficiencia_desc %}
+    <div class="saude-item" style="background: #ffebee; padding: 2px 5px; border-radius: 3px;">
+        <span class="saude-label">Deficiência:</span>
+        <span class="saude-valor" style="font-weight: bold; color: #c62828;">{{ aluno.saude.deficiencia_desc }}</span>
+    </div>
+    
+    <!-- Laudo Médico - só aparece se tiver deficiência -->
+    <div class="saude-item">
+        <span class="saude-label">Laudo Médico:</span>
+        <span class="saude-valor">
             {% if aluno.arquivos and aluno.arquivos|selectattr('campo', 'equalto', 'aluno_laudos')|list %}
-            <div class="saude-item">
-                <span class="saude-label">Laudo Médico:</span> LAUDADO
-            </div>
+                <span style="color: #2e7d32; font-weight: bold;">✓ LAUDADO</span>
             {% else %}
-            <div class="saude-item">
-                <span class="saude-label">Laudo Médico:</span> NÃO LAUDADO
-            </div>
+                <span style="color: #c62828; font-weight: bold;">⚠️ NÃO LAUDADO</span>
             {% endif %}
-            {% endif %}
-        </div>
-        {% endif %}
+        </span>
+    </div>
+    {% endif %}
+    
+</div>
+{% endif %}
 
         <!-- DECLARAÇÃO -->
         <div class="declaracao">

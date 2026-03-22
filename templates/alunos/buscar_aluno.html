@@ -487,6 +487,47 @@
             font-size: 0.9rem;
         }
 
+        /* Seção de alerta de saúde no card */
+        .saude-alerta {
+            background: rgba(255, 87, 34, 0.15);
+            border-left: 3px solid #ff5722;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-top: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .saude-alerta-titulo {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #ff9800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .saude-alerta-item {
+            font-size: 0.75rem;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+        }
+        
+        .saude-alerta-item .label {
+            font-weight: 600;
+            color: #ff9800;
+            min-width: 70px;
+        }
+        
+        .saude-alerta-item .valor {
+            color: white;
+            flex: 1;
+        }
+
         /* Área de Documentos */
         .documentos-area {
             margin-top: 15px;
@@ -1177,6 +1218,7 @@
                 const turma = aluno.turma || {};
                 const responsaveis = aluno.responsaveis || [];
                 const arquivos = aluno.arquivos || [];
+                const saude = aluno.saude || {};
                 
                 const fotoAluno = getFotoUrl(aluno, 'aluno') || AVATAR_SVG;
                 const alunoJson = JSON.stringify(aluno).replace(/"/g, '&quot;');
@@ -1184,6 +1226,12 @@
                 
                 const fotos = arquivos.filter(a => a.campo.startsWith('foto_'));
                 const documentos = arquivos.filter(a => !a.campo.startsWith('foto_'));
+                
+                // Verifica se tem dados de saúde para mostrar
+                const temAlergias = saude.alergias && saude.alergias.trim() !== '' && saude.alergias.toLowerCase() !== 'não' && saude.alergias.toLowerCase() !== 'nao';
+                const temMedicamentos = saude.medicamentos && saude.medicamentos.trim() !== '' && saude.medicamentos.toLowerCase() !== 'não' && saude.medicamentos.toLowerCase() !== 'nao';
+                const temRestricoes = saude.restricoes && saude.restricoes.trim() !== '' && saude.restricoes.toLowerCase() !== 'não' && saude.restricoes.toLowerCase() !== 'nao';
+                const temAlertaSaude = temAlergias || temMedicamentos || temRestricoes;
                 
                 html += `
     <!-- Card do Aluno -->
@@ -1209,7 +1257,45 @@
                     <div class="info-value">${aluno.endereco?.logradouro || '---'}, ${aluno.endereco?.numero || ''}</div>
                 </div>
             </div>
-            
+`;
+                
+                // Adiciona seção de alerta de saúde se houver algum problema
+                if (temAlertaSaude) {
+                    html += `
+            <div class="saude-alerta">
+                <div class="saude-alerta-titulo">
+                    ⚠️ ATENÇÃO SAÚDE
+                </div>`;
+                    
+                    if (temAlergias) {
+                        html += `
+                <div class="saude-alerta-item">
+                    <span class="label">🔴 Alergias:</span>
+                    <span class="valor">${saude.alergias}</span>
+                </div>`;
+                    }
+                    
+                    if (temMedicamentos) {
+                        html += `
+                <div class="saude-alerta-item">
+                    <span class="label">💊 Medicamentos:</span>
+                    <span class="valor">${saude.medicamentos}</span>
+                </div>`;
+                    }
+                    
+                    if (temRestricoes) {
+                        html += `
+                <div class="saude-alerta-item">
+                    <span class="label">🍽️ Restrições:</span>
+                    <span class="valor">${saude.restricoes}</span>
+                </div>`;
+                    }
+                    
+                    html += `
+            </div>`;
+                }
+                
+                html += `
             <div class="documentos-area">
                 <div class="documentos-header">
                     <h4>📁 Documentos</h4>
