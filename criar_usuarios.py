@@ -14,6 +14,40 @@ def criar_usuarios():
     
     # Lista de usuários com as senhas desejadas
     usuarios = [
+        # Usuário Master (Administrador)
+        {
+            'usuario': 'master',
+            'email': 'master@creche.com',
+            'senha_plana': 'code@@',
+            'nome': 'Administrador Master',
+            'perfil': 'admin',
+            'unidade': 'Todas as Unidades',
+            'status': 'ativo',
+            'ativo': True
+        },
+        # Usuário Admin (alternativo)
+        {
+            'usuario': 'admin',
+            'email': 'admin@creche.com',
+            'senha_plana': 'admin123',
+            'nome': 'Administrador',
+            'perfil': 'admin',
+            'unidade': 'Todas as Unidades',
+            'status': 'ativo',
+            'ativo': True
+        },
+        # Usuário Pedagógico Geral
+        {
+            'usuario': 'pedagogico',
+            'email': 'pedagogico@creche.com',
+            'senha_plana': 'pedagogo123',
+            'nome': 'Usuário Pedagógico',
+            'perfil': 'pedagogico',
+            'unidade': '',
+            'status': 'ativo',
+            'ativo': True
+        },
+        # Usuário Pedagógico CEIC
         {
             'usuario': 'pedagogaceic',
             'email': 'pedagogaceic@creche.com',
@@ -24,6 +58,7 @@ def criar_usuarios():
             'status': 'ativo',
             'ativo': True
         },
+        # Usuário Pedagógico CEIM
         {
             'usuario': 'pedagogaceim',
             'email': 'pedagogaceim@creche.com',
@@ -31,16 +66,6 @@ def criar_usuarios():
             'nome': 'Usuário Pedagógico CEIM',
             'perfil': 'pedagogico',
             'unidade': 'CEIM Prof. Egberto Malta Moreira',
-            'status': 'ativo',
-            'ativo': True
-        },
-        {
-            'usuario': 'master',
-            'email': 'master@creche.com',
-            'senha_plana': 'code@@',
-            'nome': 'Administrador Master',
-            'perfil': 'admin',
-            'unidade': 'Todas as Unidades',
             'status': 'ativo',
             'ativo': True
         }
@@ -67,24 +92,28 @@ def criar_usuarios():
         
         if existing:
             # Atualizar usuário existente
-            result = collection.update_one(
+            collection.update_one(
                 {'usuario': user_data['usuario']},
                 {'$set': dados_usuario}
             )
-            print(f"✅ Usuário {user_data['usuario']} ATUALIZADO | Senha: {user_data['senha_plana']} | Unidade: {user_data['unidade']}")
+            print(f"✅ Usuário {user_data['usuario']} ATUALIZADO | Senha: {user_data['senha_plana']}")
         else:
             # Criar novo usuário
             dados_usuario['usuario'] = user_data['usuario']
             dados_usuario['data_criacao'] = datetime.now()
             collection.insert_one(dados_usuario)
-            print(f"✅ Usuário {user_data['usuario']} CRIADO | Senha: {user_data['senha_plana']} | Unidade: {user_data['unidade']}")
+            print(f"✅ Usuário {user_data['usuario']} CRIADO | Senha: {user_data['senha_plana']}")
     
     print("\n" + "="*60)
     print("🔑 CREDENCIAIS DOS USUÁRIOS:")
     print("-"*60)
-    print("Usuário: pedagogaceic | Senha: 1234@@ | Unidade: CEIC El Shadday")
-    print("Usuário: pedagogaceim | Senha: 1234@@ | Unidade: CEIM Prof. Egberto Malta Moreira")
-    print("Usuário: master | Senha: code@@| Perfil: Administrador Master")
+    print("👨‍💼 ADMINISTRADORES:")
+    print("   Usuário: master | Senha: code@@ | Perfil: admin")
+    print("   Usuário: admin  | Senha: admin123 | Perfil: admin")
+    print("\n👩‍🏫 PEDAGÓGICOS:")
+    print("   Usuário: pedagogico    | Senha: pedagogo123 | Unidade: Todas")
+    print("   Usuário: pedagogaceic  | Senha: 1234@@      | Unidade: CEIC El Shadday")
+    print("   Usuário: pedagogaceim  | Senha: 1234@@      | Unidade: CEIM Prof. Egberto Malta Moreira")
     print("="*60)
     
     # Testar as senhas após criação
@@ -102,6 +131,10 @@ def criar_usuarios():
                 print(f"❌ {user_data['usuario']}: senha '{user_data['senha_plana']}' FALHOU!")
         else:
             print(f"❌ {user_data['usuario']}: usuário não encontrado!")
+    
+    # Contar total de usuários
+    total = collection.count_documents({})
+    print(f"\n📊 Total de usuários no sistema: {total}")
 
 if __name__ == '__main__':
     criar_usuarios()

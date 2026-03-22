@@ -2,6 +2,8 @@
 from pymongo import MongoClient
 import os
 from dotenv import load_dotenv
+import bcrypt
+from datetime import datetime
 
 load_dotenv()
 
@@ -39,10 +41,143 @@ class MongoDB:
                 collections = cls._instance.db.list_collection_names()
                 print(f"📚 Coleções existentes: {collections}")
                 
+                # Criar índices para as coleções
+                cls._instance._criar_indices()
+                
+                # CRIAR USUÁRIOS PADRÃO
+                cls._instance._criar_usuarios_padrao()
+                
             except Exception as e:
                 print(f"❌ Erro ao conectar ao MongoDB: {e}")
                 
         return cls._instance
+    
+    def _criar_indices(self):
+        """Cria índices para otimizar buscas"""
+        try:
+            # Índice para funcionários (RGM único)
+            if 'funcionarios' in self.db.list_collection_names():
+                self.db.funcionarios.create_index('rgm', unique=True)
+                print("✅ Índice 'rgm' criado na coleção 'funcionarios'")
+            
+            # Índice para alunos (número de inscrição único)
+            if 'alunos' in self.db.list_collection_names():
+                self.db.alunos.create_index('num_inscricao', unique=True)
+                print("✅ Índice 'num_inscricao' criado na coleção 'alunos'")
+            
+            # Índice para usuários (usuário único)
+            if 'usuarios' in self.db.list_collection_names():
+                self.db.usuarios.create_index('usuario', unique=True)
+                print("✅ Índice 'usuario' criado na coleção 'usuarios'")
+            
+        except Exception as e:
+            print(f"⚠️ Erro ao criar índices: {e}")
+    
+    def _criar_usuarios_padrao(self):
+        """Cria usuários padrão se não existirem"""
+        try:
+            # Garantir que a coleção usuarios existe
+            if 'usuarios' not in self.db.list_collection_names():
+                self.db.create_collection('usuarios')
+                print("✅ Coleção 'usuarios' criada")
+            
+            # Lista de usuários padrão
+            usuarios_padrao = [
+                {
+                    'usuario': 'master',
+                    'email': 'master@creche.com',
+                    'senha_plana': 'code@@',
+                    'nome': 'Administrador Master',
+                    'perfil': 'admin',
+                    'unidade': 'Todas as Unidades',
+                    'status': 'ativo',
+                    'ativo': True
+                },
+                {
+                    'usuario': 'admin',
+                    'email': 'admin@creche.com',
+                    'senha_plana': 'admin123',
+                    'nome': 'Administrador',
+                    'perfil': 'admin',
+                    'unidade': 'Todas as Unidades',
+                    'status': 'ativo',
+                    'ativo': True
+                },
+                {
+                    'usuario': 'pedagogico',
+                    'email': 'pedagogico@creche.com',
+                    'senha_plana': 'pedagogo123',
+                    'nome': 'Usuário Pedagógico',
+                    'perfil': 'pedagogico',
+                    'unidade': '',
+                    'status': 'ativo',
+                    'ativo': True
+                },
+                {
+                    'usuario': 'pedagogaceic',
+                    'email': 'pedagogaceic@creche.com',
+                    'senha_plana': '1234@@',
+                    'nome': 'Usuário Pedagógico CEIC',
+                    'perfil': 'pedagogico',
+                    'unidade': 'CEIC El Shadday',
+                    'status': 'ativo',
+                    'ativo': True
+                },
+                {
+                    'usuario': 'pedagogaceim',
+                    'email': 'pedagogaceim@creche.com',
+                    'senha_plana': '1234@@',
+                    'nome': 'Usuário Pedagógico CEIM',
+                    'perfil': 'pedagogico',
+                    'unidade': 'CEIM Prof. Egberto Malta Moreira',
+                    'status': 'ativo',
+                    'ativo': True
+                }
+            ]
+            
+            for user_data in usuarios_padrao:
+                # Verificar se usuário já existe
+                existing = self.db.usuarios.find_one({'usuario': user_data['usuario']})
+                
+                # Gerar hash da senha
+                senha_hash = bcrypt.hashpw(user_data['senha_plana'].encode('utf-8'), bcrypt.gensalt())
+                
+                dados_usuario = {
+                    'email': user_data['email'],
+                    'senha': senha_hash,
+                    'nome': user_data['nome'],
+                    'perfil': user_data['perfil'],
+                    'unidade': user_data['unidade'],
+                    'status': user_data['status'],
+                    'ativo': user_data['ativo'],
+                    'data_atualizacao': datetime.now()
+                }
+                
+                if existing:
+                    # Atualizar usuário existente
+                    self.db.usuarios.update_one(
+                        {'usuario': user_data['usuario']},
+                        {'$set': dados_usuario}
+                    )
+                    print(f"✅ Usuário {user_data['usuario']} ATUALIZADO")
+                else:
+                    # Criar novo usuário
+                    dados_usuario['usuario'] = user_data['usuario']
+                    dados_usuario['data_criacao'] = datetime.now()
+                    self.db.usuarios.insert_one(dados_usuario)
+                    print(f"✅ Usuário {user_data['usuario']} CRIADO")
+            
+            print("\n🔑 CREDENCIAIS DOS USUÁRIOS:")
+            print("-" * 40)
+            print("👑 master / code@@ (Administrador Master - TODOS os cards)")
+            print("👨‍💼 admin / admin123 (Administrador - 2 cards)")
+            print("👩‍🏫 pedagogico / pedagogo123 (Pedagógico - 3 cards)")
+            print("👩‍🏫 pedagogaceic / 1234@@ (CEIC El Shadday - 3 cards)")
+            print("👩‍🏫 pedagogaceim / 1234@@ (CEIM - 3 cards)")
+            print("=" * 40)
+            
+        except Exception as e:
+            print(f"⚠️ Erro ao criar usuários padrão: {e}")
     
     def get_collection(self, name):
         """Retorna uma coleção do banco de dados"""
@@ -62,3 +197,266 @@ class MongoDB:
 
 # Instância global
 db = MongoDB()
+
+
+# ==================== FUNÇÕES AUXILIARES PARA ACESSO AO BANCO ====================
+
+def get_db():
+    """Retorna a instância do banco de dados"""
+    return db
+
+
+def get_collection(collection_name):
+    """Retorna uma coleção específica"""
+    return db.get_collection(collection_name)
+
+
+# ==================== FUNÇÕES PARA USUÁRIOS ====================
+
+def get_usuario_by_username(usuario):
+    """Busca usuário pelo nome de usuário"""
+    try:
+        return db.usuarios.find_one({'usuario': usuario}, {'_id': 0})
+    except Exception as e:
+        print(f"Erro ao buscar usuário: {e}")
+        return None
+
+
+def listar_usuarios():
+    """Lista todos os usuários (sem senha)"""
+    try:
+        return list(db.usuarios.find({}, {'_id': 0, 'senha': 0}))
+    except Exception as e:
+        print(f"Erro ao listar usuários: {e}")
+        return []
+
+
+# ==================== FUNÇÕES PARA FUNCIONÁRIOS ====================
+
+def get_funcionario_by_rgm(rgm):
+    """Busca funcionário pelo RGM"""
+    try:
+        return db.funcionarios.find_one({'rgm': rgm}, {'_id': 0})
+    except Exception as e:
+        print(f"Erro ao buscar funcionário: {e}")
+        return None
+
+
+def listar_funcionarios(unidade=None):
+    """Lista todos os funcionários, opcionalmente filtrando por unidade"""
+    try:
+        filtro = {}
+        if unidade:
+            filtro['unidade'] = unidade
+        return list(db.funcionarios.find(filtro, {'_id': 0}).sort('nome', 1))
+    except Exception as e:
+        print(f"Erro ao listar funcionários: {e}")
+        return []
+
+
+def cadastrar_funcionario(dados):
+    """Cadastra um novo funcionário"""
+    try:
+        from datetime import datetime
+        
+        # Verificar campos obrigatórios
+        nome = dados.get('nome', '').strip()
+        rgm = dados.get('rgm', '').strip()
+        telefone = dados.get('telefone', '').strip()
+        unidade = dados.get('unidade', '')
+        funcao = dados.get('funcao', '')
+        
+        if not nome or not rgm or not unidade or not funcao or not telefone:
+            return {'sucesso': False, 'erro': 'Todos os campos são obrigatórios'}
+        
+        funcionario = {
+            'nome': nome,
+            'rgm': rgm,
+            'telefone': telefone,
+            'unidade': unidade,
+            'funcao': funcao,
+            'data_cadastro': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
+        # Verificar se já existe
+        if db.funcionarios.find_one({'rgm': funcionario['rgm']}):
+            return {'sucesso': False, 'erro': 'RGM já cadastrado'}
+        
+        db.funcionarios.insert_one(funcionario)
+        return {'sucesso': True, 'mensagem': 'Funcionário cadastrado com sucesso'}
+        
+    except Exception as e:
+        return {'sucesso': False, 'erro': str(e)}
+
+
+def atualizar_funcionario(rgm, dados):
+    """Atualiza um funcionário existente"""
+    try:
+        from datetime import datetime
+        
+        # Verificar campos obrigatórios
+        nome = dados.get('nome', '').strip()
+        telefone = dados.get('telefone', '').strip()
+        unidade = dados.get('unidade', '')
+        funcao = dados.get('funcao', '')
+        
+        if not nome or not unidade or not funcao or not telefone:
+            return {'sucesso': False, 'erro': 'Todos os campos são obrigatórios'}
+        
+        dados_atualizacao = {
+            'nome': nome,
+            'telefone': telefone,
+            'unidade': unidade,
+            'funcao': funcao,
+            'data_atualizacao': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
+        resultado = db.funcionarios.update_one(
+            {'rgm': rgm},
+            {'$set': dados_atualizacao}
+        )
+        
+        if resultado.matched_count == 0:
+            return {'sucesso': False, 'erro': 'Funcionário não encontrado'}
+        
+        return {'sucesso': True, 'mensagem': 'Funcionário atualizado com sucesso'}
+        
+    except Exception as e:
+        return {'sucesso': False, 'erro': str(e)}
+
+
+def excluir_funcionario(rgm):
+    """Exclui um funcionário pelo RGM"""
+    try:
+        resultado = db.funcionarios.delete_one({'rgm': rgm})
+        if resultado.deleted_count == 0:
+            return {'sucesso': False, 'erro': 'Funcionário não encontrado'}
+        return {'sucesso': True, 'mensagem': 'Funcionário excluído com sucesso'}
+    except Exception as e:
+        return {'sucesso': False, 'erro': str(e)}
+
+
+# ==================== FUNÇÕES PARA ALUNOS ====================
+
+def get_aluno_by_num_inscricao(num_inscricao):
+    """Busca aluno pelo número de inscrição"""
+    try:
+        return db.alunos.find_one({'num_inscricao': num_inscricao}, {'_id': 0})
+    except Exception as e:
+        print(f"Erro ao buscar aluno: {e}")
+        return None
+
+
+def listar_alunos(filtro=None):
+    """Lista todos os alunos"""
+    try:
+        if filtro is None:
+            filtro = {}
+        return list(db.alunos.find(filtro, {'_id': 0}).sort('dados_pessoais.nome', 1))
+    except Exception as e:
+        print(f"Erro ao listar alunos: {e}")
+        return []
+
+
+def cadastrar_aluno(dados):
+    """Cadastra um novo aluno"""
+    try:
+        from datetime import datetime
+        
+        # Gerar número de inscrição se não tiver
+        if not dados.get('num_inscricao'):
+            ano = datetime.now().year
+            ultimo = db.alunos.find_one({'num_inscricao': {'$regex': f'^[0-9]+-{ano}$'}}, sort=[('num_inscricao', -1)])
+            if ultimo:
+                numero = int(ultimo['num_inscricao'].split('-')[0]) + 1
+            else:
+                numero = 1
+            dados['num_inscricao'] = f"{numero:03d}-{ano}"
+        
+        dados['data_cadastro'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        db.alunos.insert_one(dados)
+        return {'sucesso': True, 'num_inscricao': dados['num_inscricao']}
+        
+    except Exception as e:
+        return {'sucesso': False, 'erro': str(e)}
+
+
+def atualizar_aluno(num_inscricao, dados):
+    """Atualiza um aluno existente"""
+    try:
+        from datetime import datetime
+        dados['data_atualizacao'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        resultado = db.alunos.update_one(
+            {'num_inscricao': num_inscricao},
+            {'$set': dados}
+        )
+        
+        if resultado.modified_count == 0:
+            return {'sucesso': False, 'erro': 'Aluno não encontrado ou nenhuma alteração'}
+        return {'sucesso': True, 'mensagem': 'Aluno atualizado com sucesso'}
+        
+    except Exception as e:
+        return {'sucesso': False, 'erro': str(e)}
+
+
+def excluir_aluno(num_inscricao):
+    """Exclui um aluno pelo número de inscrição"""
+    try:
+        resultado = db.alunos.delete_one({'num_inscricao': num_inscricao})
+        if resultado.deleted_count == 0:
+            return {'sucesso': False, 'erro': 'Aluno não encontrado'}
+        return {'sucesso': True, 'mensagem': 'Aluno excluído com sucesso'}
+    except Exception as e:
+        return {'sucesso': False, 'erro': str(e)}
+
+
+# ==================== FUNÇÕES PARA ARQUIVOS ====================
+
+def salvar_arquivo(num_inscricao, campo, data_url, nome_arquivo=None):
+    """Salva referência de um arquivo no banco de dados"""
+    try:
+        from datetime import datetime
+        
+        arquivo = {
+            'num_inscricao': num_inscricao,
+            'campo': campo,
+            'data_url': data_url,
+            'nome_arquivo': nome_arquivo,
+            'data_upload': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
+        # Remover arquivo anterior se existir
+        db.arquivos.delete_many({'num_inscricao': num_inscricao, 'campo': campo})
+        
+        # Inserir novo arquivo
+        db.arquivos.insert_one(arquivo)
+        return {'sucesso': True}
+        
+    except Exception as e:
+        return {'sucesso': False, 'erro': str(e)}
+
+
+def get_arquivo(num_inscricao, campo):
+    """Recupera um arquivo do banco de dados"""
+    try:
+        return db.arquivos.find_one(
+            {'num_inscricao': num_inscricao, 'campo': campo},
+            {'_id': 0}
+        )
+    except Exception as e:
+        print(f"Erro ao buscar arquivo: {e}")
+        return None
+
+
+def listar_arquivos_aluno(num_inscricao):
+    """Lista todos os arquivos de um aluno"""
+    try:
+        return list(db.arquivos.find(
+            {'num_inscricao': num_inscricao},
+            {'_id': 0}
+        ))
+    except Exception as e:
+        print(f"Erro ao listar arquivos: {e}")
+        return []

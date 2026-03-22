@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
+        /* ===== TODO O CSS DO SEU INDEX ATUAL ===== */
+        /* Mantenha todo o CSS do seu index.html aqui */
         * {
             margin: 0;
             padding: 0;
@@ -77,16 +79,25 @@
             margin-bottom: 60px;
         }
 
-        /* Cards principais do sistema (3 botões) - inicialmente ocultos */
+        /* Cards principais do sistema - inicialmente ocultos */
         .cards-sistema {
             display: none !important;
-            grid-template-columns: repeat(3, 1fr);
             gap: 30px;
             margin-bottom: 60px;
         }
 
         .cards-sistema.active {
             display: grid !important;
+        }
+
+        /* Grid para cards pedagógicos (3 colunas) */
+        .cards-pedagogico {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        /* Grid para cards administrativos (2 colunas) */
+        .cards-admin {
+            grid-template-columns: repeat(2, 1fr);
         }
 
         /* Cards de acesso (4 ícones) */
@@ -198,7 +209,7 @@
             border: 1px solid rgba(255, 209, 102, 0.3);
         }
 
-        /* Cards do sistema (3 botões) */
+        /* Cards do sistema pedagógico */
         .card-sistema {
             border-radius: 16px;
             padding: 40px 30px;
@@ -217,10 +228,10 @@
             background: linear-gradient(145deg, #E50914, #B81D24);
         }
         .card-sistema:nth-child(2) {
-            background: linear-gradient(145deg, #A06CD5, #8A5CC5);
+            background: linear-gradient(145deg, #0080FF, #0052CC);
         }
         .card-sistema:nth-child(3) {
-            background: linear-gradient(145deg, #0080FF, #0052CC);
+            background: linear-gradient(145deg, #4ECDC4, #45B7AC);
         }
 
         .card-sistema:hover {
@@ -242,6 +253,54 @@
         }
 
         .card-sistema .card-badge {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+        }
+
+        /* Cards administrativos (2 botões) */
+        .card-admin {
+            border-radius: 16px;
+            padding: 40px 30px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+
+        .card-admin:nth-child(1) {
+            background: linear-gradient(145deg, #A06CD5, #8A5CC5);
+        }
+        .card-admin:nth-child(2) {
+            background: linear-gradient(145deg, #FFD166, #FFB347);
+        }
+
+        .card-admin:hover {
+            transform: translateY(-8px) scale(1.02);
+        }
+
+        .card-admin h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 15px;
+        }
+
+        .card-admin p {
+            color: rgba(255,255,255,0.9);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .card-admin .card-badge {
             background: rgba(255,255,255,0.15);
             color: #fff;
             padding: 8px 20px;
@@ -596,7 +655,10 @@
             .cards-acesso {
                 grid-template-columns: repeat(2, 1fr);
             }
-            .cards-sistema {
+            .cards-pedagogico {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .cards-admin {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
@@ -605,7 +667,10 @@
             .cards-acesso {
                 grid-template-columns: 1fr;
             }
-            .cards-sistema {
+            .cards-pedagogico {
+                grid-template-columns: 1fr;
+            }
+            .cards-admin {
                 grid-template-columns: 1fr;
             }
             .header h1 {
@@ -710,6 +775,194 @@
             background: linear-gradient(135deg, #E50914, #B81D24);
             color: white;
         }
+        
+        .termos-section {
+            background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
+            border-radius: 24px;
+            padding: 50px;
+            border: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 60px;
+        }
+        
+        .termos-busca-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .termos-busca-wrapper {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .termos-busca {
+            width: 100%;
+            padding: 16px 24px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            font-size: 1rem;
+            color: #fff;
+        }
+        
+        .termos-busca:focus {
+            outline: none;
+            border-color: #E50914;
+        }
+        
+        .termo-card {
+            background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 40px;
+        }
+        
+        .termo-card-header {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .foto-aluno {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #E50914;
+        }
+        
+        .foto-aluno-placeholder {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #E50914, #B81D24);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #fff;
+        }
+        
+        .termo-info h3 {
+            font-size: 2rem;
+            color: #fff;
+        }
+        
+        .termo-meta {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        
+        .termo-meta span {
+            background: rgba(255,255,255,0.03);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+        }
+        
+        .termo-detalhes {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .termo-detalhe-item {
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .termo-detalhe-item:nth-child(1) { background: linear-gradient(145deg, #FF6B6B, #EE5A5A); }
+        .termo-detalhe-item:nth-child(2) { background: linear-gradient(145deg, #4ECDC4, #45B7AC); }
+        .termo-detalhe-item:nth-child(3) { background: linear-gradient(145deg, #FFD166, #FFB347); }
+        .termo-detalhe-item:nth-child(4) { background: linear-gradient(145deg, #A06CD5, #8A5CC5); }
+        
+        .termo-detalhe-icon { font-size: 2rem; margin-bottom: 10px; }
+        .termo-detalhe-content p { font-size: 0.8rem; color: rgba(255,255,255,0.8); }
+        .termo-detalhe-content strong { font-size: 1.2rem; display: block; }
+        
+        .termos-links {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .termo-link {
+            min-width: 140px;
+            padding: 14px 25px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .termo-link.matricula { background: #E50914; color: white; }
+        .termo-link.imagem { background: #4ECDC4; color: white; }
+        .termo-link.regulamento { background: #FFD166; color: #1a1a1a; }
+        .termo-link.saude { background: #4CAF50; color: white; }
+        .termo-link.transporte { background: #A06CD5; color: white; }
+        .termo-link.terceiros { background: #FF6B6B; color: white; }
+        
+        .lista-alunos {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .aluno-item {
+            background: #1a1a1a;
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .aluno-foto-mini {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #E50914;
+        }
+        
+        .aluno-foto-mini-placeholder {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #E50914, #B81D24);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .loading-alunos { text-align: center; padding: 60px; }
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255,255,255,0.05);
+            border-top-color: #E50914;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        @media (max-width: 768px) {
+            .termo-card-header { flex-direction: column; text-align: center; }
+            .termo-detalhes { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -734,18 +987,18 @@
 
         <!-- Cards de Acesso (4 ícones) - VISÍVEIS INICIALMENTE -->
         <div id="cardsAcesso" class="cards-acesso">
-            <div class="card-acesso pedagogico" onclick="abrirLogin()">
+            <div class="card-acesso pedagogico" onclick="abrirLoginPedagogico()">
                 <div class="card-icon">👩‍🏫</div>
                 <h3>Pedagógico</h3>
                 <p>Acesse o sistema de cadastro de alunos e documentos.</p>
                 <span class="card-badge">Clique para acessar</span>
             </div>
 
-            <div class="card-acesso administracao" onclick="mostrarEmBreve('Administração')">
+            <div class="card-acesso administracao" onclick="abrirLoginAdmin()">
                 <div class="card-icon">👨‍💼</div>
                 <h3>Administração</h3>
-                <p>Financeiro, RH, relatórios gerenciais.</p>
-                <span class="card-badge">🔒 Em breve</span>
+                <p>Funcionários, Justificativas e relatórios.</p>
+                <span class="card-badge">🔒 Acesso restrito</span>
             </div>
 
             <div class="card-acesso professores" onclick="mostrarEmBreve('Professores')">
@@ -763,8 +1016,8 @@
             </div>
         </div>
 
-        <!-- Cards do Sistema (3 botões - INICIALMENTE OCULTOS) -->
-        <div id="cardsSistema" class="cards-sistema">
+        <!-- Cards do Sistema Pedagógico (3 botões) -->
+        <div id="cardsPedagogico" class="cards-sistema cards-pedagogico">
             <a href="/alunos/cadastro" class="card-sistema">
                 <h3>📝 Novo Cadastro</h3>
                 <p>Registre um novo aluno com todos os dados, fotos e documentação necessária.</p>
@@ -784,6 +1037,21 @@
             </div>
         </div>
 
+        <!-- Cards Administrativos (2 botões) -->
+        <div id="cardsAdmin" class="cards-sistema cards-admin">
+            <a href="/funcionarios/cadastro" class="card-admin">
+                <h3>👤 Funcionários</h3>
+                <p>Cadastre e gerencie todos os funcionários da instituição.</p>
+                <span class="card-badge">Cadastro de funcionários</span>
+            </a>
+
+            <a href="/justificativa" class="card-admin">
+                <h3>⏱️ Justificativa</h3>
+                <p>Gere justificativas de saída para colaboradores.</p>
+                <span class="card-badge">Saída de funcionários</span>
+            </a>
+        </div>
+
         <!-- Seção de Termos -->
         <div id="termosSection" class="termos-section" style="display: none;">
             <div class="termos-busca-container">
@@ -797,65 +1065,65 @@
             <div id="alunos-termos" class="termos-resultado"></div>
         </div>
 
-       <!-- Modal de Login - Versão Compacta e Otimizada -->
-<div id="modalLogin" class="modal-login">
-    <div class="login-box">
-        <button class="btn-close" onclick="fecharLogin()">✕</button>
-        <h2>🔐 Acesso Pedagógico</h2>
-        <p>Digite suas credenciais para acessar o sistema</p>
-        <div id="loginError" class="login-error"></div>
-        
-        <div class="input-group">
-            <label>Usuário <span class="required">*</span></label>
-            <input type="text" id="loginUsuario" placeholder="Digite seu usuário">
-        </div>
-        
-        <div class="input-group">
-            <label>Senha <span class="required">*</span></label>
-            <div class="password-wrapper">
-                <input type="password" id="loginSenha" placeholder="Digite sua senha" onkeypress="if(event.key === 'Enter') fazerLogin()">
-                <button type="button" class="toggle-password" onclick="togglePasswordModal()">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                        <circle cx="12" cy="12" r="3"></circle>
-                    </svg>
-                </button>
+        <!-- Modal de Login -->
+        <div id="modalLogin" class="modal-login">
+            <div class="login-box">
+                <button class="btn-close" onclick="fecharLogin()">✕</button>
+                <h2 id="modalLoginTitle">🔐 Acesso Pedagógico</h2>
+                <p id="modalLoginDesc">Digite suas credenciais para acessar o sistema</p>
+                <div id="loginError" class="login-error"></div>
+                
+                <div class="input-group">
+                    <label>Usuário <span class="required">*</span></label>
+                    <input type="text" id="loginUsuario" placeholder="Digite seu usuário">
+                </div>
+                
+                <div class="input-group">
+                    <label>Senha <span class="required">*</span></label>
+                    <div class="password-wrapper">
+                        <input type="password" id="loginSenha" placeholder="Digite sua senha" onkeypress="if(event.key === 'Enter') fazerLogin()">
+                        <button type="button" class="toggle-password" onclick="togglePasswordModal()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <label class="remember-me">
+                    <input type="checkbox" id="rememberModal" value="1">
+                    <span>Lembrar-me</span>
+                </label>
+                
+                <button class="btn-login" onclick="fazerLogin()">Entrar</button>
+                
+                <div class="support-section">
+                    <p>📞 Precisa de ajuda?</p>
+                    <div class="support-links">
+                        <a href="https://wa.me/551151230349?text=Olá%2C%20preciso%20de%20ajuda%20com%20o%20sistema%20Creche%20El%20Shadday" target="_blank" rel="noopener noreferrer" class="whatsapp-link">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                            </svg>
+                            WhatsApp
+                        </a>
+                        <a href="mailto:suporte@codetecx.com" class="email-link">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="4" width="20" height="16" rx="2"/>
+                                <path d="m22 7-10 7L2 7"/>
+                            </svg>
+                            E-mail
+                        </a>
+                        <a href="#" onclick="abrirSuporteModal()" class="support-link">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            </svg>
+                            Suporte
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
-        
-        <label class="remember-me">
-            <input type="checkbox" id="rememberModal" value="1">
-            <span>Lembrar-me</span>
-        </label>
-        
-        <button class="btn-login" onclick="fazerLogin()">Entrar</button>
-        
-        <div class="support-section">
-            <p>📞 Precisa de ajuda?</p>
-            <div class="support-links">
-                <a href="https://wa.me/551151230349?text=Olá%2C%20preciso%20de%20ajuda%20com%20o%20sistema%20Creche%20El%20Shadday" target="_blank" rel="noopener noreferrer" class="whatsapp-link">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
-                    </svg>
-                    WhatsApp
-                </a>
-                <a href="mailto:suporte@codetecx.com" class="email-link">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="4" width="20" height="16" rx="2"/>
-                        <path d="m22 7-10 7L2 7"/>
-                    </svg>
-                    E-mail
-                </a>
-                <a href="#" onclick="abrirSuporteModal()" class="support-link">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                    </svg>
-                    Suporte
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
 
         <!-- Modal Trocar Senha -->
         <div id="modalTrocarSenha" class="modal-trocar-senha">
@@ -891,184 +1159,20 @@
         </div>
     </div>
 
-    <!-- Estilos adicionais para a seção de Termos -->
-    <style>
-        .termos-section {
-            background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
-            border-radius: 24px;
-            padding: 50px;
-            border: 1px solid rgba(255,255,255,0.05);
-            margin-bottom: 60px;
-        }
-        .termos-busca-container {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 40px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .termos-busca-wrapper {
-            flex: 1;
-            min-width: 300px;
-        }
-        .termos-busca {
-            width: 100%;
-            padding: 16px 24px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            font-size: 1rem;
-            color: #fff;
-        }
-        .termos-busca:focus {
-            outline: none;
-            border-color: #E50914;
-        }
-        .termo-card {
-            background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 20px;
-            padding: 40px;
-        }
-        .termo-card-header {
-            display: flex;
-            align-items: center;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-        .foto-aluno {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #E50914;
-        }
-        .foto-aluno-placeholder {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: linear-gradient(145deg, #E50914, #B81D24);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            color: #fff;
-        }
-        .termo-info h3 {
-            font-size: 2rem;
-            color: #fff;
-        }
-        .termo-meta {
-            display: flex;
-            gap: 20px;
-            margin-top: 10px;
-        }
-        .termo-meta span {
-            background: rgba(255,255,255,0.03);
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-size: 0.9rem;
-        }
-        .termo-detalhes {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-        .termo-detalhe-item {
-            border-radius: 16px;
-            padding: 25px;
-            text-align: center;
-        }
-        .termo-detalhe-item:nth-child(1) { background: linear-gradient(145deg, #FF6B6B, #EE5A5A); }
-        .termo-detalhe-item:nth-child(2) { background: linear-gradient(145deg, #4ECDC4, #45B7AC); }
-        .termo-detalhe-item:nth-child(3) { background: linear-gradient(145deg, #FFD166, #FFB347); }
-        .termo-detalhe-item:nth-child(4) { background: linear-gradient(145deg, #A06CD5, #8A5CC5); }
-        .termo-detalhe-icon { font-size: 2rem; margin-bottom: 10px; }
-        .termo-detalhe-content p { font-size: 0.8rem; color: rgba(255,255,255,0.8); }
-        .termo-detalhe-content strong { font-size: 1.2rem; display: block; }
-        .termos-links {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .termo-link {
-            min-width: 140px;
-            padding: 14px 25px;
-            border-radius: 50px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-        }
-        .termo-link.matricula { background: #E50914; color: white; }
-        .termo-link.imagem { background: #4ECDC4; color: white; }
-        .termo-link.regulamento { background: #FFD166; color: #1a1a1a; }
-        .termo-link.saude { background: #4CAF50; color: white; }
-        .termo-link.transporte { background: #A06CD5; color: white; }
-        .termo-link.terceiros { background: #FF6B6B; color: white; }
-        .lista-alunos {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-        }
-        .aluno-item {
-            background: #1a1a1a;
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 16px;
-            padding: 20px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .aluno-foto-mini {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #E50914;
-        }
-        .aluno-foto-mini-placeholder {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(145deg, #E50914, #B81D24);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-        }
-        .loading-alunos { text-align: center; padding: 60px; }
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(255,255,255,0.05);
-            border-top-color: #E50914;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @media (max-width: 768px) {
-            .termo-card-header { flex-direction: column; text-align: center; }
-            .termo-detalhes { grid-template-columns: 1fr; }
-        }
-    </style>
-
     <script>
         let alunosData = [];
         let usuarioLogado = null;
+        let tipoAcesso = 'pedagogico'; // 'pedagogico' ou 'admin'
 
         // Verificar se já tem usuário logado (sessionStorage)
         function verificarSessao() {
-            const usuario = sessionStorage.getItem('usuarioPedagogico');
+            const usuario = sessionStorage.getItem('usuarioLogado');
             if (usuario) {
                 usuarioLogado = JSON.parse(usuario);
                 mostrarSistemaLogado();
             } else {
-                document.getElementById('cardsSistema').classList.remove('active');
+                document.getElementById('cardsPedagogico').classList.remove('active');
+                document.getElementById('cardsAdmin').classList.remove('active');
                 document.getElementById('cardsAcesso').style.display = 'grid';
             }
         }
@@ -1076,17 +1180,64 @@
        // Mostrar sistema após login
 function mostrarSistemaLogado() {
     document.getElementById('cardsAcesso').style.display = 'none';
-    document.getElementById('cardsSistema').classList.add('active');
+    
+    // LOG PARA DEBUG (abrir console F12 para ver)
+    console.log('===== USUÁRIO LOGADO =====');
+    console.log('usuario:', usuarioLogado.usuario);
+    console.log('perfil:', usuarioLogado.perfil);
+    console.log('nome:', usuarioLogado.nome);
+    console.log('unidade:', usuarioLogado.unidade);
+    console.log('==========================');
+    
+    // Verificar se é ADMIN
+    const isAdmin = usuarioLogado.perfil === 'admin';
+    
+    // Verificar se é MASTER (múltiplas formas de reconhecer)
+    const isMaster = (
+        // Por usuário (case insensitive)
+        usuarioLogado.usuario === 'master' ||
+        usuarioLogado.usuario === 'Master' ||
+        usuarioLogado.usuario === 'MASTER' ||
+        usuarioLogado.usuario === 'admin_master' ||
+        // Por nome
+        usuarioLogado.nome === 'Administrador Master' ||
+        usuarioLogado.nome === 'Administrador Master' ||
+        usuarioLogado.nome === 'Administrador' ||
+        // Por unidade
+        usuarioLogado.unidade === 'Todas as Unidades' ||
+        usuarioLogado.unidade === 'Todas'
+    );
+    
+    console.log('isAdmin:', isAdmin);
+    console.log('isMaster:', isMaster);
+    
+    if (isMaster) {
+        // MASTER: vê todos os 5 cards
+        console.log('✅ MODO MASTER ATIVADO - 5 cards');
+        document.getElementById('cardsPedagogico').classList.add('active');
+        document.getElementById('cardsAdmin').classList.add('active');
+    } else if (isAdmin) {
+        // ADMIN comum: vê apenas os 2 cards administrativos
+        console.log('✅ MODO ADMIN - 2 cards');
+        document.getElementById('cardsPedagogico').classList.remove('active');
+        document.getElementById('cardsAdmin').classList.add('active');
+    } else {
+        // PEDAGÓGICO: vê apenas os 3 cards pedagógicos
+        console.log('✅ MODO PEDAGÓGICO - 3 cards');
+        document.getElementById('cardsPedagogico').classList.add('active');
+        document.getElementById('cardsAdmin').classList.remove('active');
+    }
+    
     const userInfo = document.getElementById('userInfo');
     userInfo.classList.add('active');
-    document.getElementById('userName').textContent = usuarioLogado.nome || 'Usuário';
+    document.getElementById('userName').textContent = usuarioLogado.nome || usuarioLogado.usuario || 'Usuário';
     document.getElementById('userAvatar').textContent = usuarioLogado.nome ? usuarioLogado.nome.charAt(0).toUpperCase() : '👤';
     
-    // Mostrar a unidade ou perfil
     const userRoleSpan = document.getElementById('userRole');
-    
-    if (usuarioLogado.perfil === 'admin') {
-        userRoleSpan.textContent = '👨‍💼 Administrador Master';
+    if (isMaster) {
+        userRoleSpan.textContent = '👑 Administrador Master';
+    } else if (isAdmin) {
+        userRoleSpan.textContent = '👨‍💼 Administrador';
     } else if (usuarioLogado.unidade) {
         if (usuarioLogado.unidade === 'CEIC El Shadday') {
             userRoleSpan.innerHTML = '🏫 CEIC El Shadday';
@@ -1109,127 +1260,29 @@ function mostrarSistemaLogado() {
             
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
-                toggleBtn.textContent = '🙈';
+                toggleBtn.innerHTML = '🙈';
             } else {
                 passwordInput.type = 'password';
-                toggleBtn.textContent = '👁️';
+                toggleBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
             }
         }
 
-        // Abrir modal de suporte
-        function abrirSuporteModal() {
-            const modal = document.createElement('div');
-            modal.id = 'modalSuporteTemp';
-            modal.className = 'modal-overlay';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <h3>💬 Suporte</h3>
-                    <p>Entre em contato com nossa equipe de suporte:</p>
-                    <div style="margin: 20px 0;">
-                        <p style="margin-bottom: 10px;">📱 <strong>Telefone/WhatsApp:</strong><br>(11) 5123-0349</p>
-                        <p style="margin-bottom: 10px;">✉️ <strong>E-mail:</strong><br>suporte@codetecx.com</p>
-                        <p>🕐 <strong>Horário de atendimento:</strong><br>Segunda a Sexta, 8h às 18h</p>
-                    </div>
-                    <div class="modal-buttons">
-                        <button class="btn-modal-primary" onclick="fecharModalTemp(this)">Fechar</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-            modal.classList.add('active');
+        // Abrir modal de login para Pedagógico
+        function abrirLoginPedagogico() {
+            tipoAcesso = 'pedagogico';
+            document.getElementById('modalLoginTitle').innerHTML = '🔐 Acesso Pedagógico';
+            document.getElementById('modalLoginDesc').innerHTML = 'Digite suas credenciais para acessar o sistema pedagógico';
+            document.getElementById('modalLogin').classList.add('active');
+            document.getElementById('loginUsuario').value = '';
+            document.getElementById('loginSenha').value = '';
+            document.getElementById('loginError').classList.remove('show');
         }
 
-        function fecharModalTemp(element) {
-            const modal = element.closest('.modal-overlay');
-            if (modal) modal.remove();
-        }
-
-        // Modal Trocar Senha
-        function abrirModalTrocarSenha() {
-            document.getElementById('modalTrocarSenha').classList.add('active');
-            document.getElementById('senhaAtual').value = '';
-            document.getElementById('novaSenha').value = '';
-            document.getElementById('confirmarSenha').value = '';
-            document.getElementById('trocarSenhaError').classList.remove('show');
-            document.getElementById('trocarSenhaSuccess').classList.remove('show');
-        }
-
-        function fecharModalTrocarSenha() {
-            document.getElementById('modalTrocarSenha').classList.remove('active');
-            document.getElementById('trocarSenhaError').classList.remove('show');
-            document.getElementById('trocarSenhaSuccess').classList.remove('show');
-        }
-
-        function trocarSenha() {
-            const senhaAtual = document.getElementById('senhaAtual').value;
-            const novaSenha = document.getElementById('novaSenha').value;
-            const confirmarSenha = document.getElementById('confirmarSenha').value;
-            
-            // Limpar mensagens anteriores
-            document.getElementById('trocarSenhaError').classList.remove('show');
-            document.getElementById('trocarSenhaSuccess').classList.remove('show');
-            
-            if (!senhaAtual || !novaSenha) {
-                mostrarErroTrocarSenha('Preencha todos os campos');
-                return;
-            }
-            
-            if (novaSenha !== confirmarSenha) {
-                mostrarErroTrocarSenha('As novas senhas não coincidem');
-                return;
-            }
-            
-            if (novaSenha.length < 6) {
-                mostrarErroTrocarSenha('A nova senha deve ter pelo menos 6 caracteres');
-                return;
-            }
-            
-            fetch('/api/trocar-senha', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ senha_atual: senhaAtual, nova_senha: novaSenha })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.sucesso) {
-                    // Mostrar mensagem de sucesso no modal
-                    const successDiv = document.getElementById('trocarSenhaSuccess');
-                    successDiv.textContent = '✅ ' + data.mensagem;
-                    successDiv.classList.add('show');
-                    
-                    // Limpar campos
-                    document.getElementById('senhaAtual').value = '';
-                    document.getElementById('novaSenha').value = '';
-                    document.getElementById('confirmarSenha').value = '';
-                    
-                    // Fechar modal após 2 segundos e fazer logout
-                    setTimeout(() => {
-                        fecharModalTrocarSenha();
-                        // Fazer logout para voltar à tela de login
-                        logout();
-                        // Mostrar mensagem de sucesso na tela principal
-                        alert('✅ Senha alterada com sucesso! Por favor, faça login novamente.');
-                    }, 2000);
-                } else {
-                    mostrarErroTrocarSenha(data.mensagem || 'Erro ao alterar senha');
-                }
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                mostrarErroTrocarSenha('Erro ao conectar com o servidor');
-            });
-        }
-
-        function mostrarErroTrocarSenha(mensagem) {
-            const errorDiv = document.getElementById('trocarSenhaError');
-            errorDiv.textContent = mensagem;
-            errorDiv.classList.add('show');
-            // Esconder mensagem de sucesso se estiver visível
-            document.getElementById('trocarSenhaSuccess').classList.remove('show');
-        }
-
-        // Abrir modal de login
-        function abrirLogin() {
+        // Abrir modal de login para Administrativo
+        function abrirLoginAdmin() {
+            tipoAcesso = 'admin';
+            document.getElementById('modalLoginTitle').innerHTML = '👨‍💼 Acesso Administrativo';
+            document.getElementById('modalLoginDesc').innerHTML = 'Digite suas credenciais para acessar a área administrativa';
             document.getElementById('modalLogin').classList.add('active');
             document.getElementById('loginUsuario').value = '';
             document.getElementById('loginSenha').value = '';
@@ -1258,8 +1311,14 @@ function mostrarSistemaLogado() {
             .then(response => response.json())
             .then(data => {
                 if (data.sucesso) {
+                    // Verificar se o acesso é compatível
+                    if (tipoAcesso === 'admin' && data.usuario.perfil !== 'admin') {
+                        mostrarErroLogin('Acesso negado! Esta área é restrita para administradores.');
+                        return;
+                    }
+                    
                     usuarioLogado = data.usuario;
-                    sessionStorage.setItem('usuarioPedagogico', JSON.stringify(usuarioLogado));
+                    sessionStorage.setItem('usuarioLogado', JSON.stringify(usuarioLogado));
                     fecharLogin();
                     mostrarSistemaLogado();
                 } else {
@@ -1279,10 +1338,11 @@ function mostrarSistemaLogado() {
         }
 
         function logout() {
-            sessionStorage.removeItem('usuarioPedagogico');
+            sessionStorage.removeItem('usuarioLogado');
             usuarioLogado = null;
             document.getElementById('cardsAcesso').style.display = 'grid';
-            document.getElementById('cardsSistema').classList.remove('active');
+            document.getElementById('cardsPedagogico').classList.remove('active');
+            document.getElementById('cardsAdmin').classList.remove('active');
             document.getElementById('userInfo').classList.remove('active');
             document.getElementById('termosSection').style.display = 'none';
         }
@@ -1302,30 +1362,11 @@ function mostrarSistemaLogado() {
             }
         }
 
-      function getFotoUrl(aluno, tipo) {
-    if (!aluno || !aluno.arquivos || aluno.arquivos.length === 0) return null;
-    
-    // Mapeamento dos campos de foto
-    const campoMap = {
-        'aluno': 'foto_aluno',
-        'responsavel1': 'foto_responsavel1',
-        'responsavel2': 'foto_responsavel2',
-        'responsavel3': 'foto_responsavel3',
-        'terceiro1': 'foto_terceiro1',
-        'terceiro2': 'foto_terceiro2',
-        'transporte': 'foto_transporte'
-    };
-    
-    const campoFoto = campoMap[tipo];
-    if (campoFoto) {
-        const arquivoFoto = aluno.arquivos.find(a => a.campo === campoFoto);
-        if (arquivoFoto) {
-            // CORREÇÃO: Prioriza data_url (Base64), depois caminho
-            return arquivoFoto.data_url || arquivoFoto.caminho || null;
+        function getFotoUrl(aluno, tipo) {
+            if (!aluno || !aluno.arquivos || aluno.arquivos.length === 0) return null;
+            const arquivoFoto = aluno.arquivos.find(a => a.campo === 'foto_aluno');
+            return arquivoFoto ? arquivoFoto.caminho : null;
         }
-    }
-    return null;
-}
 
         function handleImageError(img) {
             img.style.display = 'none';
@@ -1479,6 +1520,111 @@ function mostrarSistemaLogado() {
                 </div>
             `;
             document.getElementById('alunos-termos').innerHTML = html;
+        }
+
+        // Modal Trocar Senha
+        function abrirModalTrocarSenha() {
+            document.getElementById('modalTrocarSenha').classList.add('active');
+            document.getElementById('senhaAtual').value = '';
+            document.getElementById('novaSenha').value = '';
+            document.getElementById('confirmarSenha').value = '';
+            document.getElementById('trocarSenhaError').classList.remove('show');
+            document.getElementById('trocarSenhaSuccess').classList.remove('show');
+        }
+
+        function fecharModalTrocarSenha() {
+            document.getElementById('modalTrocarSenha').classList.remove('active');
+            document.getElementById('trocarSenhaError').classList.remove('show');
+            document.getElementById('trocarSenhaSuccess').classList.remove('show');
+        }
+
+        function trocarSenha() {
+            const senhaAtual = document.getElementById('senhaAtual').value;
+            const novaSenha = document.getElementById('novaSenha').value;
+            const confirmarSenha = document.getElementById('confirmarSenha').value;
+            
+            document.getElementById('trocarSenhaError').classList.remove('show');
+            document.getElementById('trocarSenhaSuccess').classList.remove('show');
+            
+            if (!senhaAtual || !novaSenha) {
+                mostrarErroTrocarSenha('Preencha todos os campos');
+                return;
+            }
+            
+            if (novaSenha !== confirmarSenha) {
+                mostrarErroTrocarSenha('As novas senhas não coincidem');
+                return;
+            }
+            
+            if (novaSenha.length < 6) {
+                mostrarErroTrocarSenha('A nova senha deve ter pelo menos 6 caracteres');
+                return;
+            }
+            
+            fetch('/api/trocar-senha', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ senha_atual: senhaAtual, nova_senha: novaSenha })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso) {
+                    const successDiv = document.getElementById('trocarSenhaSuccess');
+                    successDiv.textContent = '✅ ' + data.mensagem;
+                    successDiv.classList.add('show');
+                    
+                    document.getElementById('senhaAtual').value = '';
+                    document.getElementById('novaSenha').value = '';
+                    document.getElementById('confirmarSenha').value = '';
+                    
+                    setTimeout(() => {
+                        fecharModalTrocarSenha();
+                        logout();
+                        alert('✅ Senha alterada com sucesso! Por favor, faça login novamente.');
+                    }, 2000);
+                } else {
+                    mostrarErroTrocarSenha(data.mensagem || 'Erro ao alterar senha');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                mostrarErroTrocarSenha('Erro ao conectar com o servidor');
+            });
+        }
+
+        function mostrarErroTrocarSenha(mensagem) {
+            const errorDiv = document.getElementById('trocarSenhaError');
+            errorDiv.textContent = mensagem;
+            errorDiv.classList.add('show');
+            document.getElementById('trocarSenhaSuccess').classList.remove('show');
+        }
+
+        // Abrir modal de suporte
+        function abrirSuporteModal() {
+            const modal = document.createElement('div');
+            modal.id = 'modalSuporteTemp';
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h3>💬 Suporte</h3>
+                    <p>Entre em contato com nossa equipe de suporte:</p>
+                    <div style="margin: 20px 0;">
+                        <p style="margin-bottom: 10px;">📱 <strong>Telefone/WhatsApp:</strong><br>(11) 5123-0349</p>
+                        <p style="margin-bottom: 10px;">✉️ <strong>E-mail:</strong><br>suporte@codetecx.com</p>
+                        <p>🕐 <strong>Horário de atendimento:</strong><br>Segunda a Sexta, 8h às 18h</p>
+                    </div>
+                    <div class="modal-buttons">
+                        <button class="btn-modal-primary" onclick="fecharModalTemp(this)">Fechar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.classList.add('active');
+        }
+
+        function fecharModalTemp(element) {
+            const modal = element.closest('.modal-overlay');
+            if (modal) modal.remove();
         }
 
         // Inicialização

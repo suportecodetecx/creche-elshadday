@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Justificativa de Saída - Creche El Shadday</title>
+    
+    <!-- Fontes modernas -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            border-radius: 32px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 30px 60px -20px rgba(0,0,0,0.8);
+        }
+
+        /* Header Moderno */
+        .header-moderno {
+            padding: 24px 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            background: #1a1a1a;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+        }
+
+        .logo-animated {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #E50914, #B81D24);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.4rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+        }
+
+        .logo-wrapper:hover .logo-animated {
+            transform: scale(1.05);
+        }
+
+        .logo-text h2 {
+            color: white;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .logo-text p {
+            color: #808080;
+            font-size: 0.85rem;
+            margin: 2px 0 0;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-nav {
+            padding: 12px 28px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            background: rgba(255,255,255,0.05);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+
+        .btn-nav:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: #E50914;
+        }
+
+        .btn-primary-nav {
+            background: #E50914;
+            border: none;
+        }
+
+        .btn-primary-nav:hover {
+            background: #B81D24;
+        }
+
+        main {
+            padding: 40px;
+        }
+
+        /* Form Card - Estilo Netflix */
+        .form-card {
+            background: #1a1a1a;
+            border-radius: 24px;
+            padding: 32px;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .form-card:hover {
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .header-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #E50914;
+        }
+
+        .card-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: white;
+            flex: 1;
+            margin: 0;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: #E50914;
+            color: white;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .input-wrapper {
+            margin-bottom: 4px;
+        }
+
+        .input-wrapper label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+        }
+
+        .input-wrapper .required {
+            color: #E50914;
+            margin-left: 2px;
+        }
+
+        .input-moderno,
+        .select-moderno,
+        .textarea-moderno {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            font-size: 0.95rem;
+            background: #2a2a2a;
+            color: white;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .input-moderno:focus,
+        .select-moderno:focus,
+        .textarea-moderno:focus {
+            outline: none;
+            border-color: #E50914;
+            box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.2);
+        }
+
+        .select-moderno {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.5)' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 44px;
+        }
+
+        .select-moderno option {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .textarea-moderno {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #E50914, #B81D24);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: #E50914;
+        }
+
+        .notificacao-flutuante {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            min-width: 300px;
+            background: #1a1a1a;
+            border-radius: 12px;
+            z-index: 99999;
+            animation: slideIn 0.3s ease forwards;
+            border-left: 4px solid #4ECDC4;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+        }
+
+        .notificacao-flutuante.error {
+            border-left-color: #E50914;
+        }
+
+        .notificacao-flutuante.warning {
+            border-left-color: #FFD166;
+        }
+
+        .notificacao-conteudo {
+            padding: 16px 20px;
+        }
+
+        .notificacao-texto {
+            font-size: 0.95rem;
+            color: white;
+            font-weight: 500;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            main { padding: 20px; }
+            .form-card { padding: 20px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .btn-group { flex-direction: column; }
+            .btn { width: 100%; }
+            .header-content { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header-moderno">
+            <div class="header-content">
+                <div class="logo-wrapper" onclick="window.location.href='/'">
+                    <div class="logo-animated"><span>CS</span></div>
+                    <div class="logo-text">
+                        <h2>Creche El Shadday</h2>
+                        <p>Justificativa de Saída</p>
+                    </div>
+                </div>
+                <div class="header-buttons">
+                    <a href="/" class="btn-nav">← Início</a>
+                    <a href="/funcionarios/cadastro" class="btn-nav btn-primary-nav">Cadastrar Funcionário</a>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div class="form-card">
+                <div class="card-header">
+                    <div class="header-icon">📋</div>
+                    <h2>Justificativa de Saída - Ponto</h2>
+                    <span class="badge">Preenchimento</span>
+                </div>
+
+                <div class="form-grid">
+                    <div class="input-wrapper">
+                        <label for="dataSaida">Data de Lançamento <span class="required">*</span></label>
+                        <input type="date" id="dataSaida" class="input-moderno">
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="colaborador">Colaborador <span class="required">*</span></label>
+                        <select id="colaborador" class="select-moderno" onchange="preencherDadosFuncionario()">
+                            <option value="">Selecione um funcionário</option>
+                        </select>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="cargo">Cargo</label>
+                        <input type="text" id="cargo" class="input-moderno" readonly>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="rgm">RGM</label>
+                        <input type="text" id="rgm" class="input-moderno" readonly>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="unidade">Unidade</label>
+                        <input type="text" id="unidade" class="input-moderno" readonly>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="apontamentoInicio">Apontamento Início</label>
+                        <input type="time" id="apontamentoInicio" class="input-moderno">
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="apontamentoFim">Apontamento Fim</label>
+                        <input type="time" id="apontamentoFim" class="input-moderno">
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="motivo">Motivo <span class="required">*</span></label>
+                        <select id="motivo" class="select-moderno">
+                            <option value="">Selecione o motivo</option>
+                            <option value="Atestado médico">Atestado médico</option>
+                            <option value="Declaração médica">Declaração médica</option>
+                            <option value="Consulta médica">Consulta médica</option>
+                            <option value="Dentista">Dentista</option>
+                            <option value="Ginecologista / Obstetra">Ginecologista / Obstetra</option>
+                            <option value="Exames laboratoriais ou de imagem">Exames laboratoriais ou de imagem</option>
+                            <option value="Retirar Exames Médicos">Retirar Exames Médicos</option>
+                            <option value="Mal-estar no expediente">Mal-estar no expediente</option>
+                            <option value="Emergência médica">Emergência médica</option>
+                            <option value="Recuperação pós-procedimento">Recuperação pós-procedimento</option>
+                            <option value="Tratamento médico contínuo">Tratamento médico contínuo</option>
+                            <option value="Pré-natal">Pré-natal</option>
+                            <option value="Internação própria">Internação própria</option>
+                            <option value="Internação de familiar">Internação de familiar</option>
+                            <option value="Consulta médica de familiar">Consulta médica de familiar</option>
+                            <option value="Acompanhamento de pessoa idosa ou dependente">Acompanhamento de pessoa idosa ou dependente</option>
+                            <option value="Reunião escolar do filho">Reunião escolar do filho</option>
+                            <option value="Nascimento de filho (Gala)">Nascimento de filho (Gala)</option>
+                            <option value="Licença maternidade">Licença maternidade</option>
+                            <option value="Licença paternidade">Licença paternidade</option>
+                            <option value="Emergência familiar">Emergência familiar</option>
+                            <option value="Falecimento de familiar (luto)">Falecimento de familiar (luto)</option>
+                            <option value="Serviço externo">Serviço externo</option>
+                            <option value="Visita a cliente/fornecedor">Visita a cliente/fornecedor</option>
+                            <option value="Treinamento externo">Treinamento externo</option>
+                            <option value="Atividade de campo">Atividade de campo</option>
+                            <option value="Representação da empresa em evento">Representação da empresa em evento</option>
+                            <option value="Comparecimento à Defensoria Pública ou órgãos oficiais">Comparecimento à Defensoria Pública ou órgãos oficiais</option>
+                            <option value="Comparecimento a audiências">Comparecimento a audiências</option>
+                            <option value="Atendimento em cartório">Atendimento em cartório</option>
+                            <option value="Resolução de pendências bancárias urgentes">Resolução de pendências bancárias urgentes</option>
+                            <option value="Regularização de documentos pessoais">Regularização de documentos pessoais</option>
+                            <option value="Atraso no transporte público">Atraso no transporte público</option>
+                            <option value="Falha mecânica em transporte próprio">Falha mecânica em transporte próprio</option>
+                            <option value="Condições climáticas adversas">Condições climáticas adversas</option>
+                            <option value="Greve ou interrupção de transporte">Greve ou interrupção de transporte</option>
+                            <option value="Falta justificada">Falta justificada</option>
+                            <option value="Falta injustificada">Falta injustificada</option>
+                            <option value="Atraso">Atraso</option>
+                            <option value="Saída antecipada">Saída antecipada</option>
+                            <option value="Falta de marcação de ponto">Falta de marcação de ponto</option>
+                            <option value="Banco de horas">Banco de horas</option>
+                            <option value="Compensação de horas">Compensação de horas</option>
+                            <option value="Folga programada">Folga programada</option>
+                            <option value="Motivo não especificado">Motivo não especificado</option>
+                            <option value="Situação excepcional">Situação excepcional</option>
+                            <option value="Eletroneuromiografia">Eletroneuromiografia</option>
+                            <option value="Atestado médico de Filho(a)">Atestado médico de Filho(a)</option>
+                            <option value="Vacina">Vacina</option>
+                        </select>
+                    </div>
+
+                    <div class="input-wrapper full-width">
+                        <label for="observacoes">Observações</label>
+                        <textarea id="observacoes" class="textarea-moderno" rows="3" placeholder="Descreva detalhes adicionais..."></textarea>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="limparFormulario()">Limpar</button>
+                    <button class="btn btn-primary" onclick="gerarJustificativa()">Gerar Justificativa</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let funcionarios = [];
+
+        const UNIDADES_CONFIG = {
+            "CEIC El Shadday": {
+                "nome": "CEIC El Shadday",
+                "endereco": "Rua Francisco Vilani Bicudo, 470 - Vila Nova Aparecida",
+                "cidade": "Mogi das Cruzes",
+                "uf": "SP",
+                "cnpj": "03.067.526/0001-87",
+                "telefone": "(11) 4739-3549"
+            },
+            "CEIM Prof. Egberto Malta Moreira": {
+                "nome": "CEIM Prof. Egberto Malta Moreira",
+                "endereco": "Rua Ten. Agenor Bertini, 202 - Vila Rei",
+                "cidade": "Mogi das Cruzes",
+                "uf": "SP",
+                "cnpj": "03.067.526/0002-68",
+                "telefone": "(11) 4726-6241"
+            }
+        };
+
+        // ========== SEU CÓDIGO DE IMPRESSÃO (NÃO ALTERADO) ==========
+        const htmlImpressao = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Justificativa de Saída - Creche El Shadday</title>
+    <style>
+        /* CONFIGURAÇÃO OTIMIZADA PARA A4 - MESMA DOS TERMOS */
+        @page {
+            size: A4;
+            margin: 1.5cm 1.5cm 1.5cm 1.5cm;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: white;
+            color: #000;
+            line-height: 1.3;
+            width: 100%;
+            max-width: 210mm;
+            margin: 0 auto;
+        }
+
+        .documento {
+            width: 100%;
+            padding: 0;
+        }
+
+        /* BOTÃO DE IMPRESSÃO (visível apenas na tela) */
+        .print-button-container {
+            text-align: center;
+            margin: 20px 0 15px 0;
+        }
+
+        .print-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .print-button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+
+        .print-button:active {
+            transform: translateY(0);
+        }
+
+        @media print {
+            .print-button-container {
+                display: none;
+            }
+        }
+
+        /* CABEÇALHO - ESTILO FICHA CADASTRAL */
+        .cabecalho {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .cabecalho h1 {
+            font-size: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .cabecalho h2 {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 3px 0;
+            border-bottom: 2px solid #000;
+            display: inline-block;
+            padding-bottom: 3px;
+        }
+
+        .cabecalho p {
+            font-size: 10px;
+            margin: 2px 0;
+        }
+
+        .linha-simples {
+            border-bottom: 1px solid #000;
+            margin: 5px 0;
+        }
+
+        .titulo {
+            font-size: 13px;
+            font-weight: bold;
+            text-align: center;
+            text-transform: uppercase;
+            border: 1px solid #000;
+            padding: 6px;
+            margin: 12px 0;
+            background: #f5f5f5;
+        }
+
+        /* DADOS EM LINHA - IGUAL FICHA CADASTRAL */
+        .dados-linha {
+            display: flex;
+            margin-bottom: 5px;
+            font-size: 11px;
+            border-bottom: 1px dotted #aaa;
+            padding-bottom: 2px;
+        }
+
+        .dados-label {
+            font-weight: bold;
+            width: 140px;
+        }
+
+        .dados-valor {
+            flex: 1;
+        }
+
+        /* ASSINATURAS */
+        .assinatura-area {
+            margin-top: 25px;
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+        }
+
+        .assinatura-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .assinatura-linha {
+            border-top: 1px solid #000;
+            width: 200px;
+            margin: 0 auto 8px;
+        }
+
+        .cut-line {
+            text-align: center;
+            margin: 20px 0;
+            border-top: 1px dashed #999;
+            position: relative;
+        }
+
+        .cut-line span {
+            background: white;
+            padding: 0 10px;
+            position: relative;
+            top: -10px;
+            font-size: 9px;
+            color: #666;
+        }
+
+        /* RODAPÉ */
+        .rodape {
+            display: flex;
+            justify-content: space-between;
+            font-size: 8px;
+            border-top: 1px solid #000;
+            padding-top: 6px;
+            margin-top: 15px;
+        }
+
+        .rodape-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .data-emissao {
+            text-align: center;
+            font-size: 8px;
+            margin-top: 8px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="documento">
+        <div class="print-button-container">
+            <button class="print-button" onclick="window.print()">
+                🖨️ Imprimir Justificativa
+            </button>
+        </div>
+
+        <div class="cabecalho">
+            <h1>CRECHE EL SHADDAY</h1>
+            <h2 id="unidadeNome">CEIC El Shadday</h2>
+            <p id="unidadeInfo">CNPJ: 03.067.526/0001-87 - Mogi das Cruzes/SP</p>
+        </div>
+        <div class="linha-simples"></div>
+
+        <div class="titulo">JUSTIFICATIVA DE PONTO - VIA ORIGINAL</div>
+
+        <div class="dados-linha">
+            <span class="dados-label">Data de Lançamento:</span>
+            <span class="dados-valor" id="printData">___/___/_____</span>
+        </div>
+        <div class="dados-linha">
+            <span class="dados-label">Colaborador:</span>
+            <span class="dados-valor" id="printColaborador">_________________________</span>
+        </div>
+        <div class="dados-linha">
+            <span class="dados-label">Cargo:</span>
+            <span class="dados-valor" id="printCargo">_________________________</span>
+        </div>
+        <div class="dados-linha">
+            <span class="dados-label">RGM:</span>
+            <span class="dados-valor" id="printRgm">___________</span>
+        </div>
+        <div class="dados-linha">
+            <span class="dados-label">Unidade:</span>
+            <span class="dados-valor" id="printUnidade">___________</span>
+        </div>
+        <div class="dados-linha">
+            <span class="dados-label">Apontamento Início:</span>
+            <span class="dados-valor" id="printApontamentoInicio">___:___</span>
+        </div>
+        <div class="dados-linha">
+            <span class="dados-label">Apontamento Fim:</span>
+            <span class="dados-valor" id="printApontamentoFim">___:___</span>
+        </div>
+        <div class="dados-linha">
+            <span class="dados-label">Motivo:</span>
+            <span class="dados-valor" id="printMotivo">_________________________</span>
+        </div>
+        <div class="dados-linha">
+            <span class="dados-label">Observações:</span>
+            <span class="dados-valor" id="printObservacoes">_________________________</span>
+        </div>
+
+        <div class="assinatura-area">
+            <div class="assinatura-item">
+                <div class="assinatura-linha"></div>
+                <div>Assinatura do Colaborador</div>
+            </div>
+            <div class="assinatura-item">
+                <div class="assinatura-linha"></div>
+                <div>Assinatura do Responsável</div>
+            </div>
+        </div>
+
+        <div class="rodape">
+            <div class="rodape-info">
+                <span id="rodapeNome">Creche El Shadday</span>
+                <span id="rodapeEndereco">Rua Francisco Vilani Bicudo, 470 - Vila Nova Aparecida</span>
+            </div>
+            <div id="rodapeTelefone">📞 (11) 4739-3549</div>
+        </div>
+
+        <div class="cut-line"><span>✂️ RECORTE AQUI ✂️</span></div>
+
+        <div class="cabecalho">
+            <h1>CRECHE EL SHADDAY</h1>
+            <h2 id="unidadeNome2">CEIC El Shadday</h2>
+            <p id="unidadeInfo2">CNPJ: 03.067.526/0001-87 - Mogi das Cruzes/SP</p>
+        </div>
+        <div class="linha-simples"></div>
+
+        <div class="titulo">JUSTIFICATIVA DE PONTO - VIA COLABORADOR</div>
+
+        <div class="dados-linha">
+            <span class="dados-label">Data de Lançamento:</span>
+            <span class="dados-valor" id="printData2">___/___/_____</span>
+        </div>
+        <div class="dados-linha">
+            <span class="dados-label">Colaborador:</span>
+            <span class="dados-valor" id="printColaborador2">_________________________</span>
+        </div>
+        <div class="dados-linha">
+            <span class="dados-label">Cargo:</span>
+            <span class="dados-valor" id="printCargo2">_________________________</span>
+        </div>
+        <div class="dados-linha">
+            <span class="dados-label">RGM:</span>
+            <span class="dados-valor" id="printRgm2">___________</span>
+        </div>
+        <div class="dados-linha">
+            <span class="dados-label">Unidade:</span>
+            <span class="dados-valor" id="printUnidade2">___________</span>
+        </div>
+        <div class="dados-linha">
+            <span class="dados-label">Apontamento Início:</span>
+            <span class="dados-valor" id="printApontamentoInicio2">___:___</span>
+        </div>
+        <div class="dados-linha">
+            <span class="dados-label">Apontamento Fim:</span>
+            <span class="dados-valor" id="printApontamentoFim2">___:___</span>
+        </div>
+        <div class="dados-linha">
+            <span class="dados-label">Motivo:</span>
+            <span class="dados-valor" id="printMotivo2">_________________________</span>
+        </div>
+        <div class="dados-linha">
+            <span class="dados-label">Observações:</span>
+            <span class="dados-valor" id="printObservacoes2">_________________________</span>
+        </div>
+
+        <div class="assinatura-area">
+            <div class="assinatura-item">
+                <div class="assinatura-linha"></div>
+                <div>Assinatura do Colaborador</div>
+            </div>
+            <div class="assinatura-item">
+                <div class="assinatura-linha"></div>
+                <div>Assinatura do Responsável</div>
+            </div>
+        </div>
+
+        <div class="rodape">
+            <div class="rodape-info">
+                <span id="rodapeNome2">Creche El Shadday</span>
+                <span id="rodapeEndereco2">Rua Francisco Vilani Bicudo, 470 - Vila Nova Aparecida</span>
+            </div>
+            <div id="rodapeTelefone2">📞 (11) 4739-3549</div>
+        </div>
+        <div class="data-emissao" id="printDataEmissao"></div>
+    </div>
+
+    <script>
+        function preencherJustificativa(dados) {
+            document.getElementById('unidadeNome').textContent = dados.unidadeInfo.nome;
+            document.getElementById('unidadeInfo').textContent = \`CNPJ: \${dados.unidadeInfo.cnpj} - \${dados.unidadeInfo.cidade}/\${dados.unidadeInfo.uf}\`;
+            document.getElementById('rodapeNome').textContent = dados.unidadeInfo.nome;
+            document.getElementById('rodapeEndereco').textContent = dados.unidadeInfo.endereco;
+            document.getElementById('rodapeTelefone').textContent = \`📞 \${dados.unidadeInfo.telefone}\`;
+            
+            document.getElementById('printData').textContent = dados.data;
+            document.getElementById('printColaborador').textContent = dados.colaborador;
+            document.getElementById('printCargo').textContent = dados.cargo;
+            document.getElementById('printRgm').textContent = dados.rgm;
+            document.getElementById('printUnidade').textContent = dados.unidade;
+            document.getElementById('printApontamentoInicio').textContent = dados.apontamentoInicio;
+            document.getElementById('printApontamentoFim').textContent = dados.apontamentoFim;
+            document.getElementById('printMotivo').textContent = dados.motivo;
+            document.getElementById('printObservacoes').textContent = dados.observacoes;
+            
+            document.getElementById('unidadeNome2').textContent = dados.unidadeInfo.nome;
+            document.getElementById('unidadeInfo2').textContent = \`CNPJ: \${dados.unidadeInfo.cnpj} - \${dados.unidadeInfo.cidade}/\${dados.unidadeInfo.uf}\`;
+            document.getElementById('rodapeNome2').textContent = dados.unidadeInfo.nome;
+            document.getElementById('rodapeEndereco2').textContent = dados.unidadeInfo.endereco;
+            document.getElementById('rodapeTelefone2').textContent = \`📞 \${dados.unidadeInfo.telefone}\`;
+            
+            document.getElementById('printData2').textContent = dados.data;
+            document.getElementById('printColaborador2').textContent = dados.colaborador;
+            document.getElementById('printCargo2').textContent = dados.cargo;
+            document.getElementById('printRgm2').textContent = dados.rgm;
+            document.getElementById('printUnidade2').textContent = dados.unidade;
+            document.getElementById('printApontamentoInicio2').textContent = dados.apontamentoInicio;
+            document.getElementById('printApontamentoFim2').textContent = dados.apontamentoFim;
+            document.getElementById('printMotivo2').textContent = dados.motivo;
+            document.getElementById('printObservacoes2').textContent = dados.observacoes;
+            document.getElementById('printDataEmissao').textContent = \`Emitido em: \${dados.dataEmissao}\`;
+        }
+    <\/script>
+</body>
+</html>`;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarFuncionarios();
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('dataSaida').value = hoje;
+        });
+
+        function carregarFuncionarios() {
+            fetch('/api/funcionarios/listar')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sucesso && data.funcionarios) {
+                        funcionarios = data.funcionarios;
+                        const select = document.getElementById('colaborador');
+                        select.innerHTML = '<option value="">Selecione um funcionário</option>';
+                        funcionarios.forEach(func => {
+                            select.innerHTML += `<option value="${func.rgm}">${func.nome}</option>`;
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    mostrarNotificacao('Erro ao carregar funcionários', 'error');
+                });
+        }
+
+        function preencherDadosFuncionario() {
+            const rgm = document.getElementById('colaborador').value;
+            const funcionario = funcionarios.find(f => f.rgm === rgm);
+            
+            if (funcionario) {
+                document.getElementById('cargo').value = funcionario.funcao || '';
+                document.getElementById('rgm').value = funcionario.rgm;
+                document.getElementById('unidade').value = funcionario.unidade;
+            } else {
+                document.getElementById('cargo').value = '';
+                document.getElementById('rgm').value = '';
+                document.getElementById('unidade').value = '';
+            }
+        }
+
+        function gerarJustificativa() {
+            const data = document.getElementById('dataSaida').value;
+            const rgm = document.getElementById('colaborador').value;
+            const colaboradorNome = document.getElementById('colaborador').options[document.getElementById('colaborador').selectedIndex]?.text || '';
+            const cargo = document.getElementById('cargo').value;
+            const unidade = document.getElementById('unidade').value;
+            const apontamentoInicio = document.getElementById('apontamentoInicio').value;
+            const apontamentoFim = document.getElementById('apontamentoFim').value;
+            const motivo = document.getElementById('motivo').value;
+            const observacoes = document.getElementById('observacoes').value;
+
+            if (!rgm || !motivo) {
+                mostrarNotificacao('Selecione um colaborador e informe o motivo!', 'warning');
+                return;
+            }
+
+            const unidadeInfo = UNIDADES_CONFIG[unidade] || UNIDADES_CONFIG["CEIC El Shadday"];
+            const dataFormatada = data ? new Date(data).toLocaleDateString('pt-BR') : '___/___/_____';
+            const apontamentoInicioStr = apontamentoInicio || '___:___';
+            const apontamentoFimStr = apontamentoFim || '___:___';
+            const dataEmissao = new Date().toLocaleString('pt-BR');
+
+            // Abrir nova janela com o seu código de impressão
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(htmlImpressao);
+            printWindow.document.close();
+            
+            // Aguardar carregamento e preencher dados
+            printWindow.addEventListener('load', () => {
+                printWindow.preencherJustificativa({
+                    data: dataFormatada,
+                    colaborador: colaboradorNome,
+                    cargo: cargo,
+                    rgm: rgm,
+                    unidade: unidade,
+                    apontamentoInicio: apontamentoInicioStr,
+                    apontamentoFim: apontamentoFimStr,
+                    motivo: motivo,
+                    observacoes: observacoes,
+                    unidadeInfo: unidadeInfo,
+                    dataEmissao: dataEmissao
+                });
+                setTimeout(() => {
+                    printWindow.print();
+                }, 500);
+            });
+            
+            mostrarNotificacao('Documento gerado! Aguarde a janela de impressão.', 'success');
+        }
+
+        function limparFormulario() {
+            document.getElementById('dataSaida').value = new Date().toISOString().split('T')[0];
+            document.getElementById('colaborador').value = '';
+            document.getElementById('cargo').value = '';
+            document.getElementById('rgm').value = '';
+            document.getElementById('unidade').value = '';
+            document.getElementById('apontamentoInicio').value = '';
+            document.getElementById('apontamentoFim').value = '';
+            document.getElementById('motivo').value = '';
+            document.getElementById('observacoes').value = '';
+        }
+
+        function mostrarNotificacao(mensagem, tipo = 'success') {
+            const notificacao = document.createElement('div');
+            notificacao.className = `notificacao-flutuante ${tipo}`;
+            notificacao.innerHTML = `<div class="notificacao-conteudo"><span class="notificacao-texto">${mensagem}</span></div>`;
+            document.body.appendChild(notificacao);
+            setTimeout(() => notificacao.remove(), 3000);
+        }
+    </script>
+</body>
+</html>

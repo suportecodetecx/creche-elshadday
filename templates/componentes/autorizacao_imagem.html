@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Autorização de Uso de Imagem - {{ unidade.nome }}</title>
+    <title>Justificativa de Saída - Creche El Shadday</title>
     <style>
         /* CONFIGURAÇÃO OTIMIZADA PARA A4 */
         @page {
@@ -32,7 +32,7 @@
             padding: 0;
         }
 
-        /* BOTÃO DE IMPRESSÃO */
+        /* BOTÃO DE IMPRESSÃO (visível apenas na tela) */
         .print-button-container {
             text-align: center;
             margin: 20px 0 15px 0;
@@ -71,36 +71,27 @@
         /* CABEÇALHO - ESTILO FICHA CADASTRAL */
         .cabecalho {
             text-align: center;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
 
         .cabecalho h1 {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: bold;
             text-transform: uppercase;
             margin: 0;
         }
 
         .cabecalho h2 {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
-            margin: 2px 0;
-            color: #2C3E50;
+            margin: 3px 0;
             border-bottom: 2px solid #000;
             display: inline-block;
-            padding-bottom: 5px;
-            margin-bottom: 5px;
-        }
-
-        .cabecalho h3 {
-            font-size: 16px;
-            font-weight: normal;
-            margin: 2px 0;
-            font-style: italic;
+            padding-bottom: 3px;
         }
 
         .cabecalho p {
-            font-size: 11px;
+            font-size: 10px;
             margin: 2px 0;
         }
 
@@ -109,34 +100,21 @@
             margin: 5px 0;
         }
 
-        /* NÚMERO DO TERMO */
-        .numero-termo {
-            text-align: right;
-            font-size: 12px;
+        .titulo {
+            font-size: 13px;
             font-weight: bold;
-            margin-bottom: 15px;
-            padding: 5px;
-            border-bottom: 1px dashed #999;
-        }
-
-        /* SEÇÕES */
-        .secao {
-            margin-bottom: 12px;
-        }
-
-        .secao-titulo {
-            font-size: 14px;
-            font-weight: bold;
+            text-align: center;
             text-transform: uppercase;
-            margin: 10px 0 5px 0;
-            border-bottom: 1px solid #000;
-            padding-bottom: 2px;
+            border: 1px solid #000;
+            padding: 6px;
+            margin: 12px 0;
+            background: #f5f5f5;
         }
 
         /* DADOS EM LINHA - IGUAL FICHA CADASTRAL */
         .dados-linha {
             display: flex;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
             font-size: 11px;
             border-bottom: 1px dotted #aaa;
             padding-bottom: 2px;
@@ -144,491 +122,268 @@
 
         .dados-label {
             font-weight: bold;
-            width: 140px;
+            width: 130px;
         }
 
         .dados-valor {
             flex: 1;
         }
 
-        /* QUALIDADE */
-        .qualidade-container {
-            display: flex;
-            gap: 15px;
-        }
-
-        .qualidade-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 11px;
-        }
-
-        .check-box {
-            width: 14px;
-            height: 14px;
-            border: 1px solid #000;
-            background: white;
-            display: inline-block;
-        }
-
-        .check-marcado {
-            background: #000;
-            position: relative;
-        }
-
-        .check-marcado::after {
-            content: "✓";
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: bold;
-        }
-
-        /* TABELA */
-        .tabela-dados {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 10px;
-            margin: 8px 0;
-        }
-
-        .tabela-dados th {
-            background: #f0f0f0;
-            border: 1px solid #000;
-            padding: 4px;
-            text-align: left;
-            font-weight: bold;
-        }
-
-        .tabela-dados td {
-            border: 1px solid #000;
-            padding: 3px 6px;
-        }
-
-        .tabela-dados td:last-child {
-            text-align: center;
-            width: 30px;
-        }
-
-        /* TEXTOS */
-        .texto-box {
-            font-size: 11px;
-            line-height: 1.3;
-            text-align: justify;
-            margin-bottom: 8px;
-        }
-
-        .texto-box p {
-            margin-bottom: 5px;
-        }
-
-        .texto-box ul {
-            margin: 3px 0 3px 25px;
-        }
-
-        .texto-box li {
-            margin-bottom: 2px;
-        }
-
-        /* DESTAQUE */
-        .destaque {
-            border: 2px solid #3498DB;
-            padding: 15px;
-            margin: 20px 0;
-            font-size: 12px;
-            line-height: 1.5;
-            background: #F0F8FF;
-            border-radius: 8px;
-        }
-
-        .destaque p {
-            margin-bottom: 8px;
-        }
-
-        .destaque strong {
-            font-size: 13px;
-            text-transform: uppercase;
-            color: #2C3E50;
-        }
-
         /* ASSINATURAS */
-        .assinaturas-container {
-            margin: 25px 0 15px;
-            border-top: 2px solid #000;
-            padding-top: 20px;
-        }
-
-        .assinaturas-titulo {
-            font-size: 13px;
-            font-weight: bold;
-            text-align: center;
-            text-transform: uppercase;
-            margin-bottom: 20px;
-        }
-
-        .assinaturas-grid {
+        .assinatura-area {
+            margin-top: 25px;
             display: flex;
             justify-content: space-between;
             gap: 30px;
         }
 
-        .assinatura-coluna {
+        .assinatura-item {
+            text-align: center;
             flex: 1;
         }
 
-        .assinatura-cargo {
-            font-weight: bold;
-            font-size: 11px;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            border-bottom: 1px dotted #999;
-            padding-bottom: 2px;
+        .assinatura-linha {
+            border-top: 1px solid #000;
+            width: 200px;
+            margin: 0 auto 8px;
         }
 
-        .linha-assinatura {
-            border-bottom: 1px solid #000;
-            height: 40px;
-            margin: 10px 0 5px;
-        }
-
-        .assinatura-nome {
-            font-size: 11px;
-            font-weight: bold;
-            margin-bottom: 2px;
-        }
-
-        .assinatura-funcao {
-            font-size: 9px;
-            color: #333;
-            font-style: italic;
-        }
-
-        .dados-assinante {
-            margin-top: 15px;
+        .cut-line {
+            text-align: center;
+            margin: 20px 0;
             border-top: 1px dashed #999;
-            padding-top: 10px;
+            position: relative;
         }
 
-        .linha-dado {
-            display: flex;
-            align-items: center;
-            margin-bottom: 5px;
-            font-size: 10px;
-        }
-
-        .linha-dado span {
-            font-weight: bold;
-            width: 35px;
-        }
-
-        .linha-preenchimento {
-            flex: 1;
-            border-bottom: 1px dotted #000;
-            height: 14px;
-            margin-left: 5px;
-        }
-
-        .data-local {
-            text-align: right;
-            font-size: 11px;
-            margin: 15px 0;
-            font-style: italic;
+        .cut-line span {
+            background: white;
+            padding: 0 10px;
+            position: relative;
+            top: -10px;
+            font-size: 9px;
+            color: #666;
         }
 
         /* RODAPÉ */
         .rodape {
-            text-align: center;
-            font-size: 9px;
-            border-top: 1px solid #999;
-            padding-top: 8px;
-            margin-top: 20px;
-            line-height: 1.2;
-        }
-
-        .rodape p {
-            margin: 2px 0;
-        }
-
-        .email-destaque {
-            font-weight: bold;
-            color: #000;
-        }
-
-        /* LGPD */
-        .lgpd-footer {
+            display: flex;
+            justify-content: space-between;
             font-size: 8px;
+            border-top: 1px solid #000;
+            padding-top: 6px;
+            margin-top: 15px;
+        }
+
+        .rodape-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .data-emissao {
             text-align: center;
+            font-size: 8px;
+            margin-top: 8px;
             color: #666;
-            margin-top: 5px;
         }
     </style>
 </head>
 <body>
-    <div class="documento">
-        <!-- BOTÃO DE IMPRESSÃO -->
+    <div class="documento" id="documentoImpressao">
+        <!-- BOTÃO DE IMPRESSÃO (visível apenas na tela) -->
         <div class="print-button-container">
             <button class="print-button" onclick="window.print()">
-                🖨️ Imprimir Autorização
+                🖨️ Imprimir Justificativa
             </button>
         </div>
 
-        <!-- CABEÇALHO - ESTILO FICHA CADASTRAL -->
-        <div class="cabecalho">
-            <h1>ASSOCIAÇÃO BENEFICENTE VILA NOVA APARECIDA</h1>
-            <h2>CRECHE EL SHADDAY</h2>
-            <h3>AUTORIZAÇÃO DE USO DE IMAGEM E DADOS PESSOAIS</h3>
-            <p>{{ unidade.tipo }} - CNPJ: {{ unidade.cnpj }} - {{ unidade.cidade }}/{{ unidade.uf }}</p>
-        </div>
-        <div class="linha-simples"></div>
-
-        <!-- NÚMERO DO TERMO -->
-        <div class="numero-termo">
-            AUTORIZAÇÃO Nº {{ numero_termo }} - {{ data_atual }}
-        </div>
-
-        <!-- DADOS DO RESPONSÁVEL -->
-        <div class="secao">
-            <div class="secao-titulo">1. DADOS DO RESPONSÁVEL LEGAL</div>
-            
-            <div class="dados-linha">
-                <span class="dados-label">Nome Completo:</span>
-                <span class="dados-valor"><strong>{{ aluno.responsaveis[0].nome if aluno.responsaveis else '__________________________' }}</strong></span>
-            </div>
-            
-            <div class="dados-linha">
-                <span class="dados-label">RG:</span>
-                <span class="dados-valor">{{ aluno.responsaveis[0].rg if aluno.responsaveis else '____________________' }}</span>
-            </div>
-            
-            <div class="dados-linha">
-                <span class="dados-label">CPF:</span>
-                <span class="dados-valor">{{ aluno.responsaveis[0].cpf if aluno.responsaveis else '____________________' }}</span>
-            </div>
-            
-            <div class="dados-linha">
-                <span class="dados-label">Telefone:</span>
-                <span class="dados-valor">{{ aluno.responsaveis[0].telefone if aluno.responsaveis else '____________________' }}</span>
-            </div>
-            
-            <div class="dados-linha">
-                <span class="dados-label">Qualidade:</span>
-                <span class="dados-valor">
-                    <div class="qualidade-container">
-                        <div class="qualidade-item">
-                            <span class="check-box {% if aluno.responsaveis and aluno.responsaveis[0].parentesco and aluno.responsaveis[0].parentesco|lower in ['pai', 'pai'] %}check-marcado{% endif %}"></span>
-                            <span>Pai</span>
-                        </div>
-                        <div class="qualidade-item">
-                            <span class="check-box {% if aluno.responsaveis and aluno.responsaveis[0].parentesco and aluno.responsaveis[0].parentesco|lower in ['mãe', 'mae'] %}check-marcado{% endif %}"></span>
-                            <span>Mãe</span>
-                        </div>
-                        <div class="qualidade-item">
-                            <span class="check-box {% if not aluno.responsaveis or (aluno.responsaveis[0].parentesco and aluno.responsaveis[0].parentesco|lower not in ['pai', 'mãe', 'mae']) %}check-marcado{% endif %}"></span>
-                            <span>Outro</span>
-                        </div>
-                    </div>
-                </span>
-            </div>
-        </div>
-
-        <!-- DADOS DO MENOR -->
-        <div class="secao">
-            <div class="secao-titulo">2. DADOS DO MENOR</div>
-            
-            <div class="dados-linha">
-                <span class="dados-label">Nome Completo:</span>
-                <span class="dados-valor"><strong>{{ aluno.dados_pessoais.nome if aluno.dados_pessoais else '__________________________' }}</strong></span>
-            </div>
-            
-            <div class="dados-linha">
-                <span class="dados-label">Data de Nascimento:</span>
-                <span class="dados-valor">
-                    {% if aluno.dados_pessoais and aluno.dados_pessoais.data_nasc %}
-                        {% set data = aluno.dados_pessoais.data_nasc.split('-') %}
-                        {{ data[2] }}/{{ data[1] }}/{{ data[0] }}
-                    {% else %}
-                        ___/___/_____
-                    {% endif %}
-                </span>
-            </div>
-            
-            <div class="dados-linha">
-                <span class="dados-label">Turma:</span>
-                <span class="dados-valor">{{ aluno.turma.turma if aluno.turma else '______________' }}</span>
-            </div>
-            
-            <div class="dados-linha">
-                <span class="dados-label">Projeto:</span>
-                <span class="dados-valor">EL SHADDAY</span>
-            </div>
-        </div>
-
-        <!-- DADOS PESSOAIS AUTORIZADOS -->
-        <div class="secao">
-            <div class="secao-titulo">3. DADOS PESSOAIS AUTORIZADOS</div>
-            
-            <table class="tabela-dados">
-                <tr>
-                    <th>Tipo de Dado</th>
-                    <th style="width:30px">✔</th>
-                </tr>
-                <tr><td>Nome completo</td><td>✅</td></tr>
-                <tr><td>Data de nascimento</td><td>✅</td></tr>
-                <tr><td>Raça/cor</td><td>✅</td></tr>
-                <tr><td>Endereço completo</td><td>✅</td></tr>
-                <tr><td>Número do RG</td><td>✅</td></tr>
-                <tr><td>Número do CPF</td><td>✅</td></tr>
-                <tr><td>Fotografia 3×4</td><td>✅</td></tr>
-                <tr><td>Certidão de Nascimento</td><td>✅</td></tr>
-                <tr><td>Informações de saúde</td><td>✅</td></tr>
-                <tr><td>Atestados de vacinação</td><td>✅</td></tr>
-            </table>
-        </div>
-
-        <!-- FINALIDADE DO TRATAMENTO -->
-        <div class="secao">
-            <div class="secao-titulo">4. FINALIDADE DO TRATAMENTO</div>
-            
-            <div class="texto-box">
-                <p>Os dados coletados têm como objetivo atender as exigências da Secretaria Municipal de Educação de Mogi das Cruzes no oferecimento de vagas no programa de educação infantil, bem como atender ao censo escolar. Autorizo o uso para o preenchimento de documentos escolares, registros internos e externos, termos de autorização, registros de saúde, autorizações para passeios, viagens e eventos pedagógicos.</p>
-                
-                <p>Autorizo também o registro da imagem e voz do(a) menor em atividades, eventos sociais ou festivos promovidos pela Associação, bem como sua utilização para fins de divulgação institucional, prestação de contas e promoção dos trabalhos. As imagens poderão ser compartilhadas com a Secretaria Municipal de Educação de Mogi das Cruzes, divulgadas em redes sociais oficiais da Associação, e veiculadas em jornais, TV, mídia impressa e digital da cidade, bem como em campanhas de doação realizadas por empresas parceiras.</p>
-            </div>
-        </div>
-
-        <!-- COMPARTILHAMENTO -->
-        <div class="secao">
-            <div class="secao-titulo">5. COMPARTILHAMENTO</div>
-            
-            <div class="texto-box">
-                <p>Os dados pessoais e imagens do(a) menor poderão ser compartilhados com:</p>
-                <ul>
-                    <li>Secretaria Municipal de Educação de Mogi das Cruzes;</li>
-                    <li>Secretaria de Educação do Estado de São Paulo;</li>
-                    <li>Ministério da Educação (MEC);</li>
-                    <li>Instituto Nacional de Estudos e Pesquisas Educacionais (INEP);</li>
-                    <li>Parceiros institucionais em campanhas sociais previamente autorizadas.</li>
-                </ul>
-                <p>Na hipótese de necessidade de compartilhamento com terceiros não mencionados, será solicitado novo consentimento.</p>
-            </div>
-        </div>
-
-        <!-- SEGURANÇA E RETENÇÃO -->
-        <div class="secao">
-            <div class="secao-titulo">6. SEGURANÇA E RETENÇÃO</div>
-            
-            <div class="texto-box">
-                <p>A Associação se responsabiliza por manter medidas de segurança técnicas e administrativas para proteger os dados pessoais, imagem e voz do(a) menor, nos termos da LGPD.</p>
-                <p>Os dados serão mantidos durante todo o período de permanência na instituição e, após o término, para cumprimento de obrigações legais.</p>
-            </div>
-        </div>
-
-        <!-- DIREITO DE REVOGAÇÃO -->
-        <div class="secao">
-            <div class="secao-titulo">7. DIREITO DE REVOGAÇÃO</div>
-            
-            <div class="texto-box">
-                <p>O presente termo poderá ser revogado a qualquer tempo por e-mail ou carta escrita, conforme o artigo 8°, § 5°, da Lei n° 13.709/2018 (LGPD).</p>
-                <p><strong>A presente autorização é concedida a título gratuito.</strong></p>
-            </div>
-        </div>
-
-        <!-- DECLARAÇÃO FINAL -->
-        <div class="destaque">
-            <p><strong>AUTORIZAÇÃO EXPRESSA DE USO DE IMAGEM</strong></p>
-            <p>Por meio do presente instrumento, eu, <strong>{{ aluno.responsaveis[0].nome if aluno.responsaveis else '____________________' }}</strong>, portador(a) do RG n° <strong>{{ aluno.responsaveis[0].rg if aluno.responsaveis else '______' }}</strong> e CPF n° <strong>{{ aluno.responsaveis[0].cpf if aluno.responsaveis else '______' }}</strong>, na qualidade de 
-                <strong>
-                    {% if aluno.responsaveis and aluno.responsaveis[0].parentesco %}
-                        {% if aluno.responsaveis[0].parentesco|lower in ['pai', 'pai'] %}
-                            PAI
-                        {% elif aluno.responsaveis[0].parentesco|lower in ['mãe', 'mae'] %}
-                            MÃE
-                        {% else %}
-                            {{ aluno.responsaveis[0].parentesco|upper }}
-                        {% endif %}
-                    {% else %}
-                        RESPONSÁVEL
-                    {% endif %}
-                </strong> 
-                do menor <strong>{{ aluno.dados_pessoais.nome if aluno.dados_pessoais else '______' }}</strong>, nascido em 
-                <strong>
-                    {% if aluno.dados_pessoais and aluno.dados_pessoais.data_nasc %}
-                        {% set data = aluno.dados_pessoais.data_nasc.split('-') %}
-                        {{ data[2] }}/{{ data[1] }}/{{ data[0] }}
-                    {% else %}
-                        ___/___/_____
-                    {% endif %}
-                </strong>, autorizo a ASSOCIAÇÃO BENEFICENTE VILA NOVA APARECIDA - CRECHE EL SHADDAY, inscrita no CNPJ sob nº {{ unidade.cnpj }}, a coletar, tratar, utilizar e compartilhar os dados pessoais, imagem e voz do(a) menor, em conformidade com a Lei Geral de Proteção de Dados (Lei n° 13.709/2018), conforme disposições acima.</p>
-        </div>
-
-        <!-- ASSINATURAS -->
-        <div class="assinaturas-container">
-            <div class="assinaturas-titulo">TERMO DE AUTORIZAÇÃO DE USO DE IMAGEM</div>
-            
-            <div class="assinaturas-grid">
-                <!-- Coluna do Responsável -->
-                <div class="assinatura-coluna">
-                    <div class="assinatura-cargo">RESPONSÁVEL LEGAL</div>
-                    <div class="linha-assinatura"></div>
-                    <div class="assinatura-nome">{{ aluno.responsaveis[0].nome if aluno.responsaveis else '__________________________' }}</div>
-                    <div class="assinatura-funcao">{{ aluno.responsaveis[0].parentesco if aluno.responsaveis else 'Responsável pelo aluno' }}</div>
-                    
-                    <div class="dados-assinante">
-                        <div class="linha-dado">
-                            <span>CPF:</span>
-                            <div class="linha-preenchimento">{{ aluno.responsaveis[0].cpf if aluno.responsaveis else '' }}</div>
-                        </div>
-                        <div class="linha-dado">
-                            <span>RG:</span>
-                            <div class="linha-preenchimento">{{ aluno.responsaveis[0].rg if aluno.responsaveis else '' }}</div>
-                        </div>
-                        <div class="linha-dado">
-                            <span>Data:</span>
-                            <div class="linha-preenchimento">{{ data_atual }}</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Coluna da Creche -->
-                <div class="assinatura-coluna">
-                    <div class="assinatura-cargo">{{ unidade.nome }}</div>
-                    <div class="linha-assinatura"></div>
-                    <div class="assinatura-nome">REPRESENTANTE LEGAL</div>
-                    <div class="assinatura-funcao">Diretoria / Coordenação</div>
-                    
-                    <div class="dados-assinante">
-                        <div class="linha-dado">
-                            <span>Nome:</span>
-                            <div class="linha-preenchimento"></div>
-                        </div>
-                        <div class="linha-dado">
-                            <span>Data:</span>
-                            <div class="linha-preenchimento">{{ data_atual }}</div>
-                        </div>
-                        <div class="linha-dado">
-                            <span>Carimbo:</span>
-                            <div class="linha-preenchimento"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- DATA LOCAL -->
-        <div class="data-local">
-            {{ unidade.cidade }}/{{ unidade.uf }}, {{ data_atual }}
-        </div>
-
-        <!-- RODAPÉ -->
-        <div class="rodape">
-            <p>{{ unidade.nome }} - {{ unidade.tipo }} - CNPJ: {{ unidade.cnpj }}</p>
-            <p>{{ unidade.endereco }} - {{ unidade.bairro }} - {{ unidade.cidade }}/{{ unidade.uf }} - CEP: {{ unidade.cep }}</p>
-            <p>Telefone: {{ unidade.telefone }} | E-mail: <span class="email-destaque">{{ unidade.email }}</span></p>
-            <div class="lgpd-footer">Documento em conformidade com a Lei nº 13.709/2018 (LGPD)</div>
+        <!-- CONTEÚDO PARA IMPRESSÃO - SERÁ PREENCHIDO DINAMICAMENTE -->
+        <div id="conteudoImpressao">
+            <!-- O conteúdo será inserido via JavaScript -->
         </div>
     </div>
+
+    <script>
+        // Dados do formulário (serão preenchidos pela função do modal)
+        let dadosJustificativa = null;
+
+        // Receber dados do formulário principal
+        function setDadosJustificativa(dados) {
+            dadosJustificativa = dados;
+            renderizarDocumento();
+        }
+
+        function renderizarDocumento() {
+            if (!dadosJustificativa) return;
+
+            const dataFormatada = dadosJustificativa.data || '___/___/_____';
+            const colaboradorNome = dadosJustificativa.colaborador || '_________________________';
+            const cargo = dadosJustificativa.cargo || '_________________________';
+            const rgm = dadosJustificativa.rgm || '___________';
+            const unidade = dadosJustificativa.unidade || '___________';
+            const apontamentoInicio = dadosJustificativa.apontamentoInicio || '___:___';
+            const apontamentoFim = dadosJustificativa.apontamentoFim || '___:___';
+            const motivo = dadosJustificativa.motivo || '_________________________';
+            const observacoes = dadosJustificativa.observacoes || '_________________________';
+            const unidadeInfo = dadosJustificativa.unidadeInfo || {
+                nome: 'CEIC El Shadday',
+                endereco: 'Rua Francisco Vilani Bicudo, 470 - Vila Nova Aparecida',
+                cidade: 'Mogi das Cruzes',
+                uf: 'SP',
+                cnpj: '03.067.526/0001-87',
+                telefone: '(11) 4739-3549'
+            };
+            const dataEmissao = dadosJustificativa.dataEmissao || new Date().toLocaleString('pt-BR');
+
+            const html = `
+                <!-- VIA EMPRESA -->
+                <div class="cabecalho">
+                    <h1>CRECHE EL SHADDAY</h1>
+                    <h2>${unidadeInfo.nome}</h2>
+                    <p>CNPJ: ${unidadeInfo.cnpj} - ${unidadeInfo.cidade}/${unidadeInfo.uf}</p>
+                </div>
+                <div class="linha-simples"></div>
+                
+                <div class="titulo">JUSTIFICATIVA DE PONTO - VIA ORIGINAL</div>
+                
+                <div class="dados-linha">
+                    <span class="dados-label">Data de Lançamento:</span>
+                    <span class="dados-valor">${dataFormatada}</span>
+                </div>
+                <div class="dados-linha">
+                    <span class="dados-label">Colaborador:</span>
+                    <span class="dados-valor">${colaboradorNome}</span>
+                </div>
+                <div class="dados-linha">
+                    <span class="dados-label">Cargo:</span>
+                    <span class="dados-valor">${cargo}</span>
+                </div>
+                <div class="dados-linha">
+                    <span class="dados-label">RGM:</span>
+                    <span class="dados-valor">${rgm}</span>
+                </div>
+                <div class="dados-linha">
+                    <span class="dados-label">Unidade:</span>
+                    <span class="dados-valor">${unidade}</span>
+                </div>
+                <div class="dados-linha">
+                    <span class="dados-label">Apontamento Início:</span>
+                    <span class="dados-valor">${apontamentoInicio}</span>
+                </div>
+                <div class="dados-linha">
+                    <span class="dados-label">Apontamento Fim:</span>
+                    <span class="dados-valor">${apontamentoFim}</span>
+                </div>
+                <div class="dados-linha">
+                    <span class="dados-label">Motivo:</span>
+                    <span class="dados-valor">${motivo}</span>
+                </div>
+                <div class="dados-linha">
+                    <span class="dados-label">Observações:</span>
+                    <span class="dados-valor">${observacoes}</span>
+                </div>
+                
+                <div class="assinatura-area">
+                    <div class="assinatura-item">
+                        <div class="assinatura-linha"></div>
+                        <div>Assinatura do Colaborador</div>
+                    </div>
+                    <div class="assinatura-item">
+                        <div class="assinatura-linha"></div>
+                        <div>Assinatura do Responsável</div>
+                    </div>
+                </div>
+                
+                <div class="rodape">
+                    <div class="rodape-info">
+                        <span>${unidadeInfo.nome}</span>
+                        <span>${unidadeInfo.endereco}</span>
+                    </div>
+                    <div>📞 ${unidadeInfo.telefone}</div>
+                </div>
+                
+                <div class="cut-line"><span>✂️ RECORTE AQUI ✂️</span></div>
+                
+                <!-- VIA COLABORADOR -->
+                <div class="cabecalho">
+                    <h1>CRECHE EL SHADDAY</h1>
+                    <h2>${unidadeInfo.nome}</h2>
+                    <p>CNPJ: ${unidadeInfo.cnpj} - ${unidadeInfo.cidade}/${unidadeInfo.uf}</p>
+                </div>
+                <div class="linha-simples"></div>
+                
+                <div class="titulo">JUSTIFICATIVA DE PONTO - VIA COLABORADOR</div>
+                
+                <div class="dados-linha">
+                    <span class="dados-label">Data de Lançamento:</span>
+                    <span class="dados-valor">${dataFormatada}</span>
+                </div>
+                <div class="dados-linha">
+                    <span class="dados-label">Colaborador:</span>
+                    <span class="dados-valor">${colaboradorNome}</span>
+                </div>
+                <div class="dados-linha">
+                    <span class="dados-label">Cargo:</span>
+                    <span class="dados-valor">${cargo}</span>
+                </div>
+                <div class="dados-linha">
+                    <span class="dados-label">RGM:</span>
+                    <span class="dados-valor">${rgm}</span>
+                </div>
+                <div class="dados-linha">
+                    <span class="dados-label">Unidade:</span>
+                    <span class="dados-valor">${unidade}</span>
+                </div>
+                <div class="dados-linha">
+                    <span class="dados-label">Apontamento Início:</span>
+                    <span class="dados-valor">${apontamentoInicio}</span>
+                </div>
+                <div class="dados-linha">
+                    <span class="dados-label">Apontamento Fim:</span>
+                    <span class="dados-valor">${apontamentoFim}</span>
+                </div>
+                <div class="dados-linha">
+                    <span class="dados-label">Motivo:</span>
+                    <span class="dados-valor">${motivo}</span>
+                </div>
+                <div class="dados-linha">
+                    <span class="dados-label">Observações:</span>
+                    <span class="dados-valor">${observacoes}</span>
+                </div>
+                
+                <div class="assinatura-area">
+                    <div class="assinatura-item">
+                        <div class="assinatura-linha"></div>
+                        <div>Assinatura do Colaborador</div>
+                    </div>
+                    <div class="assinatura-item">
+                        <div class="assinatura-linha"></div>
+                        <div>Assinatura do Responsável</div>
+                    </div>
+                </div>
+                
+                <div class="rodape">
+                    <div class="rodape-info">
+                        <span>${unidadeInfo.nome}</span>
+                        <span>${unidadeInfo.endereco}</span>
+                    </div>
+                    <div>📞 ${unidadeInfo.telefone}</div>
+                </div>
+                
+                <div class="data-emissao">
+                    Emitido em: ${dataEmissao}
+                </div>
+            `;
+
+            document.getElementById('conteudoImpressao').innerHTML = html;
+        }
+
+        // Função para gerar e imprimir
+        function gerarEImprimir(dados) {
+            setDadosJustificativa(dados);
+            setTimeout(() => {
+                window.print();
+            }, 100);
+        }
+    </script>
 </body>
 </html>

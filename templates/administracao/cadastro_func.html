@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Funcionário - Creche El Shadday</title>
+    
+    <!-- Fontes modernas -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ===== VARIÁVEIS TEMA NETFLIX ===== */
+        :root {
+            --netflix-red: #E50914;
+            --netflix-red-dark: #B81D24;
+            --netflix-black: #0f0f0f;
+            --netflix-dark: #1a1a1a;
+            --netflix-gray: #2a2a2a;
+            --netflix-light: #808080;
+            --accent-blue: #0080FF;
+            --accent-green: #4ECDC4;
+            --accent-purple: #A06CD5;
+            --accent-yellow: #FFD166;
+            --white: #FFFFFF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--netflix-black);
+            min-height: 100vh;
+            color: var(--white);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--netflix-dark);
+            border-radius: 32px;
+            overflow: hidden;
+            box-shadow: 0 30px 60px -20px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* Header Moderno */
+        .header-moderno {
+            padding: 24px 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            background: var(--netflix-dark);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+        }
+
+        .logo-animated {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--netflix-red), var(--netflix-red-dark));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.4rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+        }
+
+        .logo-text h2 {
+            color: white;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text p {
+            color: var(--netflix-light);
+            font-size: 0.85rem;
+            margin: 2px 0 0;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-nav {
+            padding: 12px 28px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            background: rgba(255,255,255,0.05);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .btn-nav:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--netflix-red);
+        }
+
+        .btn-primary-nav {
+            background: var(--netflix-red);
+            border: none;
+        }
+
+        .btn-primary-nav:hover {
+            background: var(--netflix-red-dark);
+        }
+
+        main {
+            padding: 40px;
+        }
+
+        /* Cards do formulário */
+        .form-card {
+            background: var(--netflix-dark);
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .form-card:hover {
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .header-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--netflix-red);
+        }
+
+        .card-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: white;
+            flex: 1;
+            margin: 0;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: var(--netflix-red);
+            color: white;
+        }
+
+        /* Filtros */
+        .filtros-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filtro-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 16px;
+            background: var(--netflix-gray);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        .filtro-input:focus {
+            outline: none;
+            border-color: var(--netflix-red);
+        }
+
+        /* Formulário Grid */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 4px;
+        }
+
+        .input-wrapper label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+        }
+
+        .input-wrapper .required {
+            color: var(--netflix-red);
+            margin-left: 2px;
+        }
+
+        .input-moderno,
+        .select-moderno {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            background: var(--netflix-gray);
+            color: white;
+            font-family: inherit;
+        }
+
+        .input-moderno:focus,
+        .select-moderno:focus {
+            outline: none;
+            border-color: var(--netflix-red);
+            box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.2);
+        }
+
+        .select-moderno {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.5)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 44px;
+        }
+
+        .select-moderno option {
+            background: var(--netflix-dark);
+            color: white;
+        }
+
+        /* Botões */
+        .btn-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--netflix-red);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--netflix-red-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--netflix-red);
+        }
+
+        .btn-editar {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s ease;
+            margin-right: 5px;
+        }
+
+        .btn-editar:hover {
+            background: #0066CC;
+            transform: translateY(-1px);
+        }
+
+        .btn-excluir {
+            background: var(--netflix-red);
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-excluir:hover {
+            background: var(--netflix-red-dark);
+            transform: translateY(-1px);
+        }
+
+        /* Tabela de funcionários */
+        .tabela-container {
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        .tabela-funcionarios {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .tabela-funcionarios th,
+        .tabela-funcionarios td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .tabela-funcionarios th {
+            color: var(--netflix-red);
+            font-weight: 600;
+        }
+
+        .tabela-funcionarios td {
+            color: rgba(255,255,255,0.8);
+        }
+
+        /* Modal de Confirmação */
+        .modal-confirmacao {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-confirmacao.active {
+            display: flex;
+        }
+
+        .modal-confirmacao-content {
+            background: var(--netflix-dark);
+            border-radius: 24px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: fadeInUp 0.3s ease;
+        }
+
+        .modal-confirmacao-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--netflix-red);
+        }
+
+        .modal-confirmacao-content p {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 25px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-buttons button {
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+
+        .btn-confirmar {
+            background: var(--netflix-red);
+            color: white;
+        }
+
+        .btn-confirmar:hover {
+            background: var(--netflix-red-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-cancelar-modal {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .btn-cancelar-modal:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Notificações */
+        .notificacao-flutuante {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            min-width: 300px;
+            background: var(--netflix-dark);
+            border-radius: 12px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+            z-index: 99999;
+            animation: slideIn 0.3s ease forwards;
+            border-left: 4px solid var(--accent-green);
+        }
+
+        .notificacao-flutuante.error {
+            border-left-color: var(--netflix-red);
+        }
+
+        .notificacao-flutuante.warning {
+            border-left-color: var(--accent-yellow);
+        }
+
+        .notificacao-conteudo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 16px 20px;
+        }
+
+        .notificacao-texto {
+            font-size: 0.95rem;
+            color: white;
+            font-weight: 500;
+            flex: 1;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            main { padding: 20px; }
+            .form-card { padding: 20px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .btn-group { flex-direction: column; }
+            .btn { width: 100%; justify-content: center; }
+            .header-content { flex-direction: column; text-align: center; }
+            .filtros-container { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header-moderno">
+            <div class="header-content">
+                <div class="logo-wrapper" onclick="window.location.href='/'">
+                    <div class="logo-animated">
+                        <span>CS</span>
+                    </div>
+                    <div class="logo-text">
+                        <h2>Creche El Shadday</h2>
+                        <p>Cadastro de Funcionários</p>
+                    </div>
+                </div>
+                <div class="header-buttons">
+                    <a href="/" class="btn-nav">← Início</a>
+                    <a href="/justificativa" class="btn-nav btn-primary-nav">Justificativa de Saída</a>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- Formulário de Cadastro/Edição -->
+            <div class="form-card">
+                <div class="card-header">
+                    <div class="header-icon">👤</div>
+                    <h2 id="formTitle">Cadastro de Funcionário</h2>
+                    <span class="badge" id="formBadge">Novo</span>
+                </div>
+
+                <div class="form-grid">
+                    <div class="input-wrapper">
+                        <label for="nome">Nome Completo <span class="required">*</span></label>
+                        <input type="text" id="nome" class="input-moderno" placeholder="Digite o nome completo">
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="rgm">RGM <span class="required">*</span></label>
+                        <input type="text" id="rgm" class="input-moderno" placeholder="Registro do funcionário">
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="telefone">Telefone</label>
+                        <input type="text" id="telefone" class="input-moderno" placeholder="(11) 91234-5678" maxlength="15" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                        <small class="small-text" style="color: #666; font-size: 0.7rem;">Opcional</small>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="unidade">Unidade <span class="required">*</span></label>
+                        <select id="unidade" class="select-moderno">
+                            <option value="">Selecione</option>
+                            <option value="CEIC El Shadday">CEIC El Shadday</option>
+                            <option value="CEIM Prof. Egberto Malta Moreira">CEIM Prof. Egberto Malta Moreira</option>
+                        </select>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="funcao">Função <span class="required">*</span></label>
+                        <select id="funcao" class="select-moderno">
+                            <option value="">Selecione</option>
+                            <option value="Diretora Geral">Diretora Geral</option>
+                            <option value="Pedagoga">Pedagoga</option>
+                            <option value="Professora">Professora</option>
+                            <option value="Auxiliar de Desenvolvimento Infantil">Auxiliar de Desenvolvimento Infantil</option>
+                            <option value="ADI">ADI</option>
+                            <option value="Cozinheira">Cozinheira</option>
+                            <option value="Lactarista">Lactarista</option>
+                            <option value="Ajudante de Cozinha">Ajudante de Cozinha</option>
+                            <option value="Auxiliar Administrativo">Auxiliar Administrativo</option>
+                            <option value="Auxiliar de Limpeza">Auxiliar de Limpeza</option>
+                            <option value="Serviços Gerais">Serviços Gerais</option>
+                            <option value="Agente Escolar">Agente Escolar</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="limparFormulario()">Cancelar</button>
+                    <button class="btn btn-primary" id="btnSalvar" onclick="salvarFuncionario()">Salvar Funcionário</button>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="form-card">
+                <div class="card-header">
+                    <div class="header-icon">🔍</div>
+                    <h2>Filtrar Funcionários</h2>
+                </div>
+                <div class="filtros-container">
+                    <input type="text" id="filtroNome" class="filtro-input" placeholder="Filtrar por nome..." onkeyup="filtrarFuncionarios()">
+                    <select id="filtroUnidade" class="filtro-input" onchange="filtrarFuncionarios()">
+                        <option value="">Todas as unidades</option>
+                        <option value="CEIC El Shadday">CEIC El Shadday</option>
+                        <option value="CEIM Prof. Egberto Malta Moreira">CEIM Prof. Egberto Malta Moreira</option>
+                    </select>
+                    <select id="filtroFuncao" class="filtro-input" onchange="filtrarFuncionarios()">
+                        <option value="">Todas as funções</option>
+                        <option value="Diretora Geral">Diretora Geral</option>
+                        <option value="Pedagoga">Pedagoga</option>
+                        <option value="Professora">Professora</option>
+                        <option value="Auxiliar de Desenvolvimento Infantil">Auxiliar de Desenvolvimento Infantil</option>
+                        <option value="ADI">ADI</option>
+                        <option value="Cozinheira">Cozinheira</option>
+                        <option value="Lactarista">Lactarista</option>
+                        <option value="Ajudante de Cozinha">Ajudante de Cozinha</option>
+                        <option value="Auxiliar Administrativo">Auxiliar Administrativo</option>
+                        <option value="Auxiliar de Limpeza">Auxiliar de Limpeza</option>
+                        <option value="Serviços Gerais">Serviços Gerais</option>
+                        <option value="Agente Escolar">Agente Escolar</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Lista de Funcionários -->
+            <div class="form-card">
+                <div class="card-header">
+                    <div class="header-icon">📋</div>
+                    <h2>Funcionários Cadastrados</h2>
+                </div>
+                <div class="tabela-container">
+                    <table class="tabela-funcionarios" id="tabelaFuncionarios">
+                        <thead>
+                            60
+                                <th>Nome</th>
+                                <th>RGM</th>
+                                <th>Telefone</th>
+                                <th>Unidade</th>
+                                <th>Função</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaFuncionarios">
+                            60
+                                <td colspan="6" style="text-align: center;">Carregando...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal de Confirmação de Exclusão -->
+    <div id="modalExclusao" class="modal-confirmacao">
+        <div class="modal-confirmacao-content">
+            <h3>⚠️ Confirmar Exclusão</h3>
+            <p id="modalExclusaoMensagem">Tem certeza que deseja excluir este funcionário?</p>
+            <p style="font-size: 0.85rem; color: #E50914;">Esta ação não pode ser desfeita.</p>
+            <div class="modal-buttons">
+                <button class="btn-cancelar-modal" onclick="fecharModalExclusao()">Cancelar</button>
+                <button class="btn-confirmar" id="btnConfirmarExclusao">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let funcionarios = [];
+        let modoEdicao = false;
+        let rgmEditando = null;
+        let rgmParaExcluir = null;
+
+        // Carregar funcionários ao iniciar
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarFuncionarios();
+        });
+
+        function carregarFuncionarios() {
+            fetch('/api/funcionarios/listar')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sucesso && data.funcionarios) {
+                        funcionarios = data.funcionarios;
+                        aplicarFiltros();
+                    } else {
+                        document.getElementById('listaFuncionarios').innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum funcionário cadastrado</td></tr>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    mostrarNotificacao('Erro ao carregar funcionários', 'error');
+                });
+        }
+
+        function aplicarFiltros() {
+            const filtroNome = document.getElementById('filtroNome').value.toLowerCase();
+            const filtroUnidade = document.getElementById('filtroUnidade').value;
+            const filtroFuncao = document.getElementById('filtroFuncao').value;
+
+            const filtrados = funcionarios.filter(func => {
+                const matchNome = func.nome.toLowerCase().includes(filtroNome);
+                const matchUnidade = !filtroUnidade || func.unidade === filtroUnidade;
+                const matchFuncao = !filtroFuncao || func.funcao === filtroFuncao;
+                return matchNome && matchUnidade && matchFuncao;
+            });
+
+            exibirTabela(filtrados);
+        }
+
+        function filtrarFuncionarios() {
+            aplicarFiltros();
+        }
+
+        function exibirTabela(funcionariosFiltrados) {
+            const tbody = document.getElementById('listaFuncionarios');
+            if (funcionariosFiltrados.length > 0) {
+                tbody.innerHTML = funcionariosFiltrados.map(func => `
+                    <tr>
+                        <td>${escapeHtml(func.nome)}</td>
+                        <td>${escapeHtml(func.rgm)}</td>
+                        <td>${escapeHtml(func.telefone || 'Não informado')}</td>
+                        <td>${escapeHtml(func.unidade)}</td>
+                        <td>${escapeHtml(func.funcao)}</td>
+                        <td>
+                            <button class="btn-editar" onclick="editarFuncionario('${escapeHtml(func.rgm)}')">Editar</button>
+                            <button class="btn-excluir" onclick="abrirModalExclusao('${escapeHtml(func.rgm)}', '${escapeHtml(func.nome)}')">Excluir</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum funcionário encontrado</td></tr>';
+            }
+        }
+
+        function abrirModalExclusao(rgm, nome) {
+            rgmParaExcluir = rgm;
+            const modal = document.getElementById('modalExclusao');
+            const mensagem = document.getElementById('modalExclusaoMensagem');
+            mensagem.textContent = `Tem certeza que deseja excluir o funcionário "${nome}"?`;
+            modal.classList.add('active');
+        }
+
+        function fecharModalExclusao() {
+            const modal = document.getElementById('modalExclusao');
+            modal.classList.remove('active');
+            rgmParaExcluir = null;
+        }
+
+        function confirmarExclusao() {
+            if (rgmParaExcluir) {
+                excluirFuncionario(rgmParaExcluir);
+                fecharModalExclusao();
+            }
+        }
+
+        function excluirFuncionario(rgm) {
+            fetch('/api/funcionarios/excluir', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rgm })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso) {
+                    mostrarNotificacao('Funcionário excluído com sucesso!', 'success');
+                    if (modoEdicao && rgmEditando === rgm) {
+                        limparFormulario();
+                    }
+                    carregarFuncionarios();
+                } else {
+                    mostrarNotificacao(data.erro || 'Erro ao excluir', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                mostrarNotificacao('Erro de conexão', 'error');
+            });
+        }
+
+        function editarFuncionario(rgm) {
+            const funcionario = funcionarios.find(f => f.rgm === rgm);
+            if (funcionario) {
+                modoEdicao = true;
+                rgmEditando = rgm;
+                
+                document.getElementById('formTitle').textContent = 'Editar Funcionário';
+                document.getElementById('formBadge').textContent = 'Edição';
+                document.getElementById('btnSalvar').textContent = 'Atualizar Funcionário';
+                
+                document.getElementById('nome').value = funcionario.nome;
+                document.getElementById('rgm').value = funcionario.rgm;
+                document.getElementById('telefone').value = funcionario.telefone || '';
+                document.getElementById('unidade').value = funcionario.unidade;
+                document.getElementById('funcao').value = funcionario.funcao;
+                
+                // Rolar até o formulário
+                document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth' });
+                mostrarNotificacao('Editando funcionário: ' + funcionario.nome, 'success');
+            }
+        }
+
+        function salvarFuncionario() {
+            const nome = document.getElementById('nome').value.trim();
+            const rgm = document.getElementById('rgm').value.trim();
+            const telefone = document.getElementById('telefone').value.trim();
+            const unidade = document.getElementById('unidade').value;
+            const funcao = document.getElementById('funcao').value;
+
+            if (!nome || !rgm || !unidade || !funcao) {
+                mostrarNotificacao('Preencha todos os campos obrigatórios!', 'warning');
+                return;
+            }
+
+            // TELEFONE NÃO É MAIS OBRIGATÓRIO - VALIDAÇÃO REMOVIDA
+
+            const dados = { 
+                nome: nome, 
+                rgm: rgm, 
+                telefone: telefone, 
+                unidade: unidade, 
+                funcao: funcao 
+            };
+
+            const url = modoEdicao ? '/api/funcionarios/atualizar' : '/api/funcionarios/cadastrar';
+            
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso) {
+                    const mensagem = modoEdicao ? 'Funcionário atualizado com sucesso!' : 'Funcionário cadastrado com sucesso!';
+                    mostrarNotificacao(mensagem, 'success');
+                    limparFormulario();
+                    carregarFuncionarios();
+                } else {
+                    mostrarNotificacao(data.erro || 'Erro ao salvar', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                mostrarNotificacao('Erro de conexão', 'error');
+            });
+        }
+
+        function limparFormulario() {
+            modoEdicao = false;
+            rgmEditando = null;
+            
+            document.getElementById('formTitle').textContent = 'Cadastro de Funcionário';
+            document.getElementById('formBadge').textContent = 'Novo';
+            document.getElementById('btnSalvar').textContent = 'Salvar Funcionário';
+            
+            document.getElementById('nome').value = '';
+            document.getElementById('rgm').value = '';
+            document.getElementById('telefone').value = '';
+            document.getElementById('unidade').value = '';
+            document.getElementById('funcao').value = '';
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function mostrarNotificacao(mensagem, tipo = 'success') {
+            const notificacao = document.createElement('div');
+            notificacao.className = `notificacao-flutuante ${tipo}`;
+            notificacao.innerHTML = `
+                <div class="notificacao-conteudo">
+                    <span class="notificacao-texto">${mensagem}</span>
+                </div>
+            `;
+            document.body.appendChild(notificacao);
+            
+            setTimeout(() => {
+                notificacao.remove();
+            }, 3000);
+        }
+
+        // Adicionar evento ao botão de confirmação do modal
+        document.getElementById('btnConfirmarExclusao').addEventListener('click', confirmarExclusao);
+    </script>
+</body>
+</html>
