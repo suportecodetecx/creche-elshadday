@@ -23,6 +23,7 @@ from routes.uploads_routes import uploads_bp
 from routes.termos_routes import termos_bp
 from routes.auth_routes import auth_bp
 from routes.justificativa_routes import justificativa_bp
+from routes.funcionarios_routes import funcionarios_bp  # <-- ADICIONADO!
 
 app = Flask(__name__)
 CORS(app)
@@ -52,6 +53,7 @@ app.register_blueprint(uploads_bp)
 app.register_blueprint(termos_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(justificativa_bp)
+app.register_blueprint(funcionarios_bp)  # <-- ADICIONADO!
 
 
 # ==================== ROTAS PRINCIPAIS ====================
@@ -168,150 +170,6 @@ def justificativa():
         return jsonify({'erro': str(e)}), 500
 
 
-# ==================== API PARA FUNCIONÁRIOS ====================
-
-@app.route('/api/funcionarios/listar', methods=['GET'])
-def listar_funcionarios():
-    """Listar todos os funcionários"""
-    try:
-        from database.mongo import db
-        
-        funcionarios = list(db.get_collection('funcionarios').find({}))
-        
-        for func in funcionarios:
-            func['_id'] = str(func['_id'])
-        
-        return jsonify({'sucesso': True, 'funcionarios': funcionarios})
-    except Exception as e:
-        logger.error(f"Erro ao listar funcionários: {e}")
-        return jsonify({'sucesso': False, 'erro': str(e)}), 500
-
-
-@app.route('/api/funcionarios/cadastrar', methods=['POST'])
-def cadastrar_funcionario_api():
-    """Cadastrar um novo funcionário"""
-    try:
-        from database.mongo import db
-        from datetime import datetime
-        
-        if not request.is_json:
-            return jsonify({'sucesso': False, 'erro': 'Requisição deve ser JSON'}), 400
-        
-        dados = request.get_json()
-        
-        # Validar dados obrigatórios
-        if not dados.get('nome'):
-            return jsonify({'sucesso': False, 'erro': 'Nome é obrigatório'}), 400
-        if not dados.get('rgm'):
-            return jsonify({'sucesso': False, 'erro': 'RGM é obrigatório'}), 400
-        # TELEFONE AGORA É OPCIONAL - REMOVIDA A VALIDAÇÃO
-        if not dados.get('unidade'):
-            return jsonify({'sucesso': False, 'erro': 'Unidade é obrigatória'}), 400
-        if not dados.get('funcao'):
-            return jsonify({'sucesso': False, 'erro': 'Função é obrigatória'}), 400
-        
-        # Verificar se RGM já existe
-        existing = db.get_collection('funcionarios').find_one({'rgm': dados.get('rgm')})
-        if existing:
-            return jsonify({'sucesso': False, 'erro': 'RGM já cadastrado'}), 400
-        
-        # Criar novo funcionário (telefone opcional)
-        novo_funcionario = {
-            'nome': dados.get('nome'),
-            'rgm': dados.get('rgm'),
-            'telefone': dados.get('telefone', ''),  # Se não enviar, fica vazio
-            'unidade': dados.get('unidade'),
-            'funcao': dados.get('funcao'),
-            'data_cadastro': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'status': 'ativo'
-        }
-        
-        result = db.get_collection('funcionarios').insert_one(novo_funcionario)
-        
-        return jsonify({
-            'sucesso': True, 
-            'mensagem': 'Funcionário cadastrado com sucesso',
-            'id': str(result.inserted_id)
-        })
-    except Exception as e:
-        logger.error(f"Erro ao cadastrar funcionário: {e}")
-        return jsonify({'sucesso': False, 'erro': str(e)}), 500
-
-
-@app.route('/api/funcionarios/atualizar', methods=['POST'])
-def atualizar_funcionario_api():
-    """Atualizar um funcionário existente"""
-    try:
-        from database.mongo import db
-        from datetime import datetime
-        
-        if not request.is_json:
-            return jsonify({'sucesso': False, 'erro': 'Requisição deve ser JSON'}), 400
-        
-        dados = request.get_json()
-        rgm = dados.get('rgm')
-        
-        if not rgm:
-            return jsonify({'sucesso': False, 'erro': 'RGM é obrigatório'}), 400
-        
-        # Validar dados obrigatórios
-        if not dados.get('nome'):
-            return jsonify({'sucesso': False, 'erro': 'Nome é obrigatório'}), 400
-        # TELEFONE AGORA É OPCIONAL - REMOVIDA A VALIDAÇÃO
-        if not dados.get('unidade'):
-            return jsonify({'sucesso': False, 'erro': 'Unidade é obrigatória'}), 400
-        if not dados.get('funcao'):
-            return jsonify({'sucesso': False, 'erro': 'Função é obrigatória'}), 400
-        
-        # Verificar se funcionário existe
-        existing = db.get_collection('funcionarios').find_one({'rgm': rgm})
-        if not existing:
-            return jsonify({'sucesso': False, 'erro': 'Funcionário não encontrado'}), 404
-        
-        # Atualizar funcionário (telefone opcional)
-        result = db.get_collection('funcionarios').update_one(
-            {'rgm': rgm},
-            {'$set': {
-                'nome': dados.get('nome'),
-                'telefone': dados.get('telefone', ''),  # Se não enviar, mantém o que tinha
-                'unidade': dados.get('unidade'),
-                'funcao': dados.get('funcao'),
-                'data_atualizacao': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            }}
-        )
-        
-        return jsonify({'sucesso': True, 'mensagem': 'Funcionário atualizado com sucesso'})
-    except Exception as e:
-        logger.error(f"Erro ao atualizar funcionário: {e}")
-        return jsonify({'sucesso': False, 'erro': str(e)}), 500
-
-
-@app.route('/api/funcionarios/excluir', methods=['POST'])
-def excluir_funcionario_api():
-    """Excluir um funcionário"""
-    try:
-        from database.mongo import db
-        
-        if not request.is_json:
-            return jsonify({'sucesso': False, 'erro': 'Requisição deve ser JSON'}), 400
-        
-        dados = request.get_json()
-        rgm = dados.get('rgm')
-        
-        if not rgm:
-            return jsonify({'sucesso': False, 'erro': 'RGM é obrigatório'}), 400
-        
-        result = db.get_collection('funcionarios').delete_one({'rgm': rgm})
-        
-        if result.deleted_count == 0:
-            return jsonify({'sucesso': False, 'erro': 'Funcionário não encontrado'}), 404
-        
-        return jsonify({'sucesso': True, 'mensagem': 'Funcionário excluído com sucesso'})
-    except Exception as e:
-        logger.error(f"Erro ao excluir funcionário: {e}")
-        return jsonify({'sucesso': False, 'erro': str(e)}), 500
-
-
 # ==================== ROTAS PARA VISUALIZAÇÃO DE TERMOS ====================
 
 @app.route('/visualizar/termo/matricula/<num_inscricao>')
@@ -411,6 +269,7 @@ def api_test():
             'collections': collections
         })
     except Exception as e:
+        logger.error(f"Erro no teste: {e}")
         return jsonify({
             'status': 'error',
             'message': str(e),
