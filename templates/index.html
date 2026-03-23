@@ -1181,7 +1181,7 @@
 function mostrarSistemaLogado() {
     document.getElementById('cardsAcesso').style.display = 'none';
     
-    // LOG PARA DEBUG (abrir console F12 para ver)
+    // LOG PARA DEBUG
     console.log('===== USUÁRIO LOGADO =====');
     console.log('usuario:', usuarioLogado.usuario);
     console.log('perfil:', usuarioLogado.perfil);
@@ -1189,27 +1189,18 @@ function mostrarSistemaLogado() {
     console.log('unidade:', usuarioLogado.unidade);
     console.log('==========================');
     
-    // Verificar se é ADMIN
-    const isAdmin = usuarioLogado.perfil === 'admin';
-    
-    // Verificar se é MASTER (múltiplas formas de reconhecer)
+    // Verificar se é MASTER (apenas usuário "master")
     const isMaster = (
-        // Por usuário (case insensitive)
         usuarioLogado.usuario === 'master' ||
         usuarioLogado.usuario === 'Master' ||
-        usuarioLogado.usuario === 'MASTER' ||
-        usuarioLogado.usuario === 'admin_master' ||
-        // Por nome
-        usuarioLogado.nome === 'Administrador Master' ||
-        usuarioLogado.nome === 'Administrador Master' ||
-        usuarioLogado.nome === 'Administrador' ||
-        // Por unidade
-        usuarioLogado.unidade === 'Todas as Unidades' ||
-        usuarioLogado.unidade === 'Todas'
+        usuarioLogado.usuario === 'MASTER'
     );
     
-    console.log('isAdmin:', isAdmin);
+    // Verificar se é ADMIN (perfil admin, mas não master)
+    const isAdmin = usuarioLogado.perfil === 'admin' && !isMaster;
+    
     console.log('isMaster:', isMaster);
+    console.log('isAdmin:', isAdmin);
     
     if (isMaster) {
         // MASTER: vê todos os 5 cards
