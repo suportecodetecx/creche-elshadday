@@ -1189,14 +1189,10 @@ function mostrarSistemaLogado() {
     console.log('unidade:', usuarioLogado.unidade);
     console.log('==========================');
     
-    // Verificar se é MASTER (apenas usuário "master")
-    const isMaster = (
-        usuarioLogado.usuario === 'master' ||
-        usuarioLogado.usuario === 'Master' ||
-        usuarioLogado.usuario === 'MASTER'
-    );
+    // Verificar se é MASTER (perfil 'master' ou usuário 'master')
+    const isMaster = usuarioLogado.perfil === 'master' || usuarioLogado.usuario === 'master';
     
-    // Verificar se é ADMIN (perfil admin, mas não master)
+    // Verificar se é ADMIN (perfil admin, mas NÃO master)
     const isAdmin = usuarioLogado.perfil === 'admin' && !isMaster;
     
     console.log('isMaster:', isMaster);
@@ -1228,7 +1224,7 @@ function mostrarSistemaLogado() {
     if (isMaster) {
         userRoleSpan.textContent = '👑 Administrador Master';
     } else if (isAdmin) {
-        userRoleSpan.textContent = '👨‍💼 Administração';
+        userRoleSpan.textContent = '👨‍💼 Administrador';
     } else if (usuarioLogado.unidade) {
         if (usuarioLogado.unidade === 'CEIC El Shadday') {
             userRoleSpan.innerHTML = '🏫 CEIC El Shadday';

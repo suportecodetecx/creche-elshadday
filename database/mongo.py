@@ -83,26 +83,26 @@ class MongoDB:
             
             # Lista de usuários padrão
             usuarios_padrao = [
-                {
-                    'usuario': 'master',
-                    'email': 'master@creche.com',
-                    'senha_plana': 'code@@',
-                    'nome': 'Administrador Master',
-                    'perfil': 'admin',
-                    'unidade': 'Todas as Unidades',
-                    'status': 'ativo',
-                    'ativo': True
-                },
-                {
-                    'usuario': 'admin',
-                    'email': 'admin@creche.com',
-                    'senha_plana': 'admin123',
-                    'nome': 'Administrador',
-                    'perfil': 'admin',
-                    'unidade': 'Todas as Unidades',
-                    'status': 'ativo',
-                    'ativo': True
-                },
+    {
+        'usuario': 'master',
+        'email': 'master@creche.com',
+        'senha_plana': 'code@@',
+        'nome': 'Administrador Master',
+        'perfil': 'master',  # <-- MUDAR DE 'admin' PARA 'master'
+        'unidade': 'Todas as Unidades',
+        'status': 'ativo',
+        'ativo': True
+    },
+    {
+        'usuario': 'admin',
+        'email': 'admin@creche.com',
+        'senha_plana': 'admin123',
+        'nome': 'Administração',
+        'perfil': 'admin',
+        'unidade': 'Todas as Unidades',
+        'status': 'ativo',
+        'ativo': True
+    },
                 {
                     'usuario': 'pedagogico',
                     'email': 'pedagogico@creche.com',
