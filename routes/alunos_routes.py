@@ -137,45 +137,85 @@ def visualizar_arquivo(campo, num_inscricao):
 
 @alunos_bp.route('/api/alunos/proximo-numero', methods=['GET'])
 def proximo_numero():
-    """Retorna o próximo número de inscrição"""
+    """Retorna o próximo número de inscrição APENAS PARA VISUALIZAÇÃO (não incrementa o contador)"""
     try:
-        print("🔍 Buscando próximo número de inscrição...")
-        num_inscricao = aluno_service.get_proximo_numero_inscricao()
-        print(f"✅ Número gerado: {num_inscricao}")
+        print("🔍 Buscando próximo número de inscrição (pré-visualização)...")
+        from database.mongo import db
+        from datetime import datetime
+        
+        ano = datetime.now().year
+        
+        # Busca o último aluno cadastrado no ano
+        ultimo_aluno = db.alunos.find_one(
+            {'num_inscricao': {'$regex': f'-{ano}$'}},
+            sort=[('num_inscricao', -1)]
+        )
+        
+        if ultimo_aluno and ultimo_aluno.get('num_inscricao'):
+            partes = ultimo_aluno['num_inscricao'].split('-')
+            valor = int(partes[0]) + 1
+            numero = f"{str(valor).zfill(3)}-{ano}"
+        else:
+            # Primeiro aluno do ano
+            numero = f"001-{ano}"
+        
+        print(f"📌 Próximo número (pré-visualização): {numero}")
+        
         return jsonify({
             'sucesso': True,
-            'numero': num_inscricao
+            'numero': numero,
+            'preview': True  # Indica que é apenas pré-visualização
         })
+        
     except Exception as e:
-        print(f"❌ Erro ao gerar número: {str(e)}")
+        print(f"❌ Erro ao buscar próximo número: {str(e)}")
         traceback.print_exc()
         
-        try:
-            from database.mongo import db
-            ano = datetime.now().year
-            ultimo_aluno = db.alunos.find_one(
-                {'num_inscricao': {'$regex': f'-{ano}$'}},
-                sort=[('num_inscricao', -1)]
-            )
-            if ultimo_aluno and ultimo_aluno.get('num_inscricao'):
-                partes = ultimo_aluno['num_inscricao'].split('-')
-                valor = int(partes[0]) + 1
-                numero = f"{str(valor).zfill(3)}-{ano}"
-                print(f"📌 Fallback: próximo número: {numero}")
-                return jsonify({
-                    'sucesso': True,
-                    'numero': numero
-                })
-        except Exception as e2:
-            print(f"Fallback também falhou: {e2}")
-        
+        # Fallback
         from datetime import datetime
         numero_temp = f"001-{datetime.now().year}"
-        print(f"📌 Usando número temporário: {numero_temp}")
         return jsonify({
             'sucesso': True,
-            'numero': numero_temp
+            'numero': numero_temp,
+            'preview': True
         })
+
+
+def _gerar_novo_numero_inscricao(db, ano):
+    """Função auxiliar para gerar um novo número de inscrição de forma atômica (APENAS NO SALVAMENTO)"""
+    try:
+        # Usa atomic operation para incrementar o contador
+        contador = db.contadores.find_one_and_update(
+            {'nome': 'num_inscricao', 'ano': ano},
+            {'$inc': {'valor': 1}},
+            upsert=True,
+            return_document=True
+        )
+        
+        # Se o contador foi criado agora, valor inicial é 1
+        valor_atual = contador.get('valor', 1)
+        numero = f"{str(valor_atual).zfill(3)}-{ano}"
+        
+        print(f"   📌 Contador atualizado: {valor_atual} -> {numero}")
+        return numero
+        
+    except Exception as e:
+        print(f"   ⚠️ Erro ao atualizar contador: {e}")
+        # Fallback: busca o último número
+        ultimo_aluno = db.alunos.find_one(
+            {'num_inscricao': {'$regex': f'-{ano}$'}},
+            sort=[('num_inscricao', -1)]
+        )
+        
+        if ultimo_aluno and ultimo_aluno.get('num_inscricao'):
+            partes = ultimo_aluno['num_inscricao'].split('-')
+            valor = int(partes[0]) + 1
+            numero = f"{str(valor).zfill(3)}-{ano}"
+        else:
+            numero = f"001-{ano}"
+        
+        return numero
+
 
 @alunos_bp.route('/api/alunos/cadastrar', methods=['POST'])
 def cadastrar_aluno():
@@ -200,6 +240,53 @@ def cadastrar_aluno():
         print(f"\n📦 DADOS DO FORMULÁRIO:")
         for key, value in request.form.items():
             print(f"   📝 {key}: {value[:30] if value else 'vazio'}")
+        
+        # ===== GERAR NÚMERO DE INSCRIÇÃO DEFINITIVO APENAS NO SALVAMENTO =====
+        from database.mongo import db
+        from datetime import datetime
+        
+        ano = datetime.now().year
+        
+        # Verifica se o número já foi enviado pelo frontend
+        num_inscricao_frontend = request.form.get('num_inscricao')
+        
+        # Se veio um número do frontend, verifica se é um novo cadastro ou edição
+        if num_inscricao_frontend and num_inscricao_frontend != '':
+            # Verifica se já existe um aluno com esse número
+            aluno_existente = aluno_service.get_aluno_by_inscricao(num_inscricao_frontend)
+            
+            if aluno_existente:
+                # É uma atualização, não gera novo número (não deveria cair aqui)
+                num_inscricao = num_inscricao_frontend
+                print(f"📝 Modo atualização - mantendo número: {num_inscricao}")
+            else:
+                # É um novo cadastro com número já gerado (pré-visualização)
+                # Verifica se o número já está em uso (double-check)
+                if aluno_service.get_aluno_by_inscricao(num_inscricao_frontend):
+                    # Número já existe, precisa gerar outro
+                    print(f"⚠️ Número {num_inscricao_frontend} já existe, gerando novo...")
+                    num_inscricao = _gerar_novo_numero_inscricao(db, ano)
+                else:
+                    # Usa o número que veio do frontend
+                    num_inscricao = num_inscricao_frontend
+                    print(f"✅ Usando número pré-gerado: {num_inscricao}")
+                    
+                    # Atualiza o contador para refletir este número usado
+                    try:
+                        partes = num_inscricao.split('-')
+                        valor = int(partes[0])
+                        db.contadores.find_one_and_update(
+                            {'nome': 'num_inscricao', 'ano': ano},
+                            {'$set': {'valor': valor}},
+                            upsert=True
+                        )
+                        print(f"   📌 Contador atualizado para: {valor}")
+                    except Exception as e:
+                        print(f"   ⚠️ Erro ao atualizar contador: {e}")
+        else:
+            # Novo cadastro sem número, gera um novo
+            num_inscricao = _gerar_novo_numero_inscricao(db, ano)
+            print(f"🆕 Gerando novo número: {num_inscricao}")
         
         arquivos_salvos = []
         
@@ -256,7 +343,12 @@ def cadastrar_aluno():
                         print(f"   ✅ Documento processado: {info['nome']}")
         
         print("\n💾 Salvando dados no banco...")
-        resultado = aluno_service.salvar_aluno(request.form, arquivos_salvos)
+        
+        # Adiciona o número de inscrição definitivo aos dados do formulário
+        form_data = request.form.copy()
+        form_data['num_inscricao'] = num_inscricao
+        
+        resultado = aluno_service.salvar_aluno(form_data, arquivos_salvos)
         print(f"✅ Cadastro realizado! Nº: {resultado['num_inscricao']}")
         print("="*60)
         
@@ -276,6 +368,7 @@ def cadastrar_aluno():
             'sucesso': False,
             'erro': str(e)
         }), 500
+
 
 # ===== ROTA PARA ATUALIZAR ALUNO =====
 @alunos_bp.route('/api/alunos/atualizar', methods=['POST'])
@@ -402,6 +495,7 @@ def atualizar_aluno():
             'erro': str(e)
         }), 500
 
+
 # ===== ROTA PARA EXCLUIR ALUNO =====
 @alunos_bp.route('/api/alunos/excluir', methods=['POST'])
 def excluir_aluno():
@@ -449,6 +543,7 @@ def excluir_aluno():
             'sucesso': False,
             'erro': str(e)
         }), 500
+
 
 # ===== ROTA PARA PÁGINA DE CADASTRO COM EDIÇÃO - CORRIGIDA =====
 @alunos_bp.route('/alunos/cadastro')
@@ -498,6 +593,7 @@ def cadastro_aluno():
         traceback.print_exc()
         return render_template('alunos/cadastro_aluno.html', aluno=None)
 
+
 @alunos_bp.route('/api/alunos/buscar', methods=['GET'])
 def buscar_alunos():
     """Endpoint para buscar alunos"""
@@ -546,6 +642,7 @@ def buscar_alunos():
             'erro': str(e)
         }), 500
 
+
 @alunos_bp.route('/api/alunos/<id>', methods=['GET'])
 def get_aluno(id):
     """Retorna dados de um aluno específico"""
@@ -567,6 +664,7 @@ def get_aluno(id):
             'erro': str(e)
         }), 500
 
+
 @alunos_bp.route('/api/alunos/inscricao/<num_inscricao>', methods=['GET'])
 def get_aluno_by_inscricao(num_inscricao):
     """Retorna dados de um aluno pelo número de inscrição"""
@@ -587,6 +685,7 @@ def get_aluno_by_inscricao(num_inscricao):
             'sucesso': False,
             'erro': str(e)
         }), 500
+
 
 @alunos_bp.route('/api/alunos/estatisticas', methods=['GET'])
 def estatisticas():

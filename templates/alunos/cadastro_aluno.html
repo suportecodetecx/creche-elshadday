@@ -1012,29 +1012,27 @@
     <!-- DEBUG E PREENCHIMENTO AUTOMÁTICO -->
     <script>
         console.log('🔍 DEBUG - Dados do aluno recebidos:', {{ aluno | tojson | safe if aluno else 'null' }});
-        
-        // ===== RECEBE DADOS DO BACKEND =====
-        const alunoParaEditar = {{ aluno | tojson | safe if aluno else 'null' }};
 
-        // Aguarda a página carregar completamente
-        document.addEventListener('DOMContentLoaded', function() {
-            if (alunoParaEditar && alunoParaEditar !== 'null') {
-                console.log('📝 Modo edição - carregando aluno:', alunoParaEditar.num_inscricao);
-                // Pequeno delay para garantir que tudo carregou
-                setTimeout(() => {
-                    preencherFormulario(alunoParaEditar);
-                }, 100);
-            } else {
-                console.log('➕ Modo cadastro - novo aluno');
-                gerarNumeroInscricao();
-            }
-        });
+// ===== RECEBE DADOS DO BACKEND =====
+const alunoParaEditar = {{ aluno | tojson | safe if aluno else 'null' }};
 
-       // ===== FUNÇÃO PARA PREENCHER O FORMULÁRIO =====
+// Aguarda a página carregar completamente
+document.addEventListener('DOMContentLoaded', function() {
+    if (alunoParaEditar && alunoParaEditar !== 'null') {
+        console.log('📝 Modo edição - carregando aluno:', alunoParaEditar.num_inscricao);
+        setTimeout(() => {
+            preencherFormulario(alunoParaEditar);
+        }, 100);
+    } else {
+        console.log('➕ Modo cadastro - novo aluno');
+        gerarNumeroInscricao();
+    }
+});
+
+// ===== FUNÇÃO PARA PREENCHER O FORMULÁRIO =====
 function preencherFormulario(aluno) {
     console.log('🔍 Preenchendo formulário com:', aluno);
     
-    // Função auxiliar para preencher campos por ID
     function setValue(id, value) {
         const campo = document.getElementById(id);
         if (campo) {
@@ -1045,7 +1043,6 @@ function preencherFormulario(aluno) {
         }
     }
     
-    // Função auxiliar para preencher campos por NAME
     function setValueByName(name, value) {
         const campo = document.querySelector(`[name="${name}"]`);
         if (campo) {
@@ -1056,7 +1053,7 @@ function preencherFormulario(aluno) {
         }
     }
 
-    // ===== DADOS PESSOAIS =====
+    // DADOS PESSOAIS
     if (aluno.dados_pessoais) {
         setValue('nome', aluno.dados_pessoais.nome);
         setValue('data_nasc', aluno.dados_pessoais.data_nasc);
@@ -1067,7 +1064,7 @@ function preencherFormulario(aluno) {
         setValue('ra', aluno.dados_pessoais.ra);
     }
 
-    // ===== ENDEREÇO =====
+    // ENDEREÇO
     if (aluno.endereco) {
         setValue('cep', aluno.endereco.cep);
         setValue('endereco', aluno.endereco.logradouro);
@@ -1078,7 +1075,7 @@ function preencherFormulario(aluno) {
         setValue('uf', aluno.endereco.uf);
     }
 
-    // ===== TURMA =====
+    // TURMA
     if (aluno.turma) {
         setValue('unidade', aluno.turma.unidade);
         setValue('turma', aluno.turma.turma);
@@ -1086,26 +1083,27 @@ function preencherFormulario(aluno) {
         setValue('ano_letivo', aluno.turma.ano_letivo);
     }
 
-    // ===== SAÚDE =====
+    // SAÚDE
     if (aluno.saude) {
-    setValue('tipo_sanguineo', aluno.saude.tipo_sanguineo);
-    setValue('plano_saude', aluno.saude.plano_saude);
-    setValue('alergias', aluno.saude.alergias);
-    setValue('medicamentos', aluno.saude.medicamentos);
-    setValue('restricoes', aluno.saude.restricoes);
-    setValue('pediatra', aluno.saude.pediatra);
-    setValue('contato_pediatra', aluno.saude.contato_pediatra);
+        setValue('tipo_sanguineo', aluno.saude.tipo_sanguineo);
+        setValue('plano_saude', aluno.saude.plano_saude);
+        setValue('alergias', aluno.saude.alergias);
+        setValue('medicamentos', aluno.saude.medicamentos);
+        setValue('restricoes', aluno.saude.restricoes);
+        setValue('pediatra', aluno.saude.pediatra);
+        setValue('contato_pediatra', aluno.saude.contato_pediatra);
         
         if (aluno.saude.deficiencia) {
             setValue('deficiencia', 'sim');
-            document.getElementById('deficiencia-descricao').style.display = 'block';
+            const divDescricao = document.getElementById('deficiencia-descricao');
+            if (divDescricao) divDescricao.style.display = 'block';
             setValue('deficiencia_desc', aluno.saude.deficiencia_desc);
         } else {
             setValue('deficiencia', 'nao');
         }
     }
 
-    // ===== RESPONSÁVEL PRINCIPAL =====
+    // RESPONSÁVEL PRINCIPAL
     if (aluno.responsaveis && aluno.responsaveis.length > 0) {
         const respPrincipal = aluno.responsaveis.find(r => r.tipo === 'principal') || aluno.responsaveis[0];
         if (respPrincipal) {
@@ -1119,7 +1117,7 @@ function preencherFormulario(aluno) {
         }
     }
 
-    // ===== RESPONSÁVEIS ADICIONAIS =====
+    // RESPONSÁVEIS ADICIONAIS
     if (aluno.responsaveis && aluno.responsaveis.length > 1) {
         const responsaveisAdicionais = aluno.responsaveis.filter(r => r.tipo === 'adicional');
         
@@ -1140,7 +1138,7 @@ function preencherFormulario(aluno) {
         });
     }
 
-    // ===== TERCEIROS =====
+    // TERCEIROS
     if (aluno.terceiros && aluno.terceiros.length > 0) {
         if (!terceirosAtivos) {
             toggleTerceiros();
@@ -1163,7 +1161,7 @@ function preencherFormulario(aluno) {
         });
     }
 
-    // ===== TRANSPORTE =====
+    // TRANSPORTE
     if (aluno.transporte && aluno.transporte.nome) {
         const checkbox = document.querySelector('input[name="utiliza_transporte"]');
         if (checkbox) {
@@ -1180,10 +1178,21 @@ function preencherFormulario(aluno) {
         }
     }
 
-    // ===== NÚMERO DE INSCRIÇÃO =====
-    setValue('num_inscricao', aluno.num_inscricao);
+    // ===== NÚMERO DE INSCRIÇÃO (CORRIGIDO) =====
+    const campoNumero = document.getElementById('num_inscricao');
+    if (campoNumero) {
+        if (aluno.num_inscricao) {
+            campoNumero.value = aluno.num_inscricao;
+            console.log(`   ✅ Número de inscrição carregado: ${aluno.num_inscricao}`);
+            campoNumero.readOnly = true;
+            campoNumero.classList.add('readonly');
+        } else {
+            console.log(`   ⚠️ Aluno sem número de inscrição!`);
+            campoNumero.value = '';
+        }
+    }
 
-    // ===== FUNÇÃO PARA CARREGAR FOTOS =====
+    // FUNÇÃO PARA CARREGAR FOTOS EXISTENTES
     function carregarFotosExistentes(aluno) {
         console.log('📸 Carregando fotos e documentos existentes...');
         
@@ -1256,13 +1265,10 @@ function preencherFormulario(aluno) {
         console.log('✅ Fotos e documentos carregados com sucesso!');
     }
 
-    // ===== CHAMADA DA FUNÇÃO PARA CARREGAR FOTOS =====
     carregarFotosExistentes(aluno);
-
     console.log('✅ Formulário preenchido com sucesso!');
     mostrarNotificacao('✅ Dados carregados para edição', 'success');
-    
-}  // <-- ESTA É A ÚNICA CHAVE QUE FECHA A FUNÇÃO preencherFormulario!
+}  // <-- FIM CORRETO DA FUNÇÃO preencherFormulario
 
 
 
@@ -1551,10 +1557,9 @@ function preencherFormulario(aluno) {
                             </div>
 
                             <div class="input-wrapper health-full">
-        <label for="restricoes">Restrições Alimentares</label>
-        <textarea id="restricoes" name="restricoes" rows="2" placeholder="Descreva as restrições alimentares (ex: lactose, glúten, alergias a alimentos, etc.)" class="textarea-moderno"></textarea>
-        <small class="small-text">Informe alergias alimentares, intolerâncias ou restrições dietéticas</small>
-    </div>
+                                <label for="restricoes">Restrições alimentares</label>
+                                <textarea id="restricoes" name="restricoes" rows="2" placeholder="Descreva restrições alimentares" class="textarea-moderno"></textarea>
+                            </div>
 
                             <div class="input-wrapper">
                                 <label for="pediatra">Nome do Pediatra</label>
@@ -1974,31 +1979,26 @@ function preencherFormulario(aluno) {
                             </div>
 
                             <!-- Resumo Saúde -->
-<div class="summary-card">
-    <div class="edit-button" onclick="irParaPasso(1)">Editar</div>
-    <h4>Saúde da Criança</h4>
-    <div class="summary-item">
-        <span class="summary-label">Tipo Sanguíneo:</span>
-        <span class="summary-value" id="review-tipo-sanguineo">-</span>
-    </div>
-    <div class="summary-item">
-        <span class="summary-label">Plano de Saúde:</span>
-        <span class="summary-value" id="review-plano-saude">-</span>
-    </div>
-    <div class="summary-item">
-        <span class="summary-label">Alergias:</span>
-        <span class="summary-value" id="review-alergias">-</span>
-    </div>
-    <!-- ADICIONADO: Restrições Alimentares -->
-    <div class="summary-item">
-        <span class="summary-label">Restrições Alimentares:</span>
-        <span class="summary-value" id="review-restricoes">-</span>
-    </div>
-    <div class="summary-item">
-        <span class="summary-label">Deficiência:</span>
-        <span class="summary-value" id="review-deficiencia">-</span>
-    </div>
-</div>
+                            <div class="summary-card">
+                                <div class="edit-button" onclick="irParaPasso(1)">Editar</div>
+                                <h4>Saúde da Criança</h4>
+                                <div class="summary-item">
+                                    <span class="summary-label">Tipo Sanguíneo:</span>
+                                    <span class="summary-value" id="review-tipo-sanguineo">-</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="summary-label">Plano de Saúde:</span>
+                                    <span class="summary-value" id="review-plano-saude">-</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="summary-label">Alergias:</span>
+                                    <span class="summary-value" id="review-alergias">-</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="summary-label">Deficiência:</span>
+                                    <span class="summary-value" id="review-deficiencia">-</span>
+                                </div>
+                            </div>
 
                             <!-- Resumo Responsável Principal -->
                             <div class="summary-card">
@@ -2690,29 +2690,18 @@ function preencherFormulario(aluno) {
         document.querySelector(`.step-item[data-step="${passo}"]`).classList.add('active');
         document.getElementById(`step${passo}`).classList.add('active');
     }
-function atualizarBotoes() {
-    const btnPrev = document.getElementById('btnPrev');
-    const btnNext = document.getElementById('btnNext');
-    const btnSave = document.getElementById('btnSave');
-    
-    // PASSO 1: Anterior some completamente
-    if (passoAtual === 1) {
-        btnPrev.style.display = 'none';  // Some!
-        btnPrev.disabled = false;  // Remove o disabled também
-    } else {
-        btnPrev.style.display = 'inline-flex';
-        btnPrev.disabled = false;
+
+    function atualizarBotoes() {
+        document.getElementById('btnPrev').disabled = passoAtual === 1;
+        
+        if (passoAtual === totalPassos) {
+            document.getElementById('btnNext').style.display = 'none';
+            document.getElementById('btnSave').style.display = 'inline-flex';
+        } else {
+            document.getElementById('btnNext').style.display = 'inline-flex';
+            document.getElementById('btnSave').style.display = 'none';
+        }
     }
-    
-    // PASSO 4: Finalizar aparece, Próximo some
-    if (passoAtual === totalPassos) {
-        btnNext.style.display = 'none';
-        btnSave.style.display = 'inline-flex';
-    } else {
-        btnNext.style.display = 'inline-flex';
-        btnSave.style.display = 'none';
-    }
-}
 
     function contarDocumentosAnexados() {
         let docs = {
@@ -2766,107 +2755,90 @@ function atualizarBotoes() {
         return docs;
     }
 
-   function atualizarResumo() {
-    document.getElementById('review-nome').textContent = document.getElementById('nome').value || '-';
-    document.getElementById('review-data').textContent = document.getElementById('data_nasc').value || '-';
-    document.getElementById('review-ra').textContent = document.getElementById('ra').value || 'Não informado';
-    document.getElementById('review-endereco').textContent = 
-        `${document.getElementById('endereco').value || ''}, ${document.getElementById('numero').value || ''} - ${document.getElementById('bairro').value || ''}`;
-    document.getElementById('review-turma').textContent = document.getElementById('turma').value || '-';
-    document.getElementById('review-unidade').textContent = document.getElementById('unidade').value || '-';
-    
-    document.getElementById('review-tipo-sanguineo').textContent = document.getElementById('tipo_sanguineo').value || '-';
-    document.getElementById('review-plano-saude').textContent = document.getElementById('plano_saude').value || '-';
-    document.getElementById('review-alergias').textContent = document.getElementById('alergias').value || '-';
-    
-    // ADICIONADO: Restrições alimentares
-    const restricoes = document.getElementById('restricoes');
-    const reviewRestricoes = document.getElementById('review-restricoes');
-    if (reviewRestricoes) {
-        reviewRestricoes.textContent = (restricoes && restricoes.value) ? restricoes.value : 'Nenhuma restrição informada';
+    function atualizarResumo() {
+        document.getElementById('review-nome').textContent = document.getElementById('nome').value || '-';
+        document.getElementById('review-data').textContent = document.getElementById('data_nasc').value || '-';
+        document.getElementById('review-ra').textContent = document.getElementById('ra').value || 'Não informado';
+        document.getElementById('review-endereco').textContent = 
+            `${document.getElementById('endereco').value || ''}, ${document.getElementById('numero').value || ''} - ${document.getElementById('bairro').value || ''}`;
+        document.getElementById('review-turma').textContent = document.getElementById('turma').value || '-';
+        document.getElementById('review-unidade').textContent = document.getElementById('unidade').value || '-';
+        
+        document.getElementById('review-tipo-sanguineo').textContent = document.getElementById('tipo_sanguineo').value || '-';
+        document.getElementById('review-plano-saude').textContent = document.getElementById('plano_saude').value || '-';
+        document.getElementById('review-alergias').textContent = document.getElementById('alergias').value || '-';
+        
+        const deficiencia = document.getElementById('deficiencia').value;
+        document.getElementById('review-deficiencia').textContent = deficiencia === 'sim' ? 'Sim' : 'Não';
+        
+        document.getElementById('review-resp-nome').textContent = document.querySelector('input[name="responsavel1_nome"]').value || '-';
+        document.getElementById('review-resp-parentesco').textContent = document.querySelector('select[name="responsavel1_parentesco"]').value || '-';
+        document.getElementById('review-resp-telefone').textContent = document.querySelector('input[name="responsavel1_telefone"]').value || '-';
+        document.getElementById('review-resp-telefone-contato').textContent = document.querySelector('input[name="responsavel1_telefone_contato"]').value || '-';
+        document.getElementById('review-resp-cpf').textContent = document.querySelector('input[name="responsavel1_cpf"]').value || '-';
+        
+        const docs = contarDocumentosAnexados();
+        
+        const docsAlunoEl = document.getElementById('review-docs-aluno');
+        const docsRespEl = document.getElementById('review-docs-resp');
+        const docsTerceirosEl = document.getElementById('review-docs-terceiros');
+        const docsTransporteEl = document.getElementById('review-docs-transporte');
+        
+        if (docsAlunoEl) docsAlunoEl.textContent = docs.aluno.length > 0 ? docs.aluno.join(', ') : 'Nenhum';
+        if (docsRespEl) docsRespEl.textContent = docs.responsavel.length > 0 ? docs.responsavel.join(', ') : 'Nenhum';
+        if (docsTerceirosEl) docsTerceirosEl.textContent = docs.terceiros.length > 0 ? docs.terceiros.join(', ') : 'Nenhum';
+        if (docsTransporteEl) docsTransporteEl.textContent = docs.transporte.length > 0 ? docs.transporte.join(', ') : 'Nenhum';
     }
-    
-    const deficiencia = document.getElementById('deficiencia').value;
-    document.getElementById('review-deficiencia').textContent = deficiencia === 'sim' ? 'Sim' : 'Não';
-    
-    document.getElementById('review-resp-nome').textContent = document.querySelector('input[name="responsavel1_nome"]').value || '-';
-    document.getElementById('review-resp-parentesco').textContent = document.querySelector('select[name="responsavel1_parentesco"]').value || '-';
-    document.getElementById('review-resp-telefone').textContent = document.querySelector('input[name="responsavel1_telefone"]').value || '-';
-    document.getElementById('review-resp-telefone-contato').textContent = document.querySelector('input[name="responsavel1_telefone_contato"]').value || '-';
-    document.getElementById('review-resp-cpf').textContent = document.querySelector('input[name="responsavel1_cpf"]').value || '-';
-    
-    const docs = contarDocumentosAnexados();
-    
-    const docsAlunoEl = document.getElementById('review-docs-aluno');
-    const docsRespEl = document.getElementById('review-docs-resp');
-    const docsTerceirosEl = document.getElementById('review-docs-terceiros');
-    const docsTransporteEl = document.getElementById('review-docs-transporte');
-    
-    if (docsAlunoEl) docsAlunoEl.textContent = docs.aluno.length > 0 ? docs.aluno.join(', ') : 'Nenhum';
-    if (docsRespEl) docsRespEl.textContent = docs.responsavel.length > 0 ? docs.responsavel.join(', ') : 'Nenhum';
-    if (docsTerceirosEl) docsTerceirosEl.textContent = docs.terceiros.length > 0 ? docs.terceiros.join(', ') : 'Nenhum';
-    if (docsTransporteEl) docsTransporteEl.textContent = docs.transporte.length > 0 ? docs.transporte.join(', ') : 'Nenhum';
-}
 
     function limparFormulario() {
-        document.querySelectorAll('input:not([readonly]), select, textarea').forEach(campo => {
-            if (campo.type === 'checkbox') {
-                campo.checked = false;
-            } else {
-                campo.value = '';
-            }
-        });
-        
-        document.querySelectorAll('.foto-capturada').forEach(img => {
-            img.classList.remove('active');
-            img.src = '';
-        });
-        
-        document.querySelectorAll('[id^="review-foto-"]').forEach(div => {
-            div.innerHTML = '';
-        });
-        
-        document.querySelectorAll('.input-error').forEach(el => {
-            el.classList.remove('input-error');
-        });
-        
-        document.querySelectorAll('.field-message').forEach(msg => {
-            msg.style.display = 'none';
-        });
-        
-        document.querySelectorAll('.upload-card-clean').forEach(card => {
-            card.classList.remove('has-file');
-        });
-        
-        terceirosAtivos = false;
-        transporteAtivo = false;
-        document.getElementById('terceiros-container').style.display = 'none';
-        document.getElementById('terceiros-docs-section').style.display = 'none';
-        document.getElementById('transporte-container').style.display = 'none';
-        document.getElementById('transporte_docs_section').style.display = 'none';
-        
-        passoAtual = 1;
-        atualizarPasso(1);
-        atualizarBotoes();
-        
-        gerarNumeroInscricao();
-        
-        mostrarNotificacao('Cadastro limpo! Pronto para novo registro.', 'success');
-    }
-
-    // Funções da Câmera
-    async function abrirCamera(id) {
-        fecharCamera(id);
-        const video = document.getElementById(id + '_video');
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            video.srcObject = stream;
-            video.classList.add('active');
-            cameraStreams[id] = stream;
-        } catch (err) {
-            mostrarNotificacao('Erro ao acessar câmera: ' + err.message, 'error');
+    document.querySelectorAll('input:not([readonly]), select, textarea').forEach(campo => {
+        if (campo.type === 'checkbox') {
+            campo.checked = false;
+        } else {
+            campo.value = '';
         }
+    });
+    
+    document.querySelectorAll('.foto-capturada').forEach(img => {
+        img.classList.remove('active');
+        img.src = '';
+    });
+    
+    document.querySelectorAll('[id^="review-foto-"]').forEach(div => {
+        div.innerHTML = '';
+    });
+    
+    document.querySelectorAll('.input-error').forEach(el => {
+        el.classList.remove('input-error');
+    });
+    
+    document.querySelectorAll('.field-message').forEach(msg => {
+        msg.style.display = 'none';
+    });
+    
+    document.querySelectorAll('.upload-card-clean').forEach(card => {
+        card.classList.remove('has-file');
+    });
+    
+    terceirosAtivos = false;
+    transporteAtivo = false;
+    document.getElementById('terceiros-container').style.display = 'none';
+    document.getElementById('terceiros-docs-section').style.display = 'none';
+    document.getElementById('transporte-container').style.display = 'none';
+    document.getElementById('transporte_docs_section').style.display = 'none';
+    
+    passoAtual = 1;
+    atualizarPasso(1);
+    atualizarBotoes();
+    
+    // Só gera novo número se NÃO for modo edição
+    const isEditing = typeof alunoParaEditar !== 'undefined' && alunoParaEditar && alunoParaEditar !== 'null';
+    if (!isEditing) {
+        gerarNumeroInscricao();
     }
+    
+    mostrarNotificacao('Cadastro limpo! Pronto para novo registro.', 'success');
+}
 
     function capturarFoto(id) {
         const video = document.getElementById(id + '_video');
@@ -3130,33 +3102,60 @@ function atualizarBotoes() {
         return new Blob([array], { type: contentType });
     }
 
-    // Função para gerar número de inscrição
-    function gerarNumeroInscricao() {
-        fetch('/api/alunos/proximo-numero')
-            .then(response => response.json())
-            .then(data => {
-                if (data.sucesso) {
-                    document.getElementById('num_inscricao').value = data.numero;
-                }
-            })
-            .catch(error => {
-                console.error('Erro ao buscar número:', error);
-                const data = new Date();
-                const ano = data.getFullYear();
-                document.getElementById('num_inscricao').value = `001-${ano}`;
-            });
+   function gerarNumeroInscricao() {
+    // Verifica se é modo edição
+    const isEditing = typeof alunoParaEditar !== 'undefined' && alunoParaEditar && alunoParaEditar !== 'null';
+    
+    // Verifica se já existe um número
+    const campoNumero = document.getElementById('num_inscricao');
+    
+    // Se for modo edição, NUNCA gera novo número
+    if (isEditing) {
+        console.log('📝 Modo edição - mantendo número existente');
+        return;
     }
+    
+    // Se o campo já tem valor (caso já tenha sido gerado antes), não gera novo
+    if (campoNumero && campoNumero.value && campoNumero.value !== '') {
+        console.log('⚠️ Número já existe, não será gerado novo:', campoNumero.value);
+        return;
+    }
+    
+    console.log('🆕 Gerando novo número de inscrição...');
+    
+    // Busca o próximo número apenas para novos cadastros
+    fetch('/api/alunos/proximo-numero')
+        .then(response => response.json())
+        .then(data => {
+            if (data.sucesso && campoNumero) {
+                campoNumero.value = data.numero;
+                console.log(`   ✅ Número gerado: ${data.numero}`);
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao buscar número:', error);
+            const data = new Date();
+            const ano = data.getFullYear();
+            if (campoNumero) {
+                campoNumero.value = `001-${ano}`;
+                console.log(`   ⚠️ Número temporário: ${campoNumero.value}`);
+            }
+        });
+}
 
     // Função principal de salvar - VERSÃO CORRIGIDA COM EDIÇÃO
-    function salvarCadastro() {
-        // Verifica se é modo edição
-        const isEditing = alunoParaEditar && alunoParaEditar !== 'null';
-        
-        if (isEditing) {
-            console.log('📝 Modo edição - atualizando aluno:', alunoParaEditar.num_inscricao);
-        } else {
-            console.log('➕ Modo cadastro - novo aluno');
-        }
+   function salvarCadastro() {
+    // Verifica se é modo edição
+    const isEditing = alunoParaEditar && alunoParaEditar !== 'null';
+    
+    // Obtém o número de inscrição atual
+    const numInscricao = document.getElementById('num_inscricao').value;
+    
+    // Se for edição e o número não corresponder ao original, corrige
+    if (isEditing && numInscricao !== alunoParaEditar.num_inscricao) {
+        console.warn('⚠️ Número de inscrição foi alterado! Corrigindo...');
+        document.getElementById('num_inscricao').value = alunoParaEditar.num_inscricao;
+    }
         
         // Valida apenas os passos 1 e 2 (pula validação de fotos na edição)
         for (let i = 1; i <= 2; i++) {
@@ -3361,9 +3360,8 @@ function atualizarBotoes() {
         });
     }
 
-     // Inicialização
+    // Inicialização
     configurarResetDeErros();
-    atualizarBotoes();  // <-- ADICIONE ESTA LINHA!
     </script>
 </body>
 </html>

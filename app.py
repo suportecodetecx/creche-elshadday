@@ -78,14 +78,21 @@ def login_page():
         return jsonify({'erro': str(e)}), 500
 
 
-@app.route('/alunos/cadastro')
-def cadastro_aluno():
-    """Página de cadastro de alunos"""
-    try:
-        return render_template('alunos/cadastro_aluno.html')
-    except Exception as e:
-        logger.error(f"Erro ao renderizar cadastro: {e}")
-        return jsonify({'erro': str(e)}), 500
+# ====================================================================
+# ATENÇÃO: Esta rota foi comentada porque está duplicada
+# A rota correta está em routes/alunos_routes.py (blueprint)
+# Ela suporta o parâmetro 'editar' para carregar dados do aluno
+# Mantenha apenas o blueprint registrado: app.register_blueprint(alunos_bp)
+# ====================================================================
+# @app.route('/alunos/cadastro')
+# def cadastro_aluno():
+#     """Página de cadastro de alunos"""
+#     try:
+#         return render_template('alunos/cadastro_aluno.html')
+#     except Exception as e:
+#         logger.error(f"Erro ao renderizar cadastro: {e}")
+#         return jsonify({'erro': str(e)}), 500
+# ====================================================================
 
 
 @app.route('/alunos/buscar')
