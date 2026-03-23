@@ -2848,6 +2848,38 @@ function preencherFormulario(aluno) {
     mostrarNotificacao('Cadastro limpo! Pronto para novo registro.', 'success');
 }
 
+// ===== FUNÇÃO PARA ABRIR A CÂMERA =====
+async function abrirCamera(id) {
+    console.log(`📷 Abrindo câmera: ${id}`);
+    fecharCamera(id);
+    const video = document.getElementById(id + '_video');
+    
+    if (!video) {
+        console.error(`❌ Video não encontrado: ${id}_video`);
+        mostrarNotificacao('Erro: elemento de vídeo não encontrado', 'error');
+        return;
+    }
+    
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        video.classList.add('active');
+        cameraStreams[id] = stream;
+        console.log(`✅ Câmera aberta: ${id}`);
+        mostrarNotificacao('Câmera aberta! Clique em "Capturar"', 'success');
+    } catch (err) {
+        console.error(`❌ Erro ao abrir câmera:`, err);
+        let mensagem = 'Erro ao acessar câmera. ';
+        if (err.name === 'NotAllowedError') {
+            mensagem += 'Permissão negada. Autorize o acesso.';
+        } else if (err.name === 'NotFoundError') {
+            mensagem += 'Nenhuma câmera encontrada.';
+        } else {
+            mensagem += err.message;
+        }
+        mostrarNotificacao(mensagem, 'error');
+    }
+}
     function capturarFoto(id) {
         const video = document.getElementById(id + '_video');
         const canvas = document.getElementById(id + '_canvas');
