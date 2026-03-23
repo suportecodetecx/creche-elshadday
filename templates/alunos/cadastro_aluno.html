@@ -2076,20 +2076,17 @@ function preencherFormulario(aluno) {
                 </div>
 
                 <!-- Botões de Navegação -->
-                <div class="navigation-buttons">
-                    <button type="button" class="btn-nav btn-prev" onclick="mudarPasso('prev')" id="btnPrev" disabled>
-                        ← Anterior
-                    </button>
-                    <button type="button" class="btn-nav btn-next" onclick="mudarPasso('next')" id="btnNext">
-                        Próximo →
-                    </button>
-                    <button type="button" class="btn-nav btn-save" onclick="salvarCadastro()" id="btnSave" style="display: none;">
-                        Finalizar Cadastro
-                    </button>
-                </div>
-            </form>
-        </main>
-    </div>
+<div class="navigation-buttons">
+    <button type="button" class="btn-nav btn-prev" onclick="mudarPasso('prev')" id="btnPrev" style="display: none;">
+        ← Anterior
+    </button>
+    <button type="button" class="btn-nav btn-next" onclick="mudarPasso('next')" id="btnNext">
+        Próximo →
+    </button>
+    <button type="button" class="btn-nav btn-save" onclick="salvarCadastro()" id="btnSave" style="display: none;">
+        Finalizar Cadastro
+    </button>
+</div>
 
     <script>
     let passoAtual = 1;
@@ -2692,16 +2689,27 @@ function preencherFormulario(aluno) {
     }
 
     function atualizarBotoes() {
-        document.getElementById('btnPrev').disabled = passoAtual === 1;
-        
-        if (passoAtual === totalPassos) {
-            document.getElementById('btnNext').style.display = 'none';
-            document.getElementById('btnSave').style.display = 'inline-flex';
-        } else {
-            document.getElementById('btnNext').style.display = 'inline-flex';
-            document.getElementById('btnSave').style.display = 'none';
-        }
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const btnSave = document.getElementById('btnSave');
+    
+    // Se estiver no primeiro passo, esconde o botão "Anterior"
+    if (passoAtual === 1) {
+        btnPrev.style.display = 'none';
+    } else {
+        btnPrev.style.display = 'inline-flex';
+        btnPrev.disabled = false;
     }
+    
+    // Se estiver no último passo, mostra o botão "Salvar" e esconde "Próximo"
+    if (passoAtual === totalPassos) {
+        btnNext.style.display = 'none';
+        btnSave.style.display = 'inline-flex';
+    } else {
+        btnNext.style.display = 'inline-flex';
+        btnSave.style.display = 'none';
+    }
+}
 
     function contarDocumentosAnexados() {
         let docs = {
