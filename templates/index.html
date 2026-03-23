@@ -1363,10 +1363,31 @@ function mostrarSistemaLogado() {
         }
 
         function getFotoUrl(aluno, tipo) {
-            if (!aluno || !aluno.arquivos || aluno.arquivos.length === 0) return null;
-            const arquivoFoto = aluno.arquivos.find(a => a.campo === 'foto_aluno');
-            return arquivoFoto ? arquivoFoto.caminho : null;
+    // Verifica se o aluno tem arquivos
+    if (!aluno || !aluno.arquivos || aluno.arquivos.length === 0) {
+        return null;
+    }
+    
+    // Procura pela foto do aluno (campo exato: 'foto_aluno')
+    const arquivoFoto = aluno.arquivos.find(a => a.campo === 'foto_aluno');
+    
+    if (arquivoFoto) {
+        // PRIORIDADE 1: data_url (Base64) - funciona no Vercel
+        if (arquivoFoto.data_url && arquivoFoto.data_url.startsWith('data:')) {
+            return arquivoFoto.data_url;
         }
+        // PRIORIDADE 2: caminho (para desenvolvimento local)
+        if (arquivoFoto.caminho) {
+            return arquivoFoto.caminho;
+        }
+        // PRIORIDADE 3: url
+        if (arquivoFoto.url) {
+            return arquivoFoto.url;
+        }
+    }
+    
+    return null;
+}
 
         function handleImageError(img) {
             img.style.display = 'none';
@@ -1375,23 +1396,41 @@ function mostrarSistemaLogado() {
         }
 
         function carregarAlunos() {
-            const container = document.getElementById('alunos-termos');
-            container.innerHTML = '<div class="loading-alunos"><div class="loading-spinner"></div><p>Carregando alunos...</p></div>';
-            
-            fetch('/api/alunos/buscar')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.sucesso) {
-                        alunosData = data.alunos || [];
-                        atualizarSelectAlunos();
+    const container = document.getElementById('alunos-termos');
+    container.innerHTML = '<div class="loading-alunos"><div class="loading-spinner"></div><p>Carregando alunos...</p></div>';
+    
+    fetch('/api/alunos/buscar')
+        .then(response => response.json())
+        .then(data => {
+            if (data.sucesso) {
+                alunosData = data.alunos || [];
+                console.log(`📋 ${alunosData.length} alunos carregados`);
+                
+                // Log para debug - ver estrutura dos arquivos
+                alunosData.forEach(aluno => {
+                    console.log(`\n📌 Aluno: ${aluno.dados_pessoais?.nome}`);
+                    if (aluno.arquivos && aluno.arquivos.length > 0) {
+                        aluno.arquivos.forEach(arquivo => {
+                            console.log(`   - campo: ${arquivo.campo}`);
+                            console.log(`   - tem data_url: ${!!arquivo.data_url}`);
+                            if (arquivo.data_url) {
+                                console.log(`   - data_url preview: ${arquivo.data_url.substring(0, 50)}...`);
+                            }
+                        });
+                    } else {
+                        console.log(`   ❌ Nenhum arquivo`);
                     }
-                    container.innerHTML = '';
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    container.innerHTML = '<div class="no-alunos">Erro ao carregar alunos</div>';
                 });
-        }
+                
+                atualizarSelectAlunos();
+            }
+            container.innerHTML = '';
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            container.innerHTML = '<div class="no-alunos">Erro ao carregar alunos</div>';
+        });
+}
 
         function atualizarSelectAlunos() {
             const select = document.getElementById('alunoSelect');
