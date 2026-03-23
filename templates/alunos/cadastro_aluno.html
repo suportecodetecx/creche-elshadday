@@ -2690,18 +2690,29 @@ function preencherFormulario(aluno) {
         document.querySelector(`.step-item[data-step="${passo}"]`).classList.add('active');
         document.getElementById(`step${passo}`).classList.add('active');
     }
-
-    function atualizarBotoes() {
-        document.getElementById('btnPrev').disabled = passoAtual === 1;
-        
-        if (passoAtual === totalPassos) {
-            document.getElementById('btnNext').style.display = 'none';
-            document.getElementById('btnSave').style.display = 'inline-flex';
-        } else {
-            document.getElementById('btnNext').style.display = 'inline-flex';
-            document.getElementById('btnSave').style.display = 'none';
-        }
+function atualizarBotoes() {
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const btnSave = document.getElementById('btnSave');
+    
+    // PASSO 1: Anterior some completamente
+    if (passoAtual === 1) {
+        btnPrev.style.display = 'none';  // Some!
+        btnPrev.disabled = false;  // Remove o disabled também
+    } else {
+        btnPrev.style.display = 'inline-flex';
+        btnPrev.disabled = false;
     }
+    
+    // PASSO 4: Finalizar aparece, Próximo some
+    if (passoAtual === totalPassos) {
+        btnNext.style.display = 'none';
+        btnSave.style.display = 'inline-flex';
+    } else {
+        btnNext.style.display = 'inline-flex';
+        btnSave.style.display = 'none';
+    }
+}
 
     function contarDocumentosAnexados() {
         let docs = {
@@ -3350,8 +3361,9 @@ function preencherFormulario(aluno) {
         });
     }
 
-    // Inicialização
+     // Inicialização
     configurarResetDeErros();
+    atualizarBotoes();  // <-- ADICIONE ESTA LINHA!
     </script>
 </body>
 </html>
