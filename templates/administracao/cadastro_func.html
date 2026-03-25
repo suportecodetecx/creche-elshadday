@@ -239,6 +239,13 @@
             margin-left: 2px;
         }
 
+        .small-text {
+            font-size: 0.7rem;
+            color: var(--netflix-light);
+            margin-top: 4px;
+            display: block;
+        }
+
         .input-moderno,
         .select-moderno {
             width: 100%;
@@ -554,7 +561,7 @@
                     <div class="input-wrapper">
                         <label for="telefone">Telefone</label>
                         <input type="text" id="telefone" class="input-moderno" placeholder="(11) 91234-5678" maxlength="15" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-                        <small class="small-text" style="color: #666; font-size: 0.7rem;">Opcional</small>
+                        <small class="small-text">Opcional - Não é obrigatório</small>
                     </div>
 
                     <div class="input-wrapper">
@@ -807,17 +814,36 @@
             const unidade = document.getElementById('unidade').value;
             const funcao = document.getElementById('funcao').value;
 
-            if (!nome || !rgm || !unidade || !funcao) {
-                mostrarNotificacao('Preencha todos os campos obrigatórios!', 'warning');
+            // VALIDAÇÃO: Apenas campos obrigatórios (Telefone é OPCIONAL)
+            if (!nome) {
+                mostrarNotificacao('❌ Nome é obrigatório!', 'warning');
+                document.getElementById('nome').focus();
+                return;
+            }
+            
+            if (!rgm) {
+                mostrarNotificacao('❌ RGM é obrigatório!', 'warning');
+                document.getElementById('rgm').focus();
+                return;
+            }
+            
+            if (!unidade) {
+                mostrarNotificacao('❌ Unidade é obrigatória!', 'warning');
+                document.getElementById('unidade').focus();
+                return;
+            }
+            
+            if (!funcao) {
+                mostrarNotificacao('❌ Função é obrigatória!', 'warning');
+                document.getElementById('funcao').focus();
                 return;
             }
 
-            // TELEFONE NÃO É MAIS OBRIGATÓRIO - VALIDAÇÃO REMOVIDA
-
+            // Telefone é opcional - pode ficar vazio
             const dados = { 
                 nome: nome, 
                 rgm: rgm, 
-                telefone: telefone, 
+                telefone: telefone || '', 
                 unidade: unidade, 
                 funcao: funcao 
             };
@@ -832,17 +858,17 @@
             .then(response => response.json())
             .then(data => {
                 if (data.sucesso) {
-                    const mensagem = modoEdicao ? 'Funcionário atualizado com sucesso!' : 'Funcionário cadastrado com sucesso!';
+                    const mensagem = modoEdicao ? '✅ Funcionário atualizado com sucesso!' : '✅ Funcionário cadastrado com sucesso!';
                     mostrarNotificacao(mensagem, 'success');
                     limparFormulario();
                     carregarFuncionarios();
                 } else {
-                    mostrarNotificacao(data.erro || 'Erro ao salvar', 'error');
+                    mostrarNotificacao(data.erro || '❌ Erro ao salvar', 'error');
                 }
             })
             .catch(error => {
                 console.error('Erro:', error);
-                mostrarNotificacao('Erro de conexão', 'error');
+                mostrarNotificacao('❌ Erro de conexão', 'error');
             });
         }
 

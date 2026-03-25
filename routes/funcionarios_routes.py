@@ -28,12 +28,21 @@ def cadastrar_funcionario():
         unidade = dados.get('unidade', '')
         funcao = dados.get('funcao', '')
         
-        # Validações
-        if not nome or not rgm or not unidade or not funcao:
-            return jsonify({'sucesso': False, 'erro': 'Todos os campos são obrigatórios'}), 400
+        # Validações - TELEFONE AGORA É OPCIONAL
+        if not nome:
+            return jsonify({'sucesso': False, 'erro': 'Nome é obrigatório'}), 400
         
-        if not telefone:
-            return jsonify({'sucesso': False, 'erro': 'Telefone é obrigatório'}), 400
+        if not rgm:
+            return jsonify({'sucesso': False, 'erro': 'RGM é obrigatório'}), 400
+        
+        if not unidade:
+            return jsonify({'sucesso': False, 'erro': 'Unidade é obrigatória'}), 400
+        
+        if not funcao:
+            return jsonify({'sucesso': False, 'erro': 'Função é obrigatória'}), 400
+        
+        # Telefone é OPCIONAL - pode ser vazio
+        # Se telefone for vazio, guarda como string vazia
         
         db = get_db()
         
@@ -41,11 +50,11 @@ def cadastrar_funcionario():
         if db.funcionarios.find_one({'rgm': rgm}):
             return jsonify({'sucesso': False, 'erro': 'RGM já cadastrado'}), 400
         
-        # Inserir funcionário com telefone
+        # Inserir funcionário (telefone pode ser vazio)
         funcionario = {
             'nome': nome,
             'rgm': rgm,
-            'telefone': telefone,
+            'telefone': telefone if telefone else '',
             'unidade': unidade,
             'funcao': funcao,
             'data_cadastro': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -71,15 +80,20 @@ def atualizar_funcionario():
         unidade = dados.get('unidade', '')
         funcao = dados.get('funcao', '')
         
-        # Validações
+        # Validações - TELEFONE AGORA É OPCIONAL
         if not rgm:
             return jsonify({'sucesso': False, 'erro': 'RGM não informado'}), 400
         
-        if not nome or not unidade or not funcao:
-            return jsonify({'sucesso': False, 'erro': 'Todos os campos são obrigatórios'}), 400
+        if not nome:
+            return jsonify({'sucesso': False, 'erro': 'Nome é obrigatório'}), 400
         
-        if not telefone:
-            return jsonify({'sucesso': False, 'erro': 'Telefone é obrigatório'}), 400
+        if not unidade:
+            return jsonify({'sucesso': False, 'erro': 'Unidade é obrigatória'}), 400
+        
+        if not funcao:
+            return jsonify({'sucesso': False, 'erro': 'Função é obrigatória'}), 400
+        
+        # Telefone é OPCIONAL - pode ser vazio
         
         db = get_db()
         
@@ -88,12 +102,12 @@ def atualizar_funcionario():
         if not funcionario:
             return jsonify({'sucesso': False, 'erro': 'Funcionário não encontrado'}), 404
         
-        # Atualizar funcionário
+        # Atualizar funcionário (telefone pode ser vazio)
         db.funcionarios.update_one(
             {'rgm': rgm},
             {'$set': {
                 'nome': nome,
-                'telefone': telefone,
+                'telefone': telefone if telefone else '',
                 'unidade': unidade,
                 'funcao': funcao,
                 'data_atualizacao': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
