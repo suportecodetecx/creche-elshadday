@@ -396,55 +396,7 @@
                         <label for="motivo">Motivo <span class="required">*</span></label>
                         <select id="motivo" class="select-moderno">
                             <option value="">Selecione o motivo</option>
-                            <option value="Atestado médico">Atestado médico</option>
-                            <option value="Declaração médica">Declaração médica</option>
-                            <option value="Consulta médica">Consulta médica</option>
-                            <option value="Dentista">Dentista</option>
-                            <option value="Ginecologista / Obstetra">Ginecologista / Obstetra</option>
-                            <option value="Exames laboratoriais ou de imagem">Exames laboratoriais ou de imagem</option>
-                            <option value="Retirar Exames Médicos">Retirar Exames Médicos</option>
-                            <option value="Mal-estar no expediente">Mal-estar no expediente</option>
-                            <option value="Emergência médica">Emergência médica</option>
-                            <option value="Recuperação pós-procedimento">Recuperação pós-procedimento</option>
-                            <option value="Tratamento médico contínuo">Tratamento médico contínuo</option>
-                            <option value="Pré-natal">Pré-natal</option>
-                            <option value="Internação própria">Internação própria</option>
-                            <option value="Internação de familiar">Internação de familiar</option>
-                            <option value="Consulta médica de familiar">Consulta médica de familiar</option>
-                            <option value="Acompanhamento de pessoa idosa ou dependente">Acompanhamento de pessoa idosa ou dependente</option>
-                            <option value="Reunião escolar do filho">Reunião escolar do filho</option>
-                            <option value="Nascimento de filho (Gala)">Nascimento de filho (Gala)</option>
-                            <option value="Licença maternidade">Licença maternidade</option>
-                            <option value="Licença paternidade">Licença paternidade</option>
-                            <option value="Emergência familiar">Emergência familiar</option>
-                            <option value="Falecimento de familiar (luto)">Falecimento de familiar (luto)</option>
-                            <option value="Serviço externo">Serviço externo</option>
-                            <option value="Visita a cliente/fornecedor">Visita a cliente/fornecedor</option>
-                            <option value="Treinamento externo">Treinamento externo</option>
-                            <option value="Atividade de campo">Atividade de campo</option>
-                            <option value="Representação da empresa em evento">Representação da empresa em evento</option>
-                            <option value="Comparecimento à Defensoria Pública ou órgãos oficiais">Comparecimento à Defensoria Pública ou órgãos oficiais</option>
-                            <option value="Comparecimento a audiências">Comparecimento a audiências</option>
-                            <option value="Atendimento em cartório">Atendimento em cartório</option>
-                            <option value="Resolução de pendências bancárias urgentes">Resolução de pendências bancárias urgentes</option>
-                            <option value="Regularização de documentos pessoais">Regularização de documentos pessoais</option>
-                            <option value="Atraso no transporte público">Atraso no transporte público</option>
-                            <option value="Falha mecânica em transporte próprio">Falha mecânica em transporte próprio</option>
-                            <option value="Condições climáticas adversas">Condições climáticas adversas</option>
-                            <option value="Greve ou interrupção de transporte">Greve ou interrupção de transporte</option>
-                            <option value="Falta justificada">Falta justificada</option>
-                            <option value="Falta injustificada">Falta injustificada</option>
-                            <option value="Atraso">Atraso</option>
-                            <option value="Saída antecipada">Saída antecipada</option>
-                            <option value="Falta de marcação de ponto">Falta de marcação de ponto</option>
-                            <option value="Banco de horas">Banco de horas</option>
-                            <option value="Compensação de horas">Compensação de horas</option>
-                            <option value="Folga programada">Folga programada</option>
-                            <option value="Motivo não especificado">Motivo não especificado</option>
-                            <option value="Situação excepcional">Situação excepcional</option>
-                            <option value="Eletroneuromiografia">Eletroneuromiografia</option>
-                            <option value="Atestado médico de Filho(a)">Atestado médico de Filho(a)</option>
-                            <option value="Vacina">Vacina</option>
+                            <!-- Os motivos serão inseridos pelo JavaScript em ordem alfabética -->
                         </select>
                     </div>
 
@@ -464,6 +416,59 @@
 
     <script>
         let funcionarios = [];
+
+        // LISTA DE MOTIVOS EM ORDEM ALFABÉTICA
+        const MOTIVOS = [
+            "Acompanhamento de pessoa idosa ou dependente",
+            "Atendimento em cartório",
+            "Atestado médico",
+            "Atestado médico de Filho(a)",
+            "Atividade de campo",
+            "Atraso",
+            "Atraso no transporte público",
+            "Banco de horas",
+            "Comparecimento a audiências",
+            "Comparecimento à Defensoria Pública ou órgãos oficiais",
+            "Compensação de horas",
+            "Condições climáticas adversas",
+            "Consulta médica",
+            "Consulta médica de familiar",
+            "Declaração médica",
+            "Dentista",
+            "Eletroneuromiografia",
+            "Emergência familiar",
+            "Emergência médica",
+            "Exames laboratoriais ou de imagem",
+            "Falecimento de familiar (luto)",
+            "Falha mecânica em transporte próprio",
+            "Falta de marcação de ponto",
+            "Falta injustificada",
+            "Falta justificada",
+            "Folga programada",
+            "Ginecologista / Obstetra",
+            "Greve ou interrupção de transporte",
+            "Internação de familiar",
+            "Internação própria",
+            "Licença maternidade",
+            "Licença paternidade",
+            "Mal-estar no expediente",
+            "Motivo não especificado",
+            "Nascimento de filho (Gala)",
+            "Pré-natal",
+            "Recuperação pós-procedimento",
+            "Regularização de documentos pessoais",
+            "Representação da empresa em evento",
+            "Resolução de pendências bancárias urgentes",
+            "Retirar Exames Médicos",
+            "Reunião escolar do filho",
+            "Saída antecipada",
+            "Serviço externo",
+            "Situação excepcional",
+            "Treinamento externo",
+            "Tratamento médico contínuo",
+            "Vacina",
+            "Visita a cliente/fornecedor"
+        ];
 
         const UNIDADES_CONFIG = {
             "CEIC El Shadday": {
@@ -857,21 +862,42 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             carregarFuncionarios();
+            carregarMotivos();
             const hoje = new Date().toISOString().split('T')[0];
             document.getElementById('dataSaida').value = hoje;
         });
+
+        function carregarMotivos() {
+            const selectMotivo = document.getElementById('motivo');
+            selectMotivo.innerHTML = '<option value="">Selecione o motivo</option>';
+            
+            MOTIVOS.forEach(motivo => {
+                selectMotivo.innerHTML += `<option value="${motivo}">${motivo}</option>`;
+            });
+            
+            console.log(`✅ ${MOTIVOS.length} motivos carregados em ordem alfabética`);
+        }
 
         function carregarFuncionarios() {
             fetch('/api/funcionarios/listar')
                 .then(response => response.json())
                 .then(data => {
                     if (data.sucesso && data.funcionarios) {
-                        funcionarios = data.funcionarios;
+                        // ORDENAR FUNCIONÁRIOS POR NOME EM ORDEM ALFABÉTICA
+                        funcionarios = data.funcionarios.sort((a, b) => {
+                            return a.nome.localeCompare(b.nome, 'pt-BR');
+                        });
+                        
                         const select = document.getElementById('colaborador');
                         select.innerHTML = '<option value="">Selecione um funcionário</option>';
+                        
                         funcionarios.forEach(func => {
                             select.innerHTML += `<option value="${func.rgm}">${func.nome}</option>`;
                         });
+                        
+                        console.log(`✅ ${funcionarios.length} funcionários carregados em ordem alfabética`);
+                    } else {
+                        document.getElementById('colaborador').innerHTML = '<option value="">Nenhum funcionário cadastrado</option>';
                     }
                 })
                 .catch(error => {

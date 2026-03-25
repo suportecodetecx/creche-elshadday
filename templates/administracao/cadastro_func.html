@@ -279,7 +279,7 @@
             color: white;
         }
 
-        /* Botões */
+        /* Botões principais */
         .btn-group {
             display: flex;
             justify-content: flex-end;
@@ -318,16 +318,27 @@
             border-color: var(--netflix-red);
         }
 
-        .btn-editar {
-            background: var(--accent-blue);
-            color: white;
-            border: none;
-            padding: 5px 12px;
+        /* Botões de ação na tabela - CORRIGIDOS */
+        .acoes-container {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-editar, .btn-excluir {
+            padding: 6px 14px;
             border-radius: 20px;
             cursor: pointer;
             font-size: 0.75rem;
+            font-weight: 500;
             transition: all 0.2s ease;
-            margin-right: 5px;
+            white-space: nowrap;
+            border: none;
+        }
+
+        .btn-editar {
+            background: var(--accent-blue);
+            color: white;
         }
 
         .btn-editar:hover {
@@ -338,12 +349,6 @@
         .btn-excluir {
             background: var(--netflix-red);
             color: white;
-            border: none;
-            padding: 5px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.75rem;
-            transition: all 0.2s ease;
         }
 
         .btn-excluir:hover {
@@ -506,6 +511,7 @@
             to { opacity: 1; transform: translateX(0); }
         }
 
+        /* Responsividade */
         @media (max-width: 768px) {
             body { padding: 10px; }
             main { padding: 20px; }
@@ -515,6 +521,17 @@
             .btn { width: 100%; justify-content: center; }
             .header-content { flex-direction: column; text-align: center; }
             .filtros-container { flex-direction: column; }
+            
+            .acoes-container {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .btn-editar, .btn-excluir {
+                width: 100%;
+                text-align: center;
+                padding: 8px 12px;
+            }
         }
     </style>
 </head>
@@ -577,18 +594,6 @@
                         <label for="funcao">Função <span class="required">*</span></label>
                         <select id="funcao" class="select-moderno">
                             <option value="">Selecione</option>
-                            <option value="Diretora Geral">Diretora Geral</option>
-                            <option value="Pedagoga">Pedagoga</option>
-                            <option value="Professora">Professora</option>
-                            <option value="Auxiliar de Desenvolvimento Infantil">Auxiliar de Desenvolvimento Infantil</option>
-                            <option value="ADI">ADI</option>
-                            <option value="Cozinheira">Cozinheira</option>
-                            <option value="Lactarista">Lactarista</option>
-                            <option value="Ajudante de Cozinha">Ajudante de Cozinha</option>
-                            <option value="Auxiliar Administrativo">Auxiliar Administrativo</option>
-                            <option value="Auxiliar de Limpeza">Auxiliar de Limpeza</option>
-                            <option value="Serviços Gerais">Serviços Gerais</option>
-                            <option value="Agente Escolar">Agente Escolar</option>
                         </select>
                     </div>
                 </div>
@@ -614,18 +619,6 @@
                     </select>
                     <select id="filtroFuncao" class="filtro-input" onchange="filtrarFuncionarios()">
                         <option value="">Todas as funções</option>
-                        <option value="Diretora Geral">Diretora Geral</option>
-                        <option value="Pedagoga">Pedagoga</option>
-                        <option value="Professora">Professora</option>
-                        <option value="Auxiliar de Desenvolvimento Infantil">Auxiliar de Desenvolvimento Infantil</option>
-                        <option value="ADI">ADI</option>
-                        <option value="Cozinheira">Cozinheira</option>
-                        <option value="Lactarista">Lactarista</option>
-                        <option value="Ajudante de Cozinha">Ajudante de Cozinha</option>
-                        <option value="Auxiliar Administrativo">Auxiliar Administrativo</option>
-                        <option value="Auxiliar de Limpeza">Auxiliar de Limpeza</option>
-                        <option value="Serviços Gerais">Serviços Gerais</option>
-                        <option value="Agente Escolar">Agente Escolar</option>
                     </select>
                 </div>
             </div>
@@ -637,27 +630,24 @@
                     <h2>Funcionários Cadastrados</h2>
                 </div>
                 <div class="tabela-container">
-                    <table class="tabela-funcionarios" id="tabelaFuncionarios">
-                        <thead>
-                            60
-                                <th>Nome</th>
-                                <th>RGM</th>
-                                <th>Telefone</th>
-                                <th>Unidade</th>
-                                <th>Função</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="listaFuncionarios">
-                            60
-                                <td colspan="6" style="text-align: center;">Carregando...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </main>
-    </div>
+    <table class="tabela-funcionarios" id="tabelaFuncionarios">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>RGM</th>
+                <th>Telefone</th>
+                <th>Unidade</th>
+                <th>Função</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="listaFuncionarios">
+            <tr>
+                <td colspan="6" style="text-align: center;">Carregando...</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
 
     <!-- Modal de Confirmação de Exclusão -->
     <div id="modalExclusao" class="modal-confirmacao">
@@ -678,17 +668,58 @@
         let rgmEditando = null;
         let rgmParaExcluir = null;
 
+        // LISTA DE FUNÇÕES EM ORDEM ALFABÉTICA
+        const FUNCOES = [
+            "Agente Escolar",
+            "Ajudante de Cozinha",
+            "Auxiliar Administrativo",
+            "Auxiliar de Desenvolvimento Infantil",
+            "Auxiliar de Limpeza",
+            "Cozinheira",
+            "Diretora Geral",
+            "Diretora Pedagoga",
+            "Lactarista",
+            "Professora",
+            "Serviços Gerais"
+        ];
+
         // Carregar funcionários ao iniciar
         document.addEventListener('DOMContentLoaded', function() {
+            carregarFuncoes();
+            carregarFuncoesFiltro();
             carregarFuncionarios();
         });
+
+        function carregarFuncoes() {
+            const selectFuncao = document.getElementById('funcao');
+            selectFuncao.innerHTML = '<option value="">Selecione</option>';
+            
+            FUNCOES.forEach(funcao => {
+                selectFuncao.innerHTML += `<option value="${funcao}">${funcao}</option>`;
+            });
+            
+            console.log(`✅ ${FUNCOES.length} funções carregadas em ordem alfabética`);
+        }
+
+        function carregarFuncoesFiltro() {
+            const selectFiltroFuncao = document.getElementById('filtroFuncao');
+            selectFiltroFuncao.innerHTML = '<option value="">Todas as funções</option>';
+            
+            FUNCOES.forEach(funcao => {
+                selectFiltroFuncao.innerHTML += `<option value="${funcao}">${funcao}</option>`;
+            });
+            
+            console.log(`✅ ${FUNCOES.length} funções carregadas no filtro em ordem alfabética`);
+        }
 
         function carregarFuncionarios() {
             fetch('/api/funcionarios/listar')
                 .then(response => response.json())
                 .then(data => {
                     if (data.sucesso && data.funcionarios) {
-                        funcionarios = data.funcionarios;
+                        funcionarios = data.funcionarios.sort((a, b) => {
+                            return a.nome.localeCompare(b.nome, 'pt-BR');
+                        });
                         aplicarFiltros();
                     } else {
                         document.getElementById('listaFuncionarios').innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum funcionário cadastrado</td></tr>';
@@ -729,9 +760,9 @@
                         <td>${escapeHtml(func.telefone || 'Não informado')}</td>
                         <td>${escapeHtml(func.unidade)}</td>
                         <td>${escapeHtml(func.funcao)}</td>
-                        <td>
-                            <button class="btn-editar" onclick="editarFuncionario('${escapeHtml(func.rgm)}')">Editar</button>
-                            <button class="btn-excluir" onclick="abrirModalExclusao('${escapeHtml(func.rgm)}', '${escapeHtml(func.nome)}')">Excluir</button>
+                        <td class="acoes-container">
+                            <button class="btn-editar" onclick="editarFuncionario('${escapeHtml(func.rgm)}')">✏️ Editar</button>
+                            <button class="btn-excluir" onclick="abrirModalExclusao('${escapeHtml(func.rgm)}', '${escapeHtml(func.nome)}')">🗑️ Excluir</button>
                         </td>
                     </tr>
                 `).join('');
@@ -801,7 +832,6 @@
                 document.getElementById('unidade').value = funcionario.unidade;
                 document.getElementById('funcao').value = funcionario.funcao;
                 
-                // Rolar até o formulário
                 document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth' });
                 mostrarNotificacao('Editando funcionário: ' + funcionario.nome, 'success');
             }
@@ -814,7 +844,6 @@
             const unidade = document.getElementById('unidade').value;
             const funcao = document.getElementById('funcao').value;
 
-            // VALIDAÇÃO: Apenas campos obrigatórios (Telefone é OPCIONAL)
             if (!nome) {
                 mostrarNotificacao('❌ Nome é obrigatório!', 'warning');
                 document.getElementById('nome').focus();
@@ -839,7 +868,6 @@
                 return;
             }
 
-            // Telefone é opcional - pode ficar vazio
             const dados = { 
                 nome: nome, 
                 rgm: rgm, 
@@ -903,13 +931,9 @@
                 </div>
             `;
             document.body.appendChild(notificacao);
-            
-            setTimeout(() => {
-                notificacao.remove();
-            }, 3000);
+            setTimeout(() => notificacao.remove(), 3000);
         }
 
-        // Adicionar evento ao botão de confirmação do modal
         document.getElementById('btnConfirmarExclusao').addEventListener('click', confirmarExclusao);
     </script>
 </body>
