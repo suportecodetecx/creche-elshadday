@@ -8,6 +8,7 @@ import traceback
 import sys
 import base64
 from io import BytesIO
+from bson import ObjectId
 
 alunos_bp = Blueprint('alunos', __name__)
 aluno_service = AlunoService()
@@ -217,9 +218,400 @@ def _gerar_novo_numero_inscricao(db, ano):
         return numero
 
 
+# ============================================
+# NOVO ENDPOINT 1: CRIAR RASCUNHO DO ALUNO
+# ============================================
+@alunos_bp.route('/api/alunos/criar-esboco', methods=['POST'])
+def criar_esboco_aluno():
+    """
+    ETAPA 1: Cria um rascunho do aluno apenas com dados textuais
+    Retorna um ID temporário para anexar os documentos depois
+    """
+    try:
+        print("\n" + "="*60)
+        print("📝 ETAPA 1: CRIANDO RASCUNHO DO ALUNO")
+        print("="*60)
+        
+        from database.mongo import db
+        from datetime import datetime
+        
+        print("\n📦 DADOS RECEBIDOS:")
+        for key, value in request.form.items():
+            print(f"   📝 {key}: {value[:50] if value else 'vazio'}")
+        
+        # Gera número de inscrição
+        ano = datetime.now().year
+        num_inscricao = request.form.get('num_inscricao')
+        
+        if not num_inscricao:
+            # Gera um número para o rascunho
+            num_inscricao = _gerar_novo_numero_inscricao(db, ano)
+            print(f"🆕 Número gerado: {num_inscricao}")
+        else:
+            print(f"📌 Número fornecido: {num_inscricao}")
+        
+        # Prepara os dados do aluno (apenas textuais, sem arquivos)
+        dados_aluno = {
+            'num_inscricao': num_inscricao,
+            'status': 'rascunho',
+            'criado_em': datetime.now(),
+            'ultima_atualizacao': datetime.now(),
+            'arquivos': [],
+            'upload_completo': False,
+            'dados_pessoais': {
+                'nome': request.form.get('nome', ''),
+                'data_nasc': request.form.get('data_nasc', ''),
+                'sexo': request.form.get('sexo', ''),
+                'raca': request.form.get('raca', ''),
+                'naturalidade': request.form.get('naturalidade', ''),
+                'nacionalidade': request.form.get('nacionalidade', 'Brasileira'),
+                'ra': request.form.get('ra', '')
+            },
+            'endereco': {
+                'cep': request.form.get('cep', ''),
+                'logradouro': request.form.get('endereco', ''),
+                'numero': request.form.get('numero', ''),
+                'complemento': request.form.get('complemento', ''),
+                'bairro': request.form.get('bairro', ''),
+                'cidade': request.form.get('cidade', ''),
+                'uf': request.form.get('uf', '')
+            },
+            'turma': {
+                'unidade': request.form.get('unidade', ''),
+                'turma': request.form.get('turma', ''),
+                'periodo': request.form.get('periodo', ''),
+                'ano_letivo': request.form.get('ano_letivo', '2026')
+            },
+            'saude': {
+                'tipo_sanguineo': request.form.get('tipo_sanguineo', ''),
+                'plano_saude': request.form.get('plano_saude', ''),
+                'alergias': request.form.get('alergias', ''),
+                'medicamentos': request.form.get('medicamentos', ''),
+                'restricoes': request.form.get('restricoes', ''),
+                'pediatra': request.form.get('pediatra', ''),
+                'contato_pediatra': request.form.get('contato_pediatra', ''),
+                'deficiencia': request.form.get('deficiencia', 'nao'),
+                'deficiencia_desc': request.form.get('deficiencia_desc', '')
+            },
+            'responsaveis': []
+        }
+        
+        # Processa responsável principal
+        responsavel_principal = {
+            'nome': request.form.get('responsavel1_nome', ''),
+            'parentesco': request.form.get('responsavel1_parentesco', ''),
+            'telefone': request.form.get('responsavel1_telefone', ''),
+            'telefone_contato': request.form.get('responsavel1_telefone_contato', ''),
+            'cpf': request.form.get('responsavel1_cpf', ''),
+            'rg': request.form.get('responsavel1_rg', ''),
+            'email': request.form.get('responsavel1_email', ''),
+            'tipo': 'principal'
+        }
+        dados_aluno['responsaveis'].append(responsavel_principal)
+        
+        # Processa responsáveis adicionais
+        for i in range(2, 6):
+            nome = request.form.get(f'responsavel{i}_nome', '')
+            if nome:
+                resp_adicional = {
+                    'nome': nome,
+                    'parentesco': request.form.get(f'responsavel{i}_parentesco', ''),
+                    'telefone': request.form.get(f'responsavel{i}_telefone', ''),
+                    'telefone_contato': request.form.get(f'responsavel{i}_telefone_contato', ''),
+                    'cpf': request.form.get(f'responsavel{i}_cpf', ''),
+                    'rg': request.form.get(f'responsavel{i}_rg', ''),
+                    'email': request.form.get(f'responsavel{i}_email', ''),
+                    'tipo': 'adicional'
+                }
+                dados_aluno['responsaveis'].append(resp_adicional)
+        
+        # Processa terceiros
+        terceiros = []
+        for i in range(1, 4):
+            nome = request.form.get(f'terceiro{i}_nome', '')
+            if nome:
+                terceiro = {
+                    'nome': nome,
+                    'telefone': request.form.get(f'terceiro{i}_telefone', ''),
+                    'cpf': request.form.get(f'terceiro{i}_cpf', ''),
+                    'rg': request.form.get(f'terceiro{i}_rg', ''),
+                    'email': request.form.get(f'terceiro{i}_email', '')
+                }
+                terceiros.append(terceiro)
+        
+        if terceiros:
+            dados_aluno['terceiros'] = terceiros
+        
+        # Processa transporte
+        if request.form.get('utiliza_transporte') == '1':
+            dados_aluno['transporte'] = {
+                'nome': request.form.get('transporte_nome', ''),
+                'cnpj': request.form.get('transporte_cnpj', ''),
+                'cpf': request.form.get('transporte_cpf', ''),
+                'rg': request.form.get('transporte_rg', ''),
+                'telefone': request.form.get('transporte_telefone', ''),
+                'email': request.form.get('transporte_email', '')
+            }
+        
+        # Salva no banco
+        result = db.alunos.insert_one(dados_aluno)
+        aluno_id = str(result.inserted_id)
+        
+        print(f"✅ Rascunho criado com ID: {aluno_id}, Nº: {num_inscricao}")
+        print("="*60)
+        
+        return jsonify({
+            'sucesso': True,
+            'id': aluno_id,
+            'num_inscricao': num_inscricao,
+            'mensagem': 'Rascunho criado com sucesso'
+        })
+        
+    except Exception as e:
+        print(f"\n❌ ERRO ao criar rascunho: {str(e)}")
+        traceback.print_exc()
+        return jsonify({
+            'sucesso': False,
+            'erro': str(e)
+        }), 500
+
+
+# ============================================
+# NOVO ENDPOINT 2: ANEXAR DOCUMENTOS EM LOTES
+# ============================================
+@alunos_bp.route('/api/alunos/anexar-documentos', methods=['POST'])
+def anexar_documentos():
+    """
+    ETAPA 2: Anexa documentos em lotes ao rascunho do aluno
+    Recebe id_aluno e os arquivos
+    """
+    try:
+        print("\n" + "="*60)
+        print("📎 ETAPA 2: ANEXANDO DOCUMENTOS EM LOTES")
+        print("="*60)
+        
+        from database.mongo import db
+        from bson import ObjectId
+        from datetime import datetime
+        
+        id_aluno = request.form.get('id_aluno')
+        num_inscricao = request.form.get('num_inscricao')
+        
+        if not id_aluno and not num_inscricao:
+            return jsonify({
+                'sucesso': False,
+                'erro': 'ID do aluno ou número de inscrição é obrigatório'
+            }), 400
+        
+        print(f"📌 Processando para aluno ID: {id_aluno}, Nº: {num_inscricao}")
+        
+        # Busca o aluno
+        aluno = None
+        if id_aluno:
+            try:
+                aluno = db.alunos.find_one({'_id': ObjectId(id_aluno)})
+            except:
+                pass
+        
+        if not aluno and num_inscricao:
+            aluno = db.alunos.find_one({'num_inscricao': num_inscricao})
+        
+        if not aluno:
+            return jsonify({
+                'sucesso': False,
+                'erro': 'Aluno não encontrado'
+            }), 404
+        
+        print(f"✅ Aluno encontrado: {aluno.get('num_inscricao')}")
+        
+        # Processa os arquivos recebidos neste lote
+        novos_arquivos = []
+        
+        for key in request.files.keys():
+            file = request.files[key]
+            if file and file.filename:
+                print(f"\n📄 Processando arquivo: {key} - {file.filename}")
+                
+                # Salva o arquivo
+                info = save_uploaded_file(file, 'documentos', key)
+                if info:
+                    novos_arquivos.append(info)
+                    print(f"   ✅ Arquivo processado: {info['nome']} ({info['tamanho']} bytes)")
+        
+        if not novos_arquivos:
+            print("⚠️ Nenhum arquivo recebido neste lote")
+            return jsonify({
+                'sucesso': True,
+                'arquivos_recebidos': 0,
+                'mensagem': 'Nenhum arquivo para anexar'
+            })
+        
+        # Atualiza o aluno com os novos arquivos
+        arquivos_existentes = aluno.get('arquivos', [])
+        arquivos_atualizados = arquivos_existentes + novos_arquivos
+        
+        result = db.alunos.update_one(
+            {'_id': aluno['_id']},
+            {
+                '$set': {
+                    'arquivos': arquivos_atualizados,
+                    'ultima_atualizacao': datetime.now()
+                }
+            }
+        )
+        
+        print(f"✅ {len(novos_arquivos)} arquivos anexados com sucesso!")
+        print(f"📊 Total de arquivos agora: {len(arquivos_atualizados)}")
+        print("="*60)
+        
+        return jsonify({
+            'sucesso': True,
+            'arquivos_recebidos': len(novos_arquivos),
+            'total_arquivos': len(arquivos_atualizados),
+            'mensagem': f'{len(novos_arquivos)} arquivos anexados com sucesso'
+        })
+        
+    except Exception as e:
+        print(f"\n❌ ERRO ao anexar documentos: {str(e)}")
+        traceback.print_exc()
+        return jsonify({
+            'sucesso': False,
+            'erro': str(e)
+        }), 500
+
+
+# ============================================
+# NOVO ENDPOINT 3: FINALIZAR CADASTRO
+# ============================================
+@alunos_bp.route('/api/alunos/finalizar-cadastro', methods=['POST'])
+def finalizar_cadastro():
+    """
+    ETAPA 3: Finaliza o cadastro, valida documentos e marca como ativo
+    """
+    try:
+        print("\n" + "="*60)
+        print("✅ ETAPA 3: FINALIZANDO CADASTRO")
+        print("="*60)
+        
+        from database.mongo import db
+        from bson import ObjectId
+        from datetime import datetime
+        
+        id_aluno = request.form.get('id_aluno')
+        num_inscricao = request.form.get('num_inscricao')
+        finalizar = request.form.get('finalizar') == 'true'
+        
+        if not finalizar:
+            return jsonify({
+                'sucesso': False,
+                'erro': 'Parâmetro finalizar é obrigatório'
+            }), 400
+        
+        if not id_aluno and not num_inscricao:
+            return jsonify({
+                'sucesso': False,
+                'erro': 'ID do aluno ou número de inscrição é obrigatório'
+            }), 400
+        
+        # Busca o aluno
+        aluno = None
+        if id_aluno:
+            try:
+                aluno = db.alunos.find_one({'_id': ObjectId(id_aluno)})
+            except:
+                pass
+        
+        if not aluno and num_inscricao:
+            aluno = db.alunos.find_one({'num_inscricao': num_inscricao})
+        
+        if not aluno:
+            return jsonify({
+                'sucesso': False,
+                'erro': 'Aluno não encontrado'
+            }), 404
+        
+        print(f"📌 Finalizando cadastro: {aluno.get('num_inscricao')}")
+        
+        # Valida documentos obrigatórios
+        documentos_obrigatorios = [
+            'aluno_certidao', 'aluno_rg', 'aluno_vacinacao',
+            'resp_rg', 'resp_cpf', 'resp_comprovante'
+        ]
+        
+        arquivos_existentes = [a.get('campo') for a in aluno.get('arquivos', [])]
+        faltantes = [doc for doc in documentos_obrigatorios if doc not in arquivos_existentes]
+        
+        if faltantes:
+            print(f"⚠️ Documentos faltantes: {faltantes}")
+            return jsonify({
+                'sucesso': False,
+                'erro': f'Documentos obrigatórios faltantes: {", ".join(faltantes)}'
+            }), 400
+        
+        # Verifica fotos obrigatórias
+        fotos_obrigatorias = ['foto_aluno', 'foto_responsavel1']
+        fotos_faltantes = [foto for foto in fotos_obrigatorias if foto not in arquivos_existentes]
+        
+        if fotos_faltantes:
+            print(f"⚠️ Fotos faltantes: {fotos_faltantes}")
+            return jsonify({
+                'sucesso': False,
+                'erro': f'Fotos obrigatórias faltantes: {", ".join(fotos_faltantes)}'
+            }), 400
+        
+        # Se tiver terceiros, valida documentos deles
+        if aluno.get('terceiros') and len(aluno['terceiros']) > 0:
+            if 'terceiro_rg' not in arquivos_existentes:
+                return jsonify({
+                    'sucesso': False,
+                    'erro': 'Documento do terceiro (RG) é obrigatório'
+                }), 400
+        
+        # Se tiver transporte, valida documentos
+        if aluno.get('transporte'):
+            docs_transporte = ['transporte_rg', 'transporte_cpf', 'transporte_cnh']
+            docs_faltantes = [doc for doc in docs_transporte if doc not in arquivos_existentes]
+            if docs_faltantes:
+                return jsonify({
+                    'sucesso': False,
+                    'erro': f'Documentos do transporte faltantes: {", ".join(docs_faltantes)}'
+                }), 400
+        
+        # Atualiza status para ativo
+        result = db.alunos.update_one(
+            {'_id': aluno['_id']},
+            {
+                '$set': {
+                    'status': 'ativo',
+                    'finalizado_em': datetime.now(),
+                    'data_cadastro': datetime.now(),
+                    'upload_completo': True
+                }
+            }
+        )
+        
+        print(f"✅ Cadastro finalizado com sucesso! Nº: {aluno['num_inscricao']}")
+        print("="*60)
+        
+        return jsonify({
+            'sucesso': True,
+            'mensagem': 'Cadastro finalizado com sucesso!',
+            'num_inscricao': aluno['num_inscricao'],
+            'id': str(aluno['_id'])
+        })
+        
+    except Exception as e:
+        print(f"\n❌ ERRO ao finalizar cadastro: {str(e)}")
+        traceback.print_exc()
+        return jsonify({
+            'sucesso': False,
+            'erro': str(e)
+        }), 500
+
+
 @alunos_bp.route('/api/alunos/cadastrar', methods=['POST'])
 def cadastrar_aluno():
-    """Endpoint para cadastrar um novo aluno"""
+    """Endpoint para cadastrar um novo aluno (método tradicional)"""
     try:
         print("\n" + "="*60)
         print("📥 RECEBENDO REQUISIÇÃO DE CADASTRO")
