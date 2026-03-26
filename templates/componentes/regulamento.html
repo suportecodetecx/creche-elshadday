@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Regulamento Interno - {{ unidade.nome }}</title>
     <style>
-        /* CONFIGURAÇÃO OTIMIZADA PARA A4 */
+        /* CONFIGURAÇÃO OTIMIZADA PARA A4 - MARGEM SUPERIOR AUMENTADA */
         @page {
             size: A4;
-            margin: 1.5cm 1.5cm 1.5cm 1.5cm;
+            margin: 2cm 1.5cm 1.5cm 1.5cm;
         }
 
         * {
@@ -68,35 +68,72 @@
             }
         }
 
-        /* CABEÇALHO */
+        /* CABEÇALHO COM IMAGENS LADO A LADO */
         .cabecalho {
             text-align: center;
-            margin-bottom: 10px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
         }
-
-        .cabecalho h1 {
+        
+        .header-topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .header-imagens {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .header-imagens img {
+            max-height: 75px;
+            width: auto;
+            object-fit: contain;
+        }
+        
+        .logo-creche {
+            max-height: 75px;
+        }
+        
+        .logo-mogi {
+            max-height: 60px;
+        }
+        
+        .header-textos {
+            text-align: right;
+            flex: 1;
+        }
+        
+        .header-textos h1 {
             font-size: 22px;
             font-weight: bold;
             text-transform: uppercase;
             margin: 0;
             letter-spacing: 1px;
         }
-
-        .cabecalho h2 {
+        
+        .header-textos h2 {
             font-size: 18px;
             font-weight: bold;
             margin: 3px 0;
             text-transform: uppercase;
         }
-
-        .cabecalho h3 {
+        
+        .header-textos h3 {
             font-size: 14px;
             font-weight: normal;
             margin: 2px 0;
             font-style: italic;
         }
-
-        .cabecalho p {
+        
+        .header-textos p {
             font-size: 11px;
             margin: 2px 0;
         }
@@ -160,7 +197,7 @@
             margin: 20px 0;
             font-size: 12px;
             line-height: 1.5;
-            background: #F0F8FF;  /* Azul claro */
+            background: #F0F8FF;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(52, 152, 219, 0.2);
         }
@@ -301,12 +338,20 @@
         </div>
 
         <!-- ===== PÁGINA 1 ===== -->
-        <!-- CABEÇALHO -->
+        <!-- CABEÇALHO COM IMAGENS LADO A LADO -->
         <div class="cabecalho">
-            <h1>CRECHE EL SHADDAY</h1>
-            <h2>REGULAMENTO INTERNO</h2>
-            <h3 id="subtitulo-unidade">{{ unidade.tipo }}</h3>
-            <p>CNPJ: {{ unidade.cnpj }} | Autorização de Funcionamento nº 000/2026</p>
+            <div class="header-topo">
+                <div class="header-imagens">
+                    <img src="/static/img/logo-creche.png" alt="Creche El Shadday" class="logo-creche" onerror="this.style.display='none'">
+                    <img src="/static/img/Mogi.jpg" alt="Mogi das Cruzes" class="logo-mogi" onerror="this.style.display='none'">
+                </div>
+                <div class="header-textos">
+                    <h1>CRECHE EL SHADDAY</h1>
+                    <h2>REGULAMENTO INTERNO</h2>
+                    <h3 id="subtitulo-unidade">{{ unidade.tipo }}</h3>
+                    <p>CNPJ: {{ unidade.cnpj }} | Autorização de Funcionamento nº 000/2026</p>
+                </div>
+            </div>
         </div>
         <hr>
 
