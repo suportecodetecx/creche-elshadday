@@ -96,16 +96,306 @@ def save_uploaded_file(file, subfolder, campo):
             return None
     return None
 
+
+# ============================================
+# NOVOS ENDPOINTS PARA GRIDFS (UPLOAD DIRETO)
+# ============================================
+
+@alunos_bp.route('/api/upload-arquivo', methods=['POST'])
+def upload_arquivo():
+    """
+    Endpoint para upload direto de arquivo para GridFS
+    Retorna o file_id para ser salvo no documento do aluno
+    """
+    try:
+        print("\n📤 UPLOAD DIRETO PARA GRIDFS")
+        
+        campo = request.form.get('campo')
+        if not campo:
+            return jsonify({'sucesso': False, 'erro': 'Campo não informado'}), 400
+        
+        if 'arquivo' not in request.files:
+            return jsonify({'sucesso': False, 'erro': 'Nenhum arquivo enviado'}), 400
+        
+        file = request.files['arquivo']
+        if not file or not file.filename:
+            return jsonify({'sucesso': False, 'erro': 'Arquivo inválido'}), 400
+        
+        from database.mongo import salvar_arquivo_gridfs
+        
+        # Salva no GridFS
+        file_id = salvar_arquivo_gridfs(file, file.filename, campo)
+        
+        if not file_id:
+            return jsonify({'sucesso': False, 'erro': 'Erro ao salvar arquivo'}), 500
+        
+        print(f"✅ Upload concluído! ID: {file_id}")
+        
+        return jsonify({
+            'sucesso': True,
+            'file_id': file_id,
+            'campo': campo,
+            'nome_original': file.filename
+        })
+        
+    except Exception as e:
+        print(f"❌ Erro no upload: {e}")
+        traceback.print_exc()
+        return jsonify({'sucesso': False, 'erro': str(e)}), 500
+
+
+@alunos_bp.route('/api/visualizar-gridfs/<file_id>', methods=['GET'])
+def visualizar_gridfs(file_id):
+    """Visualiza um arquivo salvo no GridFS"""
+    try:
+        from database.mongo import get_arquivo_gridfs
+        
+        arquivo = get_arquivo_gridfs(file_id)
+        
+        if not arquivo:
+            return jsonify({'erro': 'Arquivo não encontrado'}), 404
+        
+        # Determina o tipo MIME
+        metadata = arquivo.metadata or {}
+        content_type = metadata.get('content_type', 'application/octet-stream')
+        
+        # Se for PDF ou imagem, define MIME correto
+        if arquivo.filename:
+            ext = arquivo.filename.rsplit('.', 1)[-1].lower() if '.' in arquivo.filename else ''
+            if ext in ['jpg', 'jpeg']:
+                content_type = 'image/jpeg'
+            elif ext == 'png':
+                content_type = 'image/png'
+            elif ext == 'pdf':
+                content_type = 'application/pdf'
+        
+        return send_file(
+            BytesIO(arquivo.read()),
+            mimetype=content_type,
+            as_attachment=False,
+            download_name=arquivo.filename
+        )
+        
+    except Exception as e:
+        print(f"❌ Erro ao visualizar arquivo: {e}")
+        traceback.print_exc()
+        return jsonify({'erro': str(e)}), 500
+
+
+# ============================================
+# NOVO ENDPOINT DE CADASTRO VIA JSON
+# ============================================
+
+@alunos_bp.route('/api/alunos/cadastrar-json', methods=['POST'])
+def cadastrar_aluno_json():
+    """Endpoint para cadastrar um novo aluno (recebe JSON com IDs dos arquivos do GridFS)"""
+    try:
+        print("\n" + "="*60)
+        print("📥 RECEBENDO REQUISIÇÃO DE CADASTRO (JSON - GRIDFS)")
+        print("="*60)
+        
+        # Recebe JSON, não form-data
+        dados = request.get_json()
+        
+        if not dados:
+            return jsonify({'sucesso': False, 'erro': 'Dados não enviados'}), 400
+        
+        # Extrai os arquivos_ids
+        arquivos_ids = dados.pop('arquivos_ids', {})
+        
+        print(f"📦 Dados recebidos:")
+        print(f"   📝 Campos de texto: {len(dados)}")
+        print(f"   📎 IDs de arquivos: {len(arquivos_ids)}")
+        
+        # ===== GERAR NÚMERO DE INSCRIÇÃO =====
+        from database.mongo import db
+        from datetime import datetime
+        
+        ano = datetime.now().year
+        num_inscricao = dados.get('num_inscricao')
+        
+        if not num_inscricao:
+            num_inscricao = _gerar_novo_numero_inscricao(db, ano)
+            print(f"🆕 Número gerado: {num_inscricao}")
+        else:
+            print(f"📌 Número recebido: {num_inscricao}")
+        
+        # ===== PREPARA O DOCUMENTO DO ALUNO =====
+        aluno = {
+            'num_inscricao': num_inscricao,
+            'status': 'ativo',
+            'data_cadastro': datetime.now(),
+            'dados_pessoais': {
+                'nome': dados.get('nome', ''),
+                'data_nasc': dados.get('data_nasc', ''),
+                'sexo': dados.get('sexo', ''),
+                'raca': dados.get('raca', ''),
+                'naturalidade': dados.get('naturalidade', ''),
+                'nacionalidade': dados.get('nacionalidade', 'Brasileira'),
+                'ra': dados.get('ra', '')
+            },
+            'endereco': {
+                'cep': dados.get('cep', ''),
+                'logradouro': dados.get('endereco', ''),
+                'numero': dados.get('numero', ''),
+                'complemento': dados.get('complemento', ''),
+                'bairro': dados.get('bairro', ''),
+                'cidade': dados.get('cidade', ''),
+                'uf': dados.get('uf', '')
+            },
+            'turma': {
+                'unidade': dados.get('unidade', ''),
+                'turma': dados.get('turma', ''),
+                'periodo': dados.get('periodo', ''),
+                'ano_letivo': dados.get('ano_letivo', '2026')
+            },
+            'saude': {
+                'tipo_sanguineo': dados.get('tipo_sanguineo', ''),
+                'plano_saude': dados.get('plano_saude', ''),
+                'alergias': dados.get('alergias', ''),
+                'medicamentos': dados.get('medicamentos', ''),
+                'restricoes': dados.get('restricoes', ''),
+                'pediatra': dados.get('pediatra', ''),
+                'contato_pediatra': dados.get('contato_pediatra', ''),
+                'deficiencia': dados.get('deficiencia', 'nao'),
+                'deficiencia_desc': dados.get('deficiencia_desc', '')
+            },
+            'responsaveis': [],
+            'arquivos_ids': arquivos_ids,  # IDs dos arquivos no GridFS
+            'usando_gridfs': True
+        }
+        
+        # ===== PROCESSA RESPONSÁVEL PRINCIPAL =====
+        responsavel_principal = {
+            'nome': dados.get('responsavel1_nome', ''),
+            'parentesco': dados.get('responsavel1_parentesco', ''),
+            'telefone': dados.get('responsavel1_telefone', ''),
+            'telefone_contato': dados.get('responsavel1_telefone_contato', ''),
+            'cpf': dados.get('responsavel1_cpf', ''),
+            'rg': dados.get('responsavel1_rg', ''),
+            'email': dados.get('responsavel1_email', ''),
+            'tipo': 'principal'
+        }
+        aluno['responsaveis'].append(responsavel_principal)
+        
+        # Processa responsáveis adicionais
+        for i in range(2, 6):
+            nome = dados.get(f'responsavel{i}_nome', '')
+            if nome:
+                resp_adicional = {
+                    'nome': nome,
+                    'parentesco': dados.get(f'responsavel{i}_parentesco', ''),
+                    'telefone': dados.get(f'responsavel{i}_telefone', ''),
+                    'telefone_contato': dados.get(f'responsavel{i}_telefone_contato', ''),
+                    'cpf': dados.get(f'responsavel{i}_cpf', ''),
+                    'rg': dados.get(f'responsavel{i}_rg', ''),
+                    'email': dados.get(f'responsavel{i}_email', ''),
+                    'tipo': 'adicional'
+                }
+                aluno['responsaveis'].append(resp_adicional)
+        
+        # Processa terceiros
+        terceiros = []
+        for i in range(1, 4):
+            nome = dados.get(f'terceiro{i}_nome', '')
+            if nome:
+                terceiro = {
+                    'nome': nome,
+                    'telefone': dados.get(f'terceiro{i}_telefone', ''),
+                    'cpf': dados.get(f'terceiro{i}_cpf', ''),
+                    'rg': dados.get(f'terceiro{i}_rg', ''),
+                    'email': dados.get(f'terceiro{i}_email', '')
+                }
+                terceiros.append(terceiro)
+        
+        if terceiros:
+            aluno['terceiros'] = terceiros
+        
+        # Processa transporte
+        if dados.get('utiliza_transporte') == '1':
+            aluno['transporte'] = {
+                'nome': dados.get('transporte_nome', ''),
+                'cnpj': dados.get('transporte_cnpj', ''),
+                'cpf': dados.get('transporte_cpf', ''),
+                'rg': dados.get('transporte_rg', ''),
+                'telefone': dados.get('transporte_telefone', ''),
+                'email': dados.get('transporte_email', '')
+            }
+        
+        # Salva no banco
+        result = db.alunos.insert_one(aluno)
+        
+        print(f"✅ Cadastro realizado! Nº: {num_inscricao}")
+        print(f"📎 IDs dos arquivos: {list(arquivos_ids.keys())}")
+        print("="*60)
+        
+        return jsonify({
+            'sucesso': True,
+            'mensagem': 'Aluno cadastrado com sucesso!',
+            'num_inscricao': num_inscricao,
+            'id': str(result.inserted_id)
+        })
+        
+    except Exception as e:
+        print(f"\n❌ ERRO: {str(e)}")
+        traceback.print_exc()
+        return jsonify({'sucesso': False, 'erro': str(e)}), 500
+
+
+# ============================================
+# ENDPOINT DE VISUALIZAÇÃO VIA GRIDFS
+# ============================================
+
+@alunos_bp.route('/api/alunos/arquivo/<file_id>', methods=['GET'])
+def visualizar_arquivo_gridfs(file_id):
+    """Visualiza um arquivo salvo no GridFS pelo ID"""
+    try:
+        from database.mongo import get_arquivo_gridfs
+        
+        arquivo = get_arquivo_gridfs(file_id)
+        
+        if not arquivo:
+            return jsonify({'erro': 'Arquivo não encontrado'}), 404
+        
+        # Determina o tipo MIME
+        ext = arquivo.filename.rsplit('.', 1)[-1].lower() if '.' in arquivo.filename else ''
+        if ext in ['jpg', 'jpeg']:
+            mime_type = 'image/jpeg'
+        elif ext == 'png':
+            mime_type = 'image/png'
+        elif ext == 'pdf':
+            mime_type = 'application/pdf'
+        else:
+            mime_type = 'application/octet-stream'
+        
+        return send_file(
+            BytesIO(arquivo.read()),
+            mimetype=mime_type,
+            as_attachment=False,
+            download_name=arquivo.filename
+        )
+        
+    except Exception as e:
+        print(f"❌ Erro ao visualizar arquivo: {e}")
+        traceback.print_exc()
+        return jsonify({'erro': str(e)}), 500
+
+
 @alunos_bp.route('/api/visualizar/<campo>/<num_inscricao>', methods=['GET'])
 def visualizar_arquivo(campo, num_inscricao):
-    """Visualiza um arquivo salvo no MongoDB (Base64)"""
+    """Visualiza um arquivo salvo no MongoDB (Base64) - LEGADO"""
     try:
         # Busca o aluno
         aluno = aluno_service.get_aluno_by_inscricao(num_inscricao)
         if not aluno:
             return jsonify({'erro': 'Aluno não encontrado'}), 404
         
-        # Busca o arquivo pelo campo
+        # Verifica se usa GridFS
+        if aluno.get('usando_gridfs') and aluno.get('arquivos_ids', {}).get(campo):
+            file_id = aluno['arquivos_ids'][campo]
+            return redirect(f'/api/alunos/arquivo/{file_id}')
+        
+        # Busca o arquivo pelo campo no modo legado
         arquivo = None
         for arq in aluno.get('arquivos', []):
             if arq.get('campo') == campo:
@@ -119,7 +409,6 @@ def visualizar_arquivo(campo, num_inscricao):
         if arquivo.get('dados'):
             dados_bytes = base64.b64decode(arquivo['dados'])
             
-            # Define o tipo MIME corretamente
             if arquivo.get('tipo') in ['jpg', 'jpeg']:
                 mime_type = 'image/jpeg'
             elif arquivo.get('tipo') == 'png':
@@ -138,7 +427,6 @@ def visualizar_arquivo(campo, num_inscricao):
                 download_name=arquivo.get('nome', 'arquivo')
             )
         
-        # Fallback para caminho
         if arquivo.get('caminho'):
             return redirect(arquivo['caminho'])
         
@@ -149,17 +437,21 @@ def visualizar_arquivo(campo, num_inscricao):
         traceback.print_exc()
         return jsonify({'erro': str(e)}), 500
 
+
+# ============================================
+# RESTANTE DO CÓDIGO (SEM ALTERAÇÕES)
+# ============================================
+
 @alunos_bp.route('/api/alunos/proximo-numero', methods=['GET'])
 def proximo_numero():
-    """Retorna o próximo número de inscrição APENAS PARA VISUALIZAÇÃO (não incrementa o contador)"""
+    """Retorna o próximo número de inscrição APENAS PARA VISUALIZAÇÃO"""
     try:
-        print("🔍 Buscando próximo número de inscrição (pré-visualização)...")
+        print("🔍 Buscando próximo número de inscrição...")
         from database.mongo import db
         from datetime import datetime
         
         ano = datetime.now().year
         
-        # Busca o último aluno cadastrado no ano
         ultimo_aluno = db.alunos.find_one(
             {'num_inscricao': {'$regex': f'-{ano}$'}},
             sort=[('num_inscricao', -1)]
@@ -170,22 +462,19 @@ def proximo_numero():
             valor = int(partes[0]) + 1
             numero = f"{str(valor).zfill(3)}-{ano}"
         else:
-            # Primeiro aluno do ano
             numero = f"001-{ano}"
         
-        print(f"📌 Próximo número (pré-visualização): {numero}")
+        print(f"📌 Próximo número: {numero}")
         
         return jsonify({
             'sucesso': True,
             'numero': numero,
-            'preview': True  # Indica que é apenas pré-visualização
+            'preview': True
         })
         
     except Exception as e:
         print(f"❌ Erro ao buscar próximo número: {str(e)}")
         traceback.print_exc()
-        
-        # Fallback
         from datetime import datetime
         numero_temp = f"001-{datetime.now().year}"
         return jsonify({
@@ -196,9 +485,8 @@ def proximo_numero():
 
 
 def _gerar_novo_numero_inscricao(db, ano):
-    """Função auxiliar para gerar um novo número de inscrição de forma atômica (APENAS NO SALVAMENTO)"""
+    """Função auxiliar para gerar um novo número de inscrição de forma atômica"""
     try:
-        # Usa atomic operation para incrementar o contador
         contador = db.contadores.find_one_and_update(
             {'nome': 'num_inscricao', 'ano': ano},
             {'$inc': {'valor': 1}},
@@ -206,7 +494,6 @@ def _gerar_novo_numero_inscricao(db, ano):
             return_document=True
         )
         
-        # Se o contador foi criado agora, valor inicial é 1
         valor_atual = contador.get('valor', 1)
         numero = f"{str(valor_atual).zfill(3)}-{ano}"
         
@@ -215,7 +502,6 @@ def _gerar_novo_numero_inscricao(db, ano):
         
     except Exception as e:
         print(f"   ⚠️ Erro ao atualizar contador: {e}")
-        # Fallback: busca o último número
         ultimo_aluno = db.alunos.find_one(
             {'num_inscricao': {'$regex': f'-{ano}$'}},
             sort=[('num_inscricao', -1)]
@@ -231,452 +517,44 @@ def _gerar_novo_numero_inscricao(db, ano):
         return numero
 
 
-# ============================================
-# NOVO ENDPOINT 1: CRIAR RASCUNHO DO ALUNO
-# ============================================
-@alunos_bp.route('/api/alunos/criar-esboco', methods=['POST'])
-def criar_esboco_aluno():
-    """
-    ETAPA 1: Cria um rascunho do aluno apenas com dados textuais
-    Retorna um ID temporário para anexar os documentos depois
-    """
-    try:
-        print("\n" + "="*60)
-        print("📝 ETAPA 1: CRIANDO RASCUNHO DO ALUNO")
-        print("="*60)
-        
-        from database.mongo import db
-        from datetime import datetime
-        
-        print("\n📦 DADOS RECEBIDOS:")
-        for key, value in request.form.items():
-            print(f"   📝 {key}: {value[:50] if value else 'vazio'}")
-        
-        # Gera número de inscrição
-        ano = datetime.now().year
-        num_inscricao = request.form.get('num_inscricao')
-        
-        if not num_inscricao:
-            # Gera um número para o rascunho
-            num_inscricao = _gerar_novo_numero_inscricao(db, ano)
-            print(f"🆕 Número gerado: {num_inscricao}")
-        else:
-            print(f"📌 Número fornecido: {num_inscricao}")
-        
-        # Prepara os dados do aluno (apenas textuais, sem arquivos)
-        dados_aluno = {
-            'num_inscricao': num_inscricao,
-            'status': 'rascunho',
-            'criado_em': datetime.now(),
-            'ultima_atualizacao': datetime.now(),
-            'arquivos': [],
-            'upload_completo': False,
-            'dados_pessoais': {
-                'nome': request.form.get('nome', ''),
-                'data_nasc': request.form.get('data_nasc', ''),
-                'sexo': request.form.get('sexo', ''),
-                'raca': request.form.get('raca', ''),
-                'naturalidade': request.form.get('naturalidade', ''),
-                'nacionalidade': request.form.get('nacionalidade', 'Brasileira'),
-                'ra': request.form.get('ra', '')
-            },
-            'endereco': {
-                'cep': request.form.get('cep', ''),
-                'logradouro': request.form.get('endereco', ''),
-                'numero': request.form.get('numero', ''),
-                'complemento': request.form.get('complemento', ''),
-                'bairro': request.form.get('bairro', ''),
-                'cidade': request.form.get('cidade', ''),
-                'uf': request.form.get('uf', '')
-            },
-            'turma': {
-                'unidade': request.form.get('unidade', ''),
-                'turma': request.form.get('turma', ''),
-                'periodo': request.form.get('periodo', ''),
-                'ano_letivo': request.form.get('ano_letivo', '2026')
-            },
-            'saude': {
-                'tipo_sanguineo': request.form.get('tipo_sanguineo', ''),
-                'plano_saude': request.form.get('plano_saude', ''),
-                'alergias': request.form.get('alergias', ''),
-                'medicamentos': request.form.get('medicamentos', ''),
-                'restricoes': request.form.get('restricoes', ''),
-                'pediatra': request.form.get('pediatra', ''),
-                'contato_pediatra': request.form.get('contato_pediatra', ''),
-                'deficiencia': request.form.get('deficiencia', 'nao'),
-                'deficiencia_desc': request.form.get('deficiencia_desc', '')
-            },
-            'responsaveis': []
-        }
-        
-        # Processa responsável principal
-        responsavel_principal = {
-            'nome': request.form.get('responsavel1_nome', ''),
-            'parentesco': request.form.get('responsavel1_parentesco', ''),
-            'telefone': request.form.get('responsavel1_telefone', ''),
-            'telefone_contato': request.form.get('responsavel1_telefone_contato', ''),
-            'cpf': request.form.get('responsavel1_cpf', ''),
-            'rg': request.form.get('responsavel1_rg', ''),
-            'email': request.form.get('responsavel1_email', ''),
-            'tipo': 'principal'
-        }
-        dados_aluno['responsaveis'].append(responsavel_principal)
-        
-        # Processa responsáveis adicionais
-        for i in range(2, 6):
-            nome = request.form.get(f'responsavel{i}_nome', '')
-            if nome:
-                resp_adicional = {
-                    'nome': nome,
-                    'parentesco': request.form.get(f'responsavel{i}_parentesco', ''),
-                    'telefone': request.form.get(f'responsavel{i}_telefone', ''),
-                    'telefone_contato': request.form.get(f'responsavel{i}_telefone_contato', ''),
-                    'cpf': request.form.get(f'responsavel{i}_cpf', ''),
-                    'rg': request.form.get(f'responsavel{i}_rg', ''),
-                    'email': request.form.get(f'responsavel{i}_email', ''),
-                    'tipo': 'adicional'
-                }
-                dados_aluno['responsaveis'].append(resp_adicional)
-        
-        # Processa terceiros
-        terceiros = []
-        for i in range(1, 4):
-            nome = request.form.get(f'terceiro{i}_nome', '')
-            if nome:
-                terceiro = {
-                    'nome': nome,
-                    'telefone': request.form.get(f'terceiro{i}_telefone', ''),
-                    'cpf': request.form.get(f'terceiro{i}_cpf', ''),
-                    'rg': request.form.get(f'terceiro{i}_rg', ''),
-                    'email': request.form.get(f'terceiro{i}_email', '')
-                }
-                terceiros.append(terceiro)
-        
-        if terceiros:
-            dados_aluno['terceiros'] = terceiros
-        
-        # Processa transporte
-        if request.form.get('utiliza_transporte') == '1':
-            dados_aluno['transporte'] = {
-                'nome': request.form.get('transporte_nome', ''),
-                'cnpj': request.form.get('transporte_cnpj', ''),
-                'cpf': request.form.get('transporte_cpf', ''),
-                'rg': request.form.get('transporte_rg', ''),
-                'telefone': request.form.get('transporte_telefone', ''),
-                'email': request.form.get('transporte_email', '')
-            }
-        
-        # Salva no banco
-        result = db.alunos.insert_one(dados_aluno)
-        aluno_id = str(result.inserted_id)
-        
-        print(f"✅ Rascunho criado com ID: {aluno_id}, Nº: {num_inscricao}")
-        print("="*60)
-        
-        return jsonify({
-            'sucesso': True,
-            'id': aluno_id,
-            'num_inscricao': num_inscricao,
-            'mensagem': 'Rascunho criado com sucesso'
-        })
-        
-    except Exception as e:
-        print(f"\n❌ ERRO ao criar rascunho: {str(e)}")
-        traceback.print_exc()
-        return jsonify({
-            'sucesso': False,
-            'erro': str(e)
-        }), 500
-
-
-# ============================================
-# NOVO ENDPOINT 2: ANEXAR DOCUMENTOS EM LOTES
-# ============================================
-@alunos_bp.route('/api/alunos/anexar-documentos', methods=['POST'])
-def anexar_documentos():
-    """
-    ETAPA 2: Anexa documentos em lotes ao rascunho do aluno
-    Recebe id_aluno e os arquivos
-    """
-    try:
-        print("\n" + "="*60)
-        print("📎 ETAPA 2: ANEXANDO DOCUMENTOS EM LOTES")
-        print("="*60)
-        
-        from database.mongo import db
-        from bson import ObjectId
-        from datetime import datetime
-        
-        id_aluno = request.form.get('id_aluno')
-        num_inscricao = request.form.get('num_inscricao')
-        
-        if not id_aluno and not num_inscricao:
-            return jsonify({
-                'sucesso': False,
-                'erro': 'ID do aluno ou número de inscrição é obrigatório'
-            }), 400
-        
-        print(f"📌 Processando para aluno ID: {id_aluno}, Nº: {num_inscricao}")
-        
-        # Busca o aluno
-        aluno = None
-        if id_aluno:
-            try:
-                aluno = db.alunos.find_one({'_id': ObjectId(id_aluno)})
-            except:
-                pass
-        
-        if not aluno and num_inscricao:
-            aluno = db.alunos.find_one({'num_inscricao': num_inscricao})
-        
-        if not aluno:
-            return jsonify({
-                'sucesso': False,
-                'erro': 'Aluno não encontrado'
-            }), 404
-        
-        print(f"✅ Aluno encontrado: {aluno.get('num_inscricao')}")
-        
-        # Processa os arquivos recebidos neste lote
-        novos_arquivos = []
-        
-        for key in request.files.keys():
-            file = request.files[key]
-            if file and file.filename:
-                print(f"\n📄 Processando arquivo: {key} - {file.filename}")
-                
-                # Salva o arquivo
-                info = save_uploaded_file(file, 'documentos', key)
-                if info:
-                    novos_arquivos.append(info)
-                    print(f"   ✅ Arquivo processado: {info['nome']} ({info['tamanho']} bytes)")
-        
-        if not novos_arquivos:
-            print("⚠️ Nenhum arquivo recebido neste lote")
-            return jsonify({
-                'sucesso': True,
-                'arquivos_recebidos': 0,
-                'mensagem': 'Nenhum arquivo para anexar'
-            })
-        
-        # Atualiza o aluno com os novos arquivos
-        arquivos_existentes = aluno.get('arquivos', [])
-        arquivos_atualizados = arquivos_existentes + novos_arquivos
-        
-        result = db.alunos.update_one(
-            {'_id': aluno['_id']},
-            {
-                '$set': {
-                    'arquivos': arquivos_atualizados,
-                    'ultima_atualizacao': datetime.now()
-                }
-            }
-        )
-        
-        print(f"✅ {len(novos_arquivos)} arquivos anexados com sucesso!")
-        print(f"📊 Total de arquivos agora: {len(arquivos_atualizados)}")
-        print("="*60)
-        
-        return jsonify({
-            'sucesso': True,
-            'arquivos_recebidos': len(novos_arquivos),
-            'total_arquivos': len(arquivos_atualizados),
-            'mensagem': f'{len(novos_arquivos)} arquivos anexados com sucesso'
-        })
-        
-    except Exception as e:
-        print(f"\n❌ ERRO ao anexar documentos: {str(e)}")
-        traceback.print_exc()
-        return jsonify({
-            'sucesso': False,
-            'erro': str(e)
-        }), 500
-
-
-# ============================================
-# NOVO ENDPOINT 3: FINALIZAR CADASTRO
-# ============================================
-@alunos_bp.route('/api/alunos/finalizar-cadastro', methods=['POST'])
-def finalizar_cadastro():
-    """
-    ETAPA 3: Finaliza o cadastro, valida documentos e marca como ativo
-    """
-    try:
-        print("\n" + "="*60)
-        print("✅ ETAPA 3: FINALIZANDO CADASTRO")
-        print("="*60)
-        
-        from database.mongo import db
-        from bson import ObjectId
-        from datetime import datetime
-        
-        id_aluno = request.form.get('id_aluno')
-        num_inscricao = request.form.get('num_inscricao')
-        finalizar = request.form.get('finalizar') == 'true'
-        
-        if not finalizar:
-            return jsonify({
-                'sucesso': False,
-                'erro': 'Parâmetro finalizar é obrigatório'
-            }), 400
-        
-        if not id_aluno and not num_inscricao:
-            return jsonify({
-                'sucesso': False,
-                'erro': 'ID do aluno ou número de inscrição é obrigatório'
-            }), 400
-        
-        # Busca o aluno
-        aluno = None
-        if id_aluno:
-            try:
-                aluno = db.alunos.find_one({'_id': ObjectId(id_aluno)})
-            except:
-                pass
-        
-        if not aluno and num_inscricao:
-            aluno = db.alunos.find_one({'num_inscricao': num_inscricao})
-        
-        if not aluno:
-            return jsonify({
-                'sucesso': False,
-                'erro': 'Aluno não encontrado'
-            }), 404
-        
-        print(f"📌 Finalizando cadastro: {aluno.get('num_inscricao')}")
-        
-        # Valida documentos obrigatórios
-        documentos_obrigatorios = [
-            'aluno_certidao', 'aluno_rg', 'aluno_vacinacao',
-            'resp_rg', 'resp_cpf', 'resp_comprovante'
-        ]
-        
-        arquivos_existentes = [a.get('campo') for a in aluno.get('arquivos', [])]
-        faltantes = [doc for doc in documentos_obrigatorios if doc not in arquivos_existentes]
-        
-        if faltantes:
-            print(f"⚠️ Documentos faltantes: {faltantes}")
-            return jsonify({
-                'sucesso': False,
-                'erro': f'Documentos obrigatórios faltantes: {", ".join(faltantes)}'
-            }), 400
-        
-        # Verifica fotos obrigatórias
-        fotos_obrigatorias = ['foto_aluno', 'foto_responsavel1']
-        fotos_faltantes = [foto for foto in fotos_obrigatorias if foto not in arquivos_existentes]
-        
-        if fotos_faltantes:
-            print(f"⚠️ Fotos faltantes: {fotos_faltantes}")
-            return jsonify({
-                'sucesso': False,
-                'erro': f'Fotos obrigatórias faltantes: {", ".join(fotos_faltantes)}'
-            }), 400
-        
-        # Se tiver terceiros, valida documentos deles
-        if aluno.get('terceiros') and len(aluno['terceiros']) > 0:
-            if 'terceiro_rg' not in arquivos_existentes:
-                return jsonify({
-                    'sucesso': False,
-                    'erro': 'Documento do terceiro (RG) é obrigatório'
-                }), 400
-        
-        # Se tiver transporte, valida documentos
-        if aluno.get('transporte'):
-            docs_transporte = ['transporte_rg', 'transporte_cpf', 'transporte_cnh']
-            docs_faltantes = [doc for doc in docs_transporte if doc not in arquivos_existentes]
-            if docs_faltantes:
-                return jsonify({
-                    'sucesso': False,
-                    'erro': f'Documentos do transporte faltantes: {", ".join(docs_faltantes)}'
-                }), 400
-        
-        # Atualiza status para ativo
-        result = db.alunos.update_one(
-            {'_id': aluno['_id']},
-            {
-                '$set': {
-                    'status': 'ativo',
-                    'finalizado_em': datetime.now(),
-                    'data_cadastro': datetime.now(),
-                    'upload_completo': True
-                }
-            }
-        )
-        
-        print(f"✅ Cadastro finalizado com sucesso! Nº: {aluno['num_inscricao']}")
-        print("="*60)
-        
-        return jsonify({
-            'sucesso': True,
-            'mensagem': 'Cadastro finalizado com sucesso!',
-            'num_inscricao': aluno['num_inscricao'],
-            'id': str(aluno['_id'])
-        })
-        
-    except Exception as e:
-        print(f"\n❌ ERRO ao finalizar cadastro: {str(e)}")
-        traceback.print_exc()
-        return jsonify({
-            'sucesso': False,
-            'erro': str(e)
-        }), 500
-
-
 @alunos_bp.route('/api/alunos/cadastrar', methods=['POST'])
 def cadastrar_aluno():
-    """Endpoint para cadastrar um novo aluno (método tradicional)"""
+    """Endpoint para cadastrar um novo aluno (método tradicional - mantido para compatibilidade)"""
     try:
         print("\n" + "="*60)
-        print("📥 RECEBENDO REQUISIÇÃO DE CADASTRO")
+        print("📥 RECEBENDO REQUISIÇÃO DE CADASTRO (TRADICIONAL)")
         print("="*60)
         
         print("\n🔍 ARQUIVOS RECEBIDOS NO REQUEST:")
-        arquivos_recebidos = []
         for key in request.files.keys():
             file = request.files[key]
             if file and file.filename:
-                arquivos_recebidos.append({
-                    'campo': key,
-                    'nome': file.filename,
-                    'tipo': file.content_type
-                })
-                print(f"   📁 {key}: {file.filename} ({file.content_type})")
+                print(f"   📁 {key}: {file.filename}")
         
         print(f"\n📦 DADOS DO FORMULÁRIO:")
         for key, value in request.form.items():
             print(f"   📝 {key}: {value[:30] if value else 'vazio'}")
         
-        # ===== GERAR NÚMERO DE INSCRIÇÃO DEFINITIVO APENAS NO SALVAMENTO =====
         from database.mongo import db
         from datetime import datetime
         
         ano = datetime.now().year
-        
-        # Verifica se o número já foi enviado pelo frontend
         num_inscricao_frontend = request.form.get('num_inscricao')
         
-        # Se veio um número do frontend, verifica se é um novo cadastro ou edição
         if num_inscricao_frontend and num_inscricao_frontend != '':
-            # Verifica se já existe um aluno com esse número
             aluno_existente = aluno_service.get_aluno_by_inscricao(num_inscricao_frontend)
             
             if aluno_existente:
-                # É uma atualização, não gera novo número (não deveria cair aqui)
                 num_inscricao = num_inscricao_frontend
                 print(f"📝 Modo atualização - mantendo número: {num_inscricao}")
             else:
-                # É um novo cadastro com número já gerado (pré-visualização)
-                # Verifica se o número já está em uso (double-check)
                 if aluno_service.get_aluno_by_inscricao(num_inscricao_frontend):
-                    # Número já existe, precisa gerar outro
                     print(f"⚠️ Número {num_inscricao_frontend} já existe, gerando novo...")
                     num_inscricao = _gerar_novo_numero_inscricao(db, ano)
                 else:
-                    # Usa o número que veio do frontend
                     num_inscricao = num_inscricao_frontend
                     print(f"✅ Usando número pré-gerado: {num_inscricao}")
                     
-                    # Atualiza o contador para refletir este número usado
                     try:
                         partes = num_inscricao.split('-')
                         valor = int(partes[0])
@@ -689,14 +567,12 @@ def cadastrar_aluno():
                     except Exception as e:
                         print(f"   ⚠️ Erro ao atualizar contador: {e}")
         else:
-            # Novo cadastro sem número, gera um novo
             num_inscricao = _gerar_novo_numero_inscricao(db, ano)
             print(f"🆕 Gerando novo número: {num_inscricao}")
         
         arquivos_salvos = []
         
-        # ===== PROCESSANDO FOTOS =====
-        print("\n📸 PROCESSANDO FOTOS...")
+        # Processa fotos
         fotos = {
             'foto_aluno': 'alunos',
             'foto_responsavel1': 'pais',
@@ -718,8 +594,7 @@ def cadastrar_aluno():
                         arquivos_salvos.append(info)
                         print(f"   ✅ Foto processada: {info['nome']}")
         
-        # ===== PROCESSANDO DOCUMENTOS =====
-        print("\n📄 PROCESSANDO DOCUMENTOS...")
+        # Processa documentos
         documentos = {
             'aluno_certidao': 'documentos',
             'aluno_cpf': 'documentos',
@@ -749,7 +624,6 @@ def cadastrar_aluno():
         
         print("\n💾 Salvando dados no banco...")
         
-        # Adiciona o número de inscrição definitivo aos dados do formulário
         form_data = request.form.copy()
         form_data['num_inscricao'] = num_inscricao
         
@@ -791,7 +665,6 @@ def atualizar_aluno():
             
         print(f"📌 Atualizando aluno: {num_inscricao_original}")
         
-        # Buscar aluno existente para manter arquivos que não foram substituídos
         aluno_existente = aluno_service.get_aluno_by_inscricao(num_inscricao_original)
         
         print("\n🔍 ARQUIVOS RECEBIDOS NO REQUEST:")
@@ -806,21 +679,16 @@ def atualizar_aluno():
         
         arquivos_salvos = []
         
-        # Manter arquivos existentes que não foram substituídos
         if aluno_existente and aluno_existente.get('arquivos'):
             for arq in aluno_existente['arquivos']:
                 campo = arq.get('campo')
-                # Verifica se este campo foi enviado novamente no request
                 if campo in request.files and request.files[campo] and request.files[campo].filename:
-                    # Será substituído, não manter
                     print(f"   🔄 Campo {campo} será substituído")
                 else:
-                    # Manter arquivo existente
                     arquivos_salvos.append(arq)
                     print(f"   📌 Mantendo arquivo existente: {campo}")
         
-        # ===== PROCESSANDO FOTOS =====
-        print("\n📸 PROCESSANDO FOTOS...")
+        # Processa fotos
         fotos = {
             'foto_aluno': 'alunos',
             'foto_responsavel1': 'pais',
@@ -839,13 +707,11 @@ def atualizar_aluno():
                     print(f"\n📸 Processando nova FOTO: {campo}")
                     info = save_uploaded_file(file, pasta, campo)
                     if info:
-                        # Remover o arquivo antigo da lista se existir
                         arquivos_salvos = [a for a in arquivos_salvos if a.get('campo') != campo]
                         arquivos_salvos.append(info)
                         print(f"   ✅ Nova foto processada: {info['nome']}")
         
-        # ===== PROCESSANDO DOCUMENTOS =====
-        print("\n📄 PROCESSANDO DOCUMENTOS...")
+        # Processa documentos
         documentos = {
             'aluno_certidao': 'documentos',
             'aluno_cpf': 'documentos',
@@ -870,7 +736,6 @@ def atualizar_aluno():
                     print(f"\n📄 Processando novo DOCUMENTO: {campo}")
                     info = save_uploaded_file(file, pasta, campo)
                     if info:
-                        # Remover o documento antigo da lista se existir
                         arquivos_salvos = [a for a in arquivos_salvos if a.get('campo') != campo]
                         arquivos_salvos.append(info)
                         print(f"   ✅ Novo documento processado: {info['nome']}")
@@ -950,10 +815,10 @@ def excluir_aluno():
         }), 500
 
 
-# ===== ROTA PARA PÁGINA DE CADASTRO COM EDIÇÃO - CORRIGIDA =====
+# ===== ROTA PARA PÁGINA DE CADASTRO =====
 @alunos_bp.route('/alunos/cadastro')
 def cadastro_aluno():
-    """Rota para página de cadastro com suporte a edição - CARREGA TODOS OS ARQUIVOS"""
+    """Rota para página de cadastro"""
     try:
         num_inscricao = request.args.get('editar')
         aluno_data = None
@@ -962,21 +827,16 @@ def cadastro_aluno():
             print(f"📝 Modo edição - buscando aluno: {num_inscricao}")
             aluno = aluno_service.get_aluno_by_inscricao(num_inscricao)
             if aluno:
-                # Converter ObjectId para string para JSON
                 if '_id' in aluno:
                     aluno['_id'] = str(aluno['_id'])
                 
-                # Preparar os arquivos para exibição no formulário
                 if aluno.get('arquivos'):
                     print(f"📁 Encontrados {len(aluno['arquivos'])} arquivos")
-                    
-                    # Criar um dicionário para fácil acesso no template
                     arquivos_dict = {}
                     for arquivo in aluno['arquivos']:
                         campo = arquivo.get('campo')
                         arquivos_dict[campo] = arquivo
                         
-                        # Se for imagem, adicionar data_url para exibição
                         if arquivo.get('dados') and arquivo.get('tipo') in ['jpg', 'jpeg', 'png', 'gif']:
                             arquivo['data_url'] = f"data:image/{arquivo['tipo']};base64,{arquivo['dados']}"
                             print(f"   ✅ Imagem {campo} preparada para exibição")
@@ -1022,12 +882,10 @@ def buscar_alunos():
         
         alunos = aluno_service.buscar_alunos(filtro)
         
-        # Converter imagens para base64 para exibição
         for aluno in alunos:
             if aluno.get('arquivos'):
                 for arquivo in aluno['arquivos']:
                     if arquivo.get('dados'):
-                        # Criar data_url para exibição
                         tipo = arquivo.get('tipo', 'jpeg')
                         if tipo in ['jpg', 'jpeg', 'png', 'gif']:
                             arquivo['data_url'] = f"data:image/{tipo};base64,{arquivo['dados']}"

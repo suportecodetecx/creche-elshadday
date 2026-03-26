@@ -930,45 +930,6 @@
             border-top: 1px solid rgba(255,255,255,0.05);
         }
 
-        /* Progress Bar */
-        .upload-progress {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            background: var(--netflix-dark);
-            border-radius: 12px;
-            padding: 16px;
-            z-index: 99999;
-            border: 1px solid rgba(255,255,255,0.1);
-            display: none;
-        }
-        
-        .upload-progress.active {
-            display: block;
-        }
-        
-        .progress-bar {
-            height: 8px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 10px 0;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: var(--netflix-red);
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-        
-        .progress-text {
-            font-size: 0.85rem;
-            color: rgba(255,255,255,0.7);
-            text-align: center;
-        }
-
         /* Responsividade */
         @media (max-width: 768px) {
             body {
@@ -1047,301 +1008,270 @@
         #transporte-container {
             display: none;
         }
-
-        /* Spinner de loading */
-        .loading-spinner {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 100000;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .loading-spinner.active {
-            display: flex;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(255,255,255,0.3);
-            border-top-color: var(--netflix-red);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        .loading-text {
-            color: white;
-            font-size: 1rem;
-        }
     </style>
     <!-- DEBUG E PREENCHIMENTO AUTOMÁTICO -->
     <script>
         console.log('🔍 DEBUG - Dados do aluno recebidos:', {{ aluno | tojson | safe if aluno else 'null' }});
 
-    // ===== RECEBE DADOS DO BACKEND =====
-    const alunoParaEditar = {{ aluno | tojson | safe if aluno else 'null' }};
+// ===== RECEBE DADOS DO BACKEND =====
+const alunoParaEditar = {{ aluno | tojson | safe if aluno else 'null' }};
 
-    // Aguarda a página carregar completamente
-    document.addEventListener('DOMContentLoaded', function() {
-        if (alunoParaEditar && alunoParaEditar !== 'null') {
-            console.log('📝 Modo edição - carregando aluno:', alunoParaEditar.num_inscricao);
-            setTimeout(() => {
-                preencherFormulario(alunoParaEditar);
-            }, 100);
+// Aguarda a página carregar completamente
+document.addEventListener('DOMContentLoaded', function() {
+    if (alunoParaEditar && alunoParaEditar !== 'null') {
+        console.log('📝 Modo edição - carregando aluno:', alunoParaEditar.num_inscricao);
+        setTimeout(() => {
+            preencherFormulario(alunoParaEditar);
+        }, 100);
+    } else {
+        console.log('➕ Modo cadastro - novo aluno');
+        gerarNumeroInscricao();
+    }
+});
+
+// ===== FUNÇÃO PARA PREENCHER O FORMULÁRIO =====
+function preencherFormulario(aluno) {
+    console.log('🔍 Preenchendo formulário com:', aluno);
+    
+    function setValue(id, value) {
+        const campo = document.getElementById(id);
+        if (campo) {
+            campo.value = value || '';
+            console.log(`   ✅ ${id}: "${value || 'vazio'}"`);
         } else {
-            console.log('➕ Modo cadastro - novo aluno');
-            gerarNumeroInscricao();
+            console.log(`   ❌ Campo não encontrado: ${id}`);
         }
-    });
+    }
+    
+    function setValueByName(name, value) {
+        const campo = document.querySelector(`[name="${name}"]`);
+        if (campo) {
+            campo.value = value || '';
+            console.log(`   ✅ ${name}: "${value || 'vazio'}"`);
+        } else {
+            console.log(`   ❌ Campo não encontrado: ${name}`);
+        }
+    }
 
-    // ===== FUNÇÃO PARA PREENCHER O FORMULÁRIO =====
-    function preencherFormulario(aluno) {
-        console.log('🔍 Preenchendo formulário com:', aluno);
+    // DADOS PESSOAIS
+    if (aluno.dados_pessoais) {
+        setValue('nome', aluno.dados_pessoais.nome);
+        setValue('data_nasc', aluno.dados_pessoais.data_nasc);
+        setValue('sexo', aluno.dados_pessoais.sexo);
+        setValue('raca', aluno.dados_pessoais.raca);
+        setValue('naturalidade', aluno.dados_pessoais.naturalidade);
+        setValue('nacionalidade', aluno.dados_pessoais.nacionalidade);
+        setValue('ra', aluno.dados_pessoais.ra);
+    }
+
+    // ENDEREÇO
+    if (aluno.endereco) {
+        setValue('cep', aluno.endereco.cep);
+        setValue('endereco', aluno.endereco.logradouro);
+        setValue('numero', aluno.endereco.numero);
+        setValue('complemento', aluno.endereco.complemento);
+        setValue('bairro', aluno.endereco.bairro);
+        setValue('cidade', aluno.endereco.cidade);
+        setValue('uf', aluno.endereco.uf);
+    }
+
+    // TURMA
+    if (aluno.turma) {
+        setValue('unidade', aluno.turma.unidade);
+        setValue('turma', aluno.turma.turma);
+        setValue('periodo', aluno.turma.periodo);
+        setValue('ano_letivo', aluno.turma.ano_letivo);
+    }
+
+    // SAÚDE
+    if (aluno.saude) {
+        setValue('tipo_sanguineo', aluno.saude.tipo_sanguineo);
+        setValue('plano_saude', aluno.saude.plano_saude);
+        setValue('alergias', aluno.saude.alergias);
+        setValue('medicamentos', aluno.saude.medicamentos);
+        setValue('restricoes', aluno.saude.restricoes);
+        setValue('pediatra', aluno.saude.pediatra);
+        setValue('contato_pediatra', aluno.saude.contato_pediatra);
         
-        function setValue(id, value) {
-            const campo = document.getElementById(id);
-            if (campo) {
-                campo.value = value || '';
-                console.log(`   ✅ ${id}: "${value || 'vazio'}"`);
-            } else {
-                console.log(`   ❌ Campo não encontrado: ${id}`);
-            }
+        if (aluno.saude.deficiencia) {
+            setValue('deficiencia', 'sim');
+            const divDescricao = document.getElementById('deficiencia-descricao');
+            if (divDescricao) divDescricao.style.display = 'block';
+            setValue('deficiencia_desc', aluno.saude.deficiencia_desc);
+        } else {
+            setValue('deficiencia', 'nao');
+        }
+    }
+
+    // RESPONSÁVEL PRINCIPAL
+    if (aluno.responsaveis && aluno.responsaveis.length > 0) {
+        const respPrincipal = aluno.responsaveis.find(r => r.tipo === 'principal') || aluno.responsaveis[0];
+        if (respPrincipal) {
+            setValueByName('responsavel1_nome', respPrincipal.nome);
+            setValueByName('responsavel1_parentesco', respPrincipal.parentesco);
+            setValueByName('responsavel1_telefone', respPrincipal.telefone);
+            setValueByName('responsavel1_telefone_contato', respPrincipal.telefone_contato);
+            setValueByName('responsavel1_cpf', respPrincipal.cpf);
+            setValueByName('responsavel1_rg', respPrincipal.rg);
+            setValueByName('responsavel1_email', respPrincipal.email);
+        }
+    }
+
+    // RESPONSÁVEIS ADICIONAIS
+    if (aluno.responsaveis && aluno.responsaveis.length > 1) {
+        const responsaveisAdicionais = aluno.responsaveis.filter(r => r.tipo === 'adicional');
+        
+        responsaveisAdicionais.forEach((resp, index) => {
+            adicionarResponsavel();
+            
+            setTimeout(() => {
+                const num = index + 2;
+                setValueByName(`responsavel${num}_nome`, resp.nome);
+                setValueByName(`responsavel${num}_parentesco`, resp.parentesco);
+                setValueByName(`responsavel${num}_telefone`, resp.telefone);
+                setValueByName(`responsavel${num}_telefone_contato`, resp.telefone_contato);
+                setValueByName(`responsavel${num}_cpf`, resp.cpf);
+                setValueByName(`responsavel${num}_rg`, resp.rg);
+                setValueByName(`responsavel${num}_email`, resp.email);
+                console.log(`   ✅ Responsável adicional ${num} carregado: ${resp.nome}`);
+            }, 100 * (index + 1));
+        });
+    }
+
+    // TERCEIROS
+    if (aluno.terceiros && aluno.terceiros.length > 0) {
+        if (!terceirosAtivos) {
+            toggleTerceiros();
         }
         
-        function setValueByName(name, value) {
-            const campo = document.querySelector(`[name="${name}"]`);
-            if (campo) {
-                campo.value = value || '';
-                console.log(`   ✅ ${name}: "${value || 'vazio'}"`);
-            } else {
-                console.log(`   ❌ Campo não encontrado: ${name}`);
-            }
-        }
-
-        // DADOS PESSOAIS
-        if (aluno.dados_pessoais) {
-            setValue('nome', aluno.dados_pessoais.nome);
-            setValue('data_nasc', aluno.dados_pessoais.data_nasc);
-            setValue('sexo', aluno.dados_pessoais.sexo);
-            setValue('raca', aluno.dados_pessoais.raca);
-            setValue('naturalidade', aluno.dados_pessoais.naturalidade);
-            setValue('nacionalidade', aluno.dados_pessoais.nacionalidade);
-            setValue('ra', aluno.dados_pessoais.ra);
-        }
-
-        // ENDEREÇO
-        if (aluno.endereco) {
-            setValue('cep', aluno.endereco.cep);
-            setValue('endereco', aluno.endereco.logradouro);
-            setValue('numero', aluno.endereco.numero);
-            setValue('complemento', aluno.endereco.complemento);
-            setValue('bairro', aluno.endereco.bairro);
-            setValue('cidade', aluno.endereco.cidade);
-            setValue('uf', aluno.endereco.uf);
-        }
-
-        // TURMA
-        if (aluno.turma) {
-            setValue('unidade', aluno.turma.unidade);
-            setValue('turma', aluno.turma.turma);
-            setValue('periodo', aluno.turma.periodo);
-            setValue('ano_letivo', aluno.turma.ano_letivo);
-        }
-
-        // SAÚDE
-        if (aluno.saude) {
-            setValue('tipo_sanguineo', aluno.saude.tipo_sanguineo);
-            setValue('plano_saude', aluno.saude.plano_saude);
-            setValue('alergias', aluno.saude.alergias);
-            setValue('medicamentos', aluno.saude.medicamentos);
-            setValue('restricoes', aluno.saude.restricoes);
-            setValue('pediatra', aluno.saude.pediatra);
-            setValue('contato_pediatra', aluno.saude.contato_pediatra);
-            
-            if (aluno.saude.deficiencia) {
-                setValue('deficiencia', 'sim');
-                const divDescricao = document.getElementById('deficiencia-descricao');
-                if (divDescricao) divDescricao.style.display = 'block';
-                setValue('deficiencia_desc', aluno.saude.deficiencia_desc);
-            } else {
-                setValue('deficiencia', 'nao');
-            }
-        }
-
-        // RESPONSÁVEL PRINCIPAL
-        if (aluno.responsaveis && aluno.responsaveis.length > 0) {
-            const respPrincipal = aluno.responsaveis.find(r => r.tipo === 'principal') || aluno.responsaveis[0];
-            if (respPrincipal) {
-                setValueByName('responsavel1_nome', respPrincipal.nome);
-                setValueByName('responsavel1_parentesco', respPrincipal.parentesco);
-                setValueByName('responsavel1_telefone', respPrincipal.telefone);
-                setValueByName('responsavel1_telefone_contato', respPrincipal.telefone_contato);
-                setValueByName('responsavel1_cpf', respPrincipal.cpf);
-                setValueByName('responsavel1_rg', respPrincipal.rg);
-                setValueByName('responsavel1_email', respPrincipal.email);
-            }
-        }
-
-        // RESPONSÁVEIS ADICIONAIS
-        if (aluno.responsaveis && aluno.responsaveis.length > 1) {
-            const responsaveisAdicionais = aluno.responsaveis.filter(r => r.tipo === 'adicional');
-            
-            responsaveisAdicionais.forEach((resp, index) => {
-                adicionarResponsavel();
-                
-                setTimeout(() => {
-                    const num = index + 2;
-                    setValueByName(`responsavel${num}_nome`, resp.nome);
-                    setValueByName(`responsavel${num}_parentesco`, resp.parentesco);
-                    setValueByName(`responsavel${num}_telefone`, resp.telefone);
-                    setValueByName(`responsavel${num}_telefone_contato`, resp.telefone_contato);
-                    setValueByName(`responsavel${num}_cpf`, resp.cpf);
-                    setValueByName(`responsavel${num}_rg`, resp.rg);
-                    setValueByName(`responsavel${num}_email`, resp.email);
-                    console.log(`   ✅ Responsável adicional ${num} carregado: ${resp.nome}`);
-                }, 100 * (index + 1));
-            });
-        }
-
-        // TERCEIROS
-        if (aluno.terceiros && aluno.terceiros.length > 0) {
-            if (!terceirosAtivos) {
-                toggleTerceiros();
+        aluno.terceiros.forEach((terceiro, index) => {
+            if (index > 0) {
+                adicionarTerceiro();
             }
             
-            aluno.terceiros.forEach((terceiro, index) => {
-                if (index > 0) {
-                    adicionarTerceiro();
-                }
-                
-                setTimeout(() => {
-                    const num = index + 1;
-                    setValueByName(`terceiro${num}_nome`, terceiro.nome);
-                    setValueByName(`terceiro${num}_telefone`, terceiro.telefone);
-                    setValueByName(`terceiro${num}_cpf`, terceiro.cpf);
-                    setValueByName(`terceiro${num}_rg`, terceiro.rg);
-                    setValueByName(`terceiro${num}_email`, terceiro.email);
-                    console.log(`   ✅ Terceiro ${num} carregado: ${terceiro.nome}`);
-                }, 100 * (index + 1));
-            });
-        }
+            setTimeout(() => {
+                const num = index + 1;
+                setValueByName(`terceiro${num}_nome`, terceiro.nome);
+                setValueByName(`terceiro${num}_telefone`, terceiro.telefone);
+                setValueByName(`terceiro${num}_cpf`, terceiro.cpf);
+                setValueByName(`terceiro${num}_rg`, terceiro.rg);
+                setValueByName(`terceiro${num}_email`, terceiro.email);
+                console.log(`   ✅ Terceiro ${num} carregado: ${terceiro.nome}`);
+            }, 100 * (index + 1));
+        });
+    }
 
-        // TRANSPORTE
-        if (aluno.transporte && aluno.transporte.nome) {
-            const checkbox = document.querySelector('input[name="utiliza_transporte"]');
-            if (checkbox) {
-                checkbox.checked = true;
-                toggleTransporte({ checked: true });
-                
-                setValueByName('transporte_nome', aluno.transporte.nome);
-                setValueByName('transporte_cnpj', aluno.transporte.cnpj);
-                setValueByName('transporte_cpf', aluno.transporte.cpf);
-                setValueByName('transporte_rg', aluno.transporte.rg);
-                setValueByName('transporte_telefone', aluno.transporte.telefone);
-                setValueByName('transporte_email', aluno.transporte.email);
-                console.log(`   ✅ Transporte carregado: ${aluno.transporte.nome}`);
-            }
+    // TRANSPORTE
+    if (aluno.transporte && aluno.transporte.nome) {
+        const checkbox = document.querySelector('input[name="utiliza_transporte"]');
+        if (checkbox) {
+            checkbox.checked = true;
+            toggleTransporte({ checked: true });
+            
+            setValueByName('transporte_nome', aluno.transporte.nome);
+            setValueByName('transporte_cnpj', aluno.transporte.cnpj);
+            setValueByName('transporte_cpf', aluno.transporte.cpf);
+            setValueByName('transporte_rg', aluno.transporte.rg);
+            setValueByName('transporte_telefone', aluno.transporte.telefone);
+            setValueByName('transporte_email', aluno.transporte.email);
+            console.log(`   ✅ Transporte carregado: ${aluno.transporte.nome}`);
         }
+    }
 
-        // ===== NÚMERO DE INSCRIÇÃO (CORRIGIDO) =====
-        const campoNumero = document.getElementById('num_inscricao');
-        if (campoNumero) {
-            if (aluno.num_inscricao) {
-                campoNumero.value = aluno.num_inscricao;
-                console.log(`   ✅ Número de inscrição carregado: ${aluno.num_inscricao}`);
-                campoNumero.readOnly = true;
-                campoNumero.classList.add('readonly');
-            } else {
-                console.log(`   ⚠️ Aluno sem número de inscrição!`);
-                campoNumero.value = '';
-            }
+    // ===== NÚMERO DE INSCRIÇÃO (CORRIGIDO) =====
+    const campoNumero = document.getElementById('num_inscricao');
+    if (campoNumero) {
+        if (aluno.num_inscricao) {
+            campoNumero.value = aluno.num_inscricao;
+            console.log(`   ✅ Número de inscrição carregado: ${aluno.num_inscricao}`);
+            campoNumero.readOnly = true;
+            campoNumero.classList.add('readonly');
+        } else {
+            console.log(`   ⚠️ Aluno sem número de inscrição!`);
+            campoNumero.value = '';
         }
+    }
 
-        // FUNÇÃO PARA CARREGAR FOTOS EXISTENTES
-        function carregarFotosExistentes(aluno) {
-            console.log('📸 Carregando fotos e documentos existentes...');
+    // FUNÇÃO PARA CARREGAR FOTOS EXISTENTES
+    function carregarFotosExistentes(aluno) {
+        console.log('📸 Carregando fotos e documentos existentes...');
+        
+        if (!aluno.arquivos || aluno.arquivos.length === 0) {
+            console.log('   ℹ️ Nenhum arquivo encontrado');
+            return;
+        }
+        
+        const mapaFotos = {
+            'foto_aluno': 'aluno_foto_img',
+            'foto_responsavel1': 'resp_foto_img',
+            'foto_responsavel2': 'resp2_foto_img',
+            'foto_responsavel3': 'resp3_foto_img',
+            'foto_terceiro1': 'terceiro1_foto_img',
+            'foto_terceiro2': 'terceiro2_foto_img',
+            'foto_terceiro3': 'terceiro3_foto_img',
+            'foto_transporte': 'transporte_foto_img'
+        };
+        
+        const mapaCards = {
+            'aluno_certidao': 'certidao-card',
+            'aluno_rg': 'rg-card',
+            'aluno_vacinacao': 'vacinacao-card',
+            'aluno_laudos': 'laudos-card',
+            'resp_rg': 'resp-rg-card',
+            'resp_cpf': 'resp-cpf-card',
+            'resp_comprovante': 'resp-comprovante-card',
+            'resp2_rg': 'resp2-rg-card',
+            'resp2_cpf': 'resp2-cpf-card',
+            'terceiro_rg': 'terceiro-rg-card',
+            'transporte_rg': 'transporte-rg-card',
+            'transporte_cpf': 'transporte-cpf-card',
+            'transporte_cnh': 'transporte-cnh-card'
+        };
+        
+        for (let i = 0; i < aluno.arquivos.length; i++) {
+            const arquivo = aluno.arquivos[i];
+            const campo = arquivo.campo;
             
-            if (!aluno.arquivos || aluno.arquivos.length === 0) {
-                console.log('   ℹ️ Nenhum arquivo encontrado');
-                return;
-            }
+            if (!campo) continue;
             
-            const mapaFotos = {
-                'foto_aluno': 'aluno_foto_img',
-                'foto_responsavel1': 'resp_foto_img',
-                'foto_responsavel2': 'resp2_foto_img',
-                'foto_responsavel3': 'resp3_foto_img',
-                'foto_terceiro1': 'terceiro1_foto_img',
-                'foto_terceiro2': 'terceiro2_foto_img',
-                'foto_terceiro3': 'terceiro3_foto_img',
-                'foto_transporte': 'transporte_foto_img'
-            };
-            
-            const mapaCards = {
-                'aluno_certidao': 'certidao-card',
-                'aluno_rg': 'rg-card',
-                'aluno_vacinacao': 'vacinacao-card',
-                'aluno_laudos': 'laudos-card',
-                'resp_rg': 'resp-rg-card',
-                'resp_cpf': 'resp-cpf-card',
-                'resp_comprovante': 'resp-comprovante-card',
-                'resp2_rg': 'resp2-rg-card',
-                'resp2_cpf': 'resp2-cpf-card',
-                'terceiro_rg': 'terceiro-rg-card',
-                'transporte_rg': 'transporte-rg-card',
-                'transporte_cpf': 'transporte-cpf-card',
-                'transporte_cnh': 'transporte-cnh-card'
-            };
-            
-            for (let i = 0; i < aluno.arquivos.length; i++) {
-                const arquivo = aluno.arquivos[i];
-                const campo = arquivo.campo;
-                
-                if (!campo) continue;
-                
-                if (campo.startsWith('foto_')) {
-                    const imgId = mapaFotos[campo];
-                    if (imgId && arquivo.data_url) {
-                        const imgElement = document.getElementById(imgId);
-                        if (imgElement) {
-                            imgElement.src = arquivo.data_url;
-                            imgElement.classList.add('active');
-                            console.log(`   ✅ Foto carregada: ${campo}`);
-                            
-                            const prefix = campo.replace('foto_', '').split('_')[0];
-                            const reviewDiv = document.getElementById('review-foto-' + prefix);
-                            if (reviewDiv) {
-                                reviewDiv.innerHTML = `<img src="${arquivo.data_url}" class="photo-thumbnail">`;
-                            }
-                        }
-                    }
-                } else {
-                    const cardId = mapaCards[campo];
-                    if (cardId) {
-                        const card = document.getElementById(cardId);
-                        if (card) {
-                            card.classList.add('has-file');
-                            console.log(`   ✅ Documento marcado: ${campo}`);
+            if (campo.startsWith('foto_')) {
+                const imgId = mapaFotos[campo];
+                if (imgId && arquivo.data_url) {
+                    const imgElement = document.getElementById(imgId);
+                    if (imgElement) {
+                        imgElement.src = arquivo.data_url;
+                        imgElement.classList.add('active');
+                        console.log(`   ✅ Foto carregada: ${campo}`);
+                        
+                        const prefix = campo.replace('foto_', '').split('_')[0];
+                        const reviewDiv = document.getElementById('review-foto-' + prefix);
+                        if (reviewDiv) {
+                            reviewDiv.innerHTML = `<img src="${arquivo.data_url}" class="photo-thumbnail">`;
                         }
                     }
                 }
+            } else {
+                const cardId = mapaCards[campo];
+                if (cardId) {
+                    const card = document.getElementById(cardId);
+                    if (card) {
+                        card.classList.add('has-file');
+                        console.log(`   ✅ Documento marcado: ${campo}`);
+                    }
+                }
             }
-            
-            console.log('✅ Fotos e documentos carregados com sucesso!');
         }
+        
+        console.log('✅ Fotos e documentos carregados com sucesso!');
+    }
 
-        carregarFotosExistentes(aluno);
-        console.log('✅ Formulário preenchido com sucesso!');
-        mostrarNotificacao('✅ Dados carregados para edição', 'success');
-    }  // <-- FIM CORRETO DA FUNÇÃO preencherFormulario
+    carregarFotosExistentes(aluno);
+    console.log('✅ Formulário preenchido com sucesso!');
+    mostrarNotificacao('✅ Dados carregados para edição', 'success');
+}  // <-- FIM CORRETO DA FUNÇÃO preencherFormulario
+
+
+
     </script>
 </head>
 <body>
@@ -2146,1089 +2076,596 @@
                 </div>
 
                 <!-- Botões de Navegação -->
-                <div class="navigation-buttons">
-                    <button type="button" class="btn-nav btn-prev" onclick="mudarPasso('prev')" id="btnPrev" style="display: none;">
-                        ← Anterior
-                    </button>
-                    <button type="button" class="btn-nav btn-next" onclick="mudarPasso('next')" id="btnNext">
-                        Próximo →
-                    </button>
-                    <button type="button" class="btn-nav btn-save" onclick="salvarCadastro()" id="btnSave" style="display: none;">
-                        Finalizar Cadastro
-                    </button>
-                </div>
-            </form>
-        </main>
-    </div>
-
-    <!-- Progress Bar para upload -->
-    <div class="upload-progress" id="uploadProgress">
-        <div class="progress-text">Enviando documentos...</div>
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
-        </div>
-        <div class="progress-text" id="progressStatus">0%</div>
-    </div>
-
-    <!-- Spinner de loading -->
-    <div class="loading-spinner" id="loadingSpinner">
-        <div class="spinner"></div>
-        <div class="loading-text">Processando arquivos...</div>
-    </div>
+<div class="navigation-buttons">
+    <button type="button" class="btn-nav btn-prev" onclick="mudarPasso('prev')" id="btnPrev" style="display: none;">
+        ← Anterior
+    </button>
+    <button type="button" class="btn-nav btn-next" onclick="mudarPasso('next')" id="btnNext">
+        Próximo →
+    </button>
+    <button type="button" class="btn-nav btn-save" onclick="salvarCadastro()" id="btnSave" style="display: none;">
+        Finalizar Cadastro
+    </button>
+</div>
 
     <script>
-        let passoAtual = 1;
-        const totalPassos = 4;
-        let cameraStreams = {};
-        let terceirosAtivos = false;
-        let transporteAtivo = false;
+    let passoAtual = 1;
+    const totalPassos = 4;
+    let cameraStreams = {};
+    let terceirosAtivos = false;
+    let transporteAtivo = false;
 
-        // Função para mostrar loading
-        function mostrarLoading(mostrar) {
-            const spinner = document.getElementById('loadingSpinner');
-            if (spinner) {
-                if (mostrar) {
-                    spinner.classList.add('active');
+    // Função para marcar visualmente que um arquivo foi anexado
+    function marcarArquivoAnexado(cardId) {
+        const card = document.getElementById(cardId);
+        if (card) {
+            card.classList.add('has-file');
+        }
+    }
+
+    // Função para validar CPF
+    function validarCPF(cpf) {
+        cpf = cpf.replace(/[^\d]/g, '');
+        
+        if (cpf.length !== 11) return false;
+        if (/^(\d)\1+$/.test(cpf)) return false;
+        
+        let soma = 0;
+        for (let i = 0; i < 9; i++) {
+            soma += parseInt(cpf.charAt(i)) * (10 - i);
+        }
+        let resto = (soma * 10) % 11;
+        let digito1 = (resto === 10 || resto === 11) ? 0 : resto;
+        
+        if (digito1 !== parseInt(cpf.charAt(9))) return false;
+        
+        soma = 0;
+        for (let i = 0; i < 10; i++) {
+            soma += parseInt(cpf.charAt(i)) * (11 - i);
+        }
+        resto = (soma * 10) % 11;
+        let digito2 = (resto === 10 || resto === 11) ? 0 : resto;
+        
+        return digito2 === parseInt(cpf.charAt(10));
+    }
+
+    // Função para mostrar notificação elegante
+    function mostrarNotificacao(mensagem, tipo = 'warning') {
+        const notificacaoAnterior = document.querySelector('.notificacao-flutuante');
+        if (notificacaoAnterior) {
+            notificacaoAnterior.remove();
+        }
+        
+        const notificacao = document.createElement('div');
+        notificacao.className = `notificacao-flutuante ${tipo}`;
+        notificacao.innerHTML = `
+            <div class="notificacao-conteudo">
+                <span class="notificacao-icone">${tipo === 'warning' ? '⚠️' : tipo === 'error' ? '✕' : '✓'}</span>
+                <span class="notificacao-texto">${mensagem}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(notificacao);
+        
+        setTimeout(() => {
+            notificacao.style.animation = 'slideOut 0.3s ease forwards';
+            setTimeout(() => {
+                if (notificacao.parentNode) {
+                    notificacao.remove();
+                }
+            }, 300);
+        }, 3000);
+    }
+
+    // Função para resetar erros em tempo real
+    function configurarResetDeErros() {
+        document.querySelectorAll('input, select, textarea').forEach(campo => {
+            campo.addEventListener('input', function() {
+                this.classList.remove('input-error');
+                
+                if (this.id) {
+                    const msgId = `msg-${this.id}`;
+                    const msgElement = document.getElementById(msgId);
+                    if (msgElement) msgElement.style.display = 'none';
+                }
+            });
+            
+            campo.addEventListener('change', function() {
+                this.classList.remove('input-error');
+                if (this.id) {
+                    const msgId = `msg-${this.id}`;
+                    const msgElement = document.getElementById(msgId);
+                    if (msgElement) msgElement.style.display = 'none';
+                }
+            });
+        });
+        
+        document.querySelectorAll('input[type="file"]').forEach(campo => {
+            campo.addEventListener('change', function() {
+                this.classList.remove('input-error');
+                if (this.id) {
+                    const msgId = `msg-${this.id}`;
+                    const msgElement = document.getElementById(msgId);
+                    if (msgElement) msgElement.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    function toggleTerceiros() {
+        const container = document.getElementById('terceiros-container');
+        const docsSection = document.getElementById('terceiros-docs-section');
+        
+        terceirosAtivos = !terceirosAtivos;
+        
+        if (terceirosAtivos) {
+            container.style.display = 'block';
+            docsSection.style.display = 'block';
+        } else {
+            container.style.display = 'none';
+            docsSection.style.display = 'none';
+        }
+    }
+
+    function mudarPasso(direcao) {
+        const passoAtualElement = document.querySelector(`.step-item[data-step="${passoAtual}"]`);
+
+        if (direcao === 'next') {
+            if (!validarPasso(passoAtual)) {
+                mostrarNotificacao('Preencha todos os campos obrigatórios marcados em vermelho', 'warning');
+                rolarAteCampoVazio(passoAtual);
+                return;
+            }
+            passoAtualElement.classList.add('completed');
+            passoAtual++;
+        } else {
+            passoAtual--;
+        }
+
+        atualizarPasso(passoAtual);
+        atualizarBotoes();
+        
+        if (passoAtual === 4) {
+            atualizarResumo();
+        }
+    }
+
+    function irParaPasso(passo) {
+        for (let i = 1; i < passo; i++) {
+            if (!verificarPassoCompleto(i)) {
+                mostrarNotificacao('Complete os passos anteriores primeiro!', 'warning');
+                rolarAteCampoVazio(i);
+                return;
+            }
+        }
+        
+        passoAtual = passo;
+        atualizarPasso(passoAtual);
+        atualizarBotoes();
+        
+        if (passoAtual === 4) {
+            atualizarResumo();
+        }
+    }
+
+    function rolarAteCampoVazio(passo) {
+        atualizarPasso(passo);
+        
+        if (passo === 1) {
+            const campos = ['nome', 'data_nasc', 'sexo', 'cep', 'endereco', 'numero', 'bairro', 'cidade', 'uf', 'unidade', 'turma', 'periodo', 'ano_letivo', 'tipo_sanguineo'];
+            for (let campo of campos) {
+                const elemento = document.getElementById(campo);
+                if (elemento && !elemento.value) {
+                    elemento.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    elemento.focus();
+                    break;
+                }
+            }
+        } else if (passo === 2) {
+            const respNome = document.querySelector('input[name="responsavel1_nome"]');
+            const respTelefone = document.querySelector('input[name="responsavel1_telefone"]');
+            const respCpf = document.querySelector('input[name="responsavel1_cpf"]');
+            const respRg = document.querySelector('input[name="responsavel1_rg"]');
+            
+            if (respNome && !respNome.value) {
+                respNome.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                respNome.focus();
+                return;
+            }
+            if (respTelefone && !respTelefone.value) {
+                respTelefone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                respTelefone.focus();
+                return;
+            }
+            if (respCpf && !respCpf.value) {
+                respCpf.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                respCpf.focus();
+                return;
+            }
+            if (respRg && !respRg.value) {
+                respRg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                respRg.focus();
+                return;
+            }
+            
+            if (terceirosAtivos) {
+                const terceiros = document.querySelectorAll('.terceiro-card');
+                for (let terceiro of terceiros) {
+                    const nomeInput = terceiro.querySelector('input[name*="_nome"]');
+                    if (nomeInput && !nomeInput.value) {
+                        nomeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        nomeInput.focus();
+                        return;
+                    }
+                }
+            }
+            
+            if (transporteAtivo) {
+                const transpNome = document.querySelector('input[name="transporte_nome"]');
+                if (transpNome && !transpNome.value) {
+                    transpNome.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    transpNome.focus();
+                }
+            }
+        } else if (passo === 3) {
+            const docs = [
+                { id: 'aluno_foto_img', tipo: 'foto' },
+                { id: 'aluno_certidao', tipo: 'file' },
+                { id: 'aluno_rg', tipo: 'file' },
+                { id: 'aluno_vacinacao', tipo: 'file' },
+                { id: 'resp_rg', tipo: 'file' },
+                { id: 'resp_cpf', tipo: 'file' },
+                { id: 'resp_comprovante', tipo: 'file' }
+            ];
+            
+            for (let doc of docs) {
+                const elemento = document.getElementById(doc.id);
+                if (doc.tipo === 'foto') {
+                    if (!elemento.classList.contains('active')) {
+                        elemento.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        break;
+                    }
                 } else {
-                    spinner.classList.remove('active');
+                    if (!elemento.files || elemento.files.length === 0) {
+                        elemento.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    function verificarPassoCompleto(passo) {
+        if (passo === 1) {
+            const campos = ['nome', 'data_nasc', 'sexo', 'cep', 'endereco', 'numero', 'bairro', 'cidade', 'uf', 'unidade', 'turma', 'periodo', 'ano_letivo', 'tipo_sanguineo'];
+            return campos.every(campo => {
+                const elemento = document.getElementById(campo);
+                return elemento && elemento.value;
+            });
+        }
+        if (passo === 2) {
+            const respNome = document.querySelector('input[name="responsavel1_nome"]');
+            const respTelefone = document.querySelector('input[name="responsavel1_telefone"]');
+            const respCpf = document.querySelector('input[name="responsavel1_cpf"]');
+            const respRg = document.querySelector('input[name="responsavel1_rg"]');
+            const respFoto = document.getElementById('resp_foto_img');
+            
+            let valido = respNome && respNome.value && 
+                         respTelefone && respTelefone.value && 
+                         respCpf && respCpf.value && 
+                         respRg && respRg.value &&
+                         respFoto && respFoto.classList.contains('active');
+            
+            if (terceirosAtivos) {
+                const terceiros = document.querySelectorAll('.terceiro-card');
+                if (terceiros.length === 0) return false;
+                
+                for (let terceiro of terceiros) {
+                    const nomeInput = terceiro.querySelector('input[name*="_nome"]');
+                    const telefoneInput = terceiro.querySelector('input[name*="_telefone"]');
+                    const cpfInput = terceiro.querySelector('input[name*="_cpf"]');
+                    const rgInput = terceiro.querySelector('input[name*="_rg"]');
+                    
+                    if (!nomeInput.value || !telefoneInput.value || !cpfInput.value || !rgInput.value) {
+                        return false;
+                    }
+                }
+            }
+            
+            if (transporteAtivo) {
+                const transpNome = document.querySelector('input[name="transporte_nome"]');
+                const transpCnpj = document.querySelector('input[name="transporte_cnpj"]');
+                const transpCpf = document.querySelector('input[name="transporte_cpf"]');
+                const transpRg = document.querySelector('input[name="transporte_rg"]');
+                const transpTelefone = document.querySelector('input[name="transporte_telefone"]');
+                const transpFoto = document.getElementById('transporte_foto_img');
+                
+                valido = valido && 
+                         transpNome && transpNome.value &&
+                         transpCnpj && transpCnpj.value &&
+                         transpCpf && transpCpf.value &&
+                         transpRg && transpRg.value &&
+                         transpTelefone && transpTelefone.value &&
+                         transpFoto && transpFoto.classList.contains('active');
+            }
+            
+            return valido;
+        }
+        if (passo === 3) {
+            const alunoFoto = document.getElementById('aluno_foto_img');
+            const alunoCertidao = document.getElementById('aluno_certidao');
+            const alunoRg = document.getElementById('aluno_rg');
+            const alunoVacinacao = document.getElementById('aluno_vacinacao');
+            const respRgDoc = document.getElementById('resp_rg');
+            const respCpfDoc = document.getElementById('resp_cpf');
+            const respComprovante = document.getElementById('resp_comprovante');
+            
+            let valido = alunoFoto.classList.contains('active') &&
+                        alunoCertidao.files.length > 0 &&
+                        alunoRg.files.length > 0 &&
+                        alunoVacinacao.files.length > 0 &&
+                        respRgDoc.files.length > 0 &&
+                        respCpfDoc.files.length > 0 &&
+                        respComprovante.files.length > 0;
+            
+            if (terceirosAtivos) {
+                const terceiroRg = document.getElementById('terceiro_rg');
+                valido = valido && terceiroRg.files.length > 0;
+            }
+            
+            if (transporteAtivo) {
+                const transporteRg = document.getElementById('transporte_rg');
+                const transporteCpf = document.getElementById('transporte_cpf');
+                const transporteCnh = document.getElementById('transporte_cnh');
+                valido = valido && 
+                         transporteRg.files.length > 0 &&
+                         transporteCpf.files.length > 0 &&
+                         transporteCnh.files.length > 0;
+            }
+            
+            return valido;
+        }
+        return true;
+    }
+
+    function validarPasso(passo) {
+        // Pular validação de fotos na edição
+        if (passo === 3 && alunoParaEditar && alunoParaEditar !== 'null') {
+            console.log('📝 Modo edição - ignorando validação de fotos novas');
+            return true;
+        }
+        
+        let valido = true;
+        
+        document.querySelectorAll('.input-error').forEach(el => {
+            el.classList.remove('input-error');
+        });
+        document.querySelectorAll('.field-message').forEach(msg => {
+            msg.style.display = 'none';
+        });
+        
+        if (passo === 1) {
+            const campos = [
+                'nome', 'data_nasc', 'sexo', 'cep', 'endereco', 
+                'numero', 'bairro', 'cidade', 'uf', 'unidade', 
+                'turma', 'periodo', 'ano_letivo', 'tipo_sanguineo'
+            ];
+            
+            campos.forEach(campo => {
+                const elemento = document.getElementById(campo);
+                const msg = document.getElementById(`msg-${campo}`);
+                if (elemento && !elemento.value) {
+                    if (msg) {
+                        msg.style.display = 'block';
+                        elemento.classList.add('input-error');
+                    }
+                    valido = false;
+                }
+            });
+        }
+        
+        if (passo === 2) {
+            const respNome = document.querySelector('input[name="responsavel1_nome"]');
+            const respTelefone = document.querySelector('input[name="responsavel1_telefone"]');
+            const respCpf = document.querySelector('input[name="responsavel1_cpf"]');
+            const respRg = document.querySelector('input[name="responsavel1_rg"]');
+            const respFoto = document.getElementById('resp_foto_img');
+            
+            if (respNome && !respNome.value) {
+                document.getElementById('msg-resp-nome').style.display = 'block';
+                respNome.classList.add('input-error');
+                valido = false;
+            }
+            
+            if (respTelefone && !respTelefone.value) {
+                document.getElementById('msg-resp-telefone').style.display = 'block';
+                respTelefone.classList.add('input-error');
+                valido = false;
+            }
+            
+            if (respCpf && !respCpf.value) {
+                document.getElementById('msg-resp-cpf').style.display = 'block';
+                respCpf.classList.add('input-error');
+                valido = false;
+            } else if (respCpf && respCpf.value && !validarCPF(respCpf.value)) {
+                document.getElementById('msg-resp-cpf').textContent = 'CPF inválido';
+                document.getElementById('msg-resp-cpf').style.display = 'block';
+                respCpf.classList.add('input-error');
+                valido = false;
+            }
+            
+            if (respRg && !respRg.value) {
+                document.getElementById('msg-resp-rg').style.display = 'block';
+                respRg.classList.add('input-error');
+                valido = false;
+            }
+            
+            if (respFoto && !respFoto.classList.contains('active')) {
+                document.getElementById('msg-resp-foto').style.display = 'block';
+                valido = false;
+            }
+
+            if (terceirosAtivos) {
+                const terceiros = document.querySelectorAll('.terceiro-card');
+                if (terceiros.length === 0) {
+                    mostrarNotificacao('Adicione pelo menos um terceiro autorizado', 'warning');
+                    valido = false;
+                } else {
+                    terceiros.forEach((terceiro, index) => {
+                        const num = index + 1;
+                        
+                        const nomeInput = terceiro.querySelector(`input[name="terceiro${num}_nome"]`);
+                        const telefoneInput = terceiro.querySelector(`input[name="terceiro${num}_telefone"]`);
+                        const cpfInput = terceiro.querySelector(`input[name="terceiro${num}_cpf"]`);
+                        const rgInput = terceiro.querySelector(`input[name="terceiro${num}_rg"]`);
+                        const fotoImg = document.getElementById(`terceiro${num}_foto_img`);
+                        
+                        if (nomeInput && !nomeInput.value) {
+                            document.getElementById(`msg-terceiro${num}-nome`).style.display = 'block';
+                            nomeInput.classList.add('input-error');
+                            valido = false;
+                        }
+                        
+                        if (telefoneInput && !telefoneInput.value) {
+                            document.getElementById(`msg-terceiro${num}-telefone`).style.display = 'block';
+                            telefoneInput.classList.add('input-error');
+                            valido = false;
+                        }
+                        
+                        if (cpfInput && !cpfInput.value) {
+                            document.getElementById(`msg-terceiro${num}-cpf`).style.display = 'block';
+                            cpfInput.classList.add('input-error');
+                            valido = false;
+                        } else if (cpfInput && cpfInput.value && !validarCPF(cpfInput.value)) {
+                            document.getElementById(`msg-terceiro${num}-cpf`).textContent = 'CPF inválido';
+                            document.getElementById(`msg-terceiro${num}-cpf`).style.display = 'block';
+                            cpfInput.classList.add('input-error');
+                            valido = false;
+                        }
+                        
+                        if (rgInput && !rgInput.value) {
+                            document.getElementById(`msg-terceiro${num}-rg`).style.display = 'block';
+                            rgInput.classList.add('input-error');
+                            valido = false;
+                        }
+                        
+                        if (fotoImg && !fotoImg.classList.contains('active')) {
+                            document.getElementById(`msg-terceiro${num}-foto`).style.display = 'block';
+                            valido = false;
+                        }
+                    });
+                }
+            }
+
+            if (transporteAtivo) {
+                const transpNome = document.querySelector('input[name="transporte_nome"]');
+                const transpCnpj = document.querySelector('input[name="transporte_cnpj"]');
+                const transpCpf = document.querySelector('input[name="transporte_cpf"]');
+                const transpRg = document.querySelector('input[name="transporte_rg"]');
+                const transpTelefone = document.querySelector('input[name="transporte_telefone"]');
+                const transpFoto = document.getElementById('transporte_foto_img');
+                
+                if (transpNome && !transpNome.value) {
+                    document.getElementById('msg-transporte-nome').style.display = 'block';
+                    transpNome.classList.add('input-error');
+                    valido = false;
+                }
+                
+                if (transpCnpj && !transpCnpj.value) {
+                    document.getElementById('msg-transporte-cnpj').style.display = 'block';
+                    transpCnpj.classList.add('input-error');
+                    valido = false;
+                }
+                
+                if (transpCpf && !transpCpf.value) {
+                    document.getElementById('msg-transporte-cpf').style.display = 'block';
+                    transpCpf.classList.add('input-error');
+                    valido = false;
+                } else if (transpCpf && transpCpf.value && !validarCPF(transpCpf.value)) {
+                    document.getElementById('msg-transporte-cpf').textContent = 'CPF inválido';
+                    document.getElementById('msg-transporte-cpf').style.display = 'block';
+                    transpCpf.classList.add('input-error');
+                    valido = false;
+                }
+                
+                if (transpRg && !transpRg.value) {
+                    document.getElementById('msg-transporte-rg').style.display = 'block';
+                    transpRg.classList.add('input-error');
+                    valido = false;
+                }
+                
+                if (transpTelefone && !transpTelefone.value) {
+                    document.getElementById('msg-transporte-telefone').style.display = 'block';
+                    transpTelefone.classList.add('input-error');
+                    valido = false;
+                }
+                
+                if (transpFoto && !transpFoto.classList.contains('active')) {
+                    document.getElementById('msg-transporte-foto').style.display = 'block';
+                    valido = false;
                 }
             }
         }
         
-        // Função para atualizar progresso do upload
-        function atualizarProgresso(percentual, texto) {
-            const progressDiv = document.getElementById('uploadProgress');
-            const fill = document.getElementById('progressFill');
-            const status = document.getElementById('progressStatus');
-            
-            if (percentual > 0 && percentual < 100) {
-                progressDiv.classList.add('active');
-            } else if (percentual >= 100) {
-                setTimeout(() => {
-                    progressDiv.classList.remove('active');
-                }, 1000);
-            } else {
-                progressDiv.classList.remove('active');
-            }
-            
-            if (fill) fill.style.width = percentual + '%';
-            if (status) status.textContent = texto || `${Math.round(percentual)}%`;
-        }
-
-        // Função para marcar visualmente que um arquivo foi anexado
-        function marcarArquivoAnexado(cardId) {
-            const card = document.getElementById(cardId);
-            if (card) {
-                card.classList.add('has-file');
-            }
-        }
-
-        // Função para validar CPF
-        function validarCPF(cpf) {
-            cpf = cpf.replace(/[^\d]/g, '');
-            
-            if (cpf.length !== 11) return false;
-            if (/^(\d)\1+$/.test(cpf)) return false;
-            
-            let soma = 0;
-            for (let i = 0; i < 9; i++) {
-                soma += parseInt(cpf.charAt(i)) * (10 - i);
-            }
-            let resto = (soma * 10) % 11;
-            let digito1 = (resto === 10 || resto === 11) ? 0 : resto;
-            
-            if (digito1 !== parseInt(cpf.charAt(9))) return false;
-            
-            soma = 0;
-            for (let i = 0; i < 10; i++) {
-                soma += parseInt(cpf.charAt(i)) * (11 - i);
-            }
-            resto = (soma * 10) % 11;
-            let digito2 = (resto === 10 || resto === 11) ? 0 : resto;
-            
-            return digito2 === parseInt(cpf.charAt(10));
-        }
-
-        // Função para mostrar notificação elegante
-        function mostrarNotificacao(mensagem, tipo = 'warning') {
-            const notificacaoAnterior = document.querySelector('.notificacao-flutuante');
-            if (notificacaoAnterior) {
-                notificacaoAnterior.remove();
-            }
-            
-            const notificacao = document.createElement('div');
-            notificacao.className = `notificacao-flutuante ${tipo}`;
-            notificacao.innerHTML = `
-                <div class="notificacao-conteudo">
-                    <span class="notificacao-icone">${tipo === 'warning' ? '⚠️' : tipo === 'error' ? '✕' : '✓'}</span>
-                    <span class="notificacao-texto">${mensagem}</span>
-                </div>
-            `;
-            
-            document.body.appendChild(notificacao);
-            
-            setTimeout(() => {
-                notificacao.style.animation = 'slideOut 0.3s ease forwards';
-                setTimeout(() => {
-                    if (notificacao.parentNode) {
-                        notificacao.remove();
-                    }
-                }, 300);
-            }, 3000);
-        }
-
-        // ===== NOVA FUNÇÃO: UPLOAD EM MÚLTIPLAS ETAPAS =====
-        async function uploadMultiEtapas(formData, numInscricao) {
-            return new Promise(async (resolve, reject) => {
-                try {
-                    // PASSO 1: Enviar apenas os dados textuais e criar registro
-                    const dadosTexto = new FormData();
-                    
-                    // Copiar todos os campos não-arquivo
-                    for (let pair of formData.entries()) {
-                        if (!(pair[1] instanceof File)) {
-                            dadosTexto.append(pair[0], pair[1]);
-                        }
-                    }
-                    
-                    // Adicionar flag para indicar que é um cadastro inicial
-                    dadosTexto.append('upload_em_partes', 'true');
-                    dadosTexto.append('num_inscricao', numInscricao);
-                    
-                    console.log('📦 ETAPA 1: Criando registro do aluno...');
-                    atualizarProgresso(10, 'Criando registro...');
-                    
-                    const response1 = await fetch('/api/alunos/criar-esboco', {
-                        method: 'POST',
-                        body: dadosTexto
-                    });
-                    
-                    if (!response1.ok) {
-                        throw new Error(`Erro ao criar registro: ${response1.status}`);
-                    }
-                    
-                    const data1 = await response1.json();
-                    if (!data1.sucesso) {
-                        throw new Error(data1.erro || 'Erro ao criar registro');
-                    }
-                    
-                    const idAluno = data1.id;
-                    console.log(`✅ Registro criado com ID: ${idAluno}`);
-                    atualizarProgresso(20, 'Registro criado');
-                    
-                    // PASSO 2: Enviar os arquivos em lotes
-                    const arquivos = [];
-                    for (let pair of formData.entries()) {
-                        if (pair[1] instanceof File && pair[1].size > 0) {
-                            arquivos.push({
-                                campo: pair[0],
-                                arquivo: pair[1],
-                                nome: pair[1].name,
-                                tamanho: pair[1].size
-                            });
-                        }
-                    }
-                    
-                    console.log(`📦 ETAPA 2: Enviando ${arquivos.length} arquivos em lotes...`);
-                    
-                    const BATCH_SIZE = 2; // 2 arquivos por lote
-                    let concluidos = 0;
-                    
-                    for (let i = 0; i < arquivos.length; i += BATCH_SIZE) {
-                        const batch = arquivos.slice(i, i + BATCH_SIZE);
-                        const batchFormData = new FormData();
-                        batchFormData.append('id_aluno', idAluno);
-                        batchFormData.append('num_inscricao', numInscricao);
-                        
-                        for (const item of batch) {
-                            batchFormData.append(item.campo, item.arquivo, item.nome);
-                        }
-                        
-                        const percentualInicio = 20 + (i / arquivos.length) * 70;
-                        atualizarProgresso(percentualInicio, `Enviando lote ${Math.floor(i/BATCH_SIZE) + 1}...`);
-                        
-                        const responseBatch = await fetch('/api/alunos/anexar-documentos', {
-                            method: 'POST',
-                            body: batchFormData
-                        });
-                        
-                        if (!responseBatch.ok) {
-                            throw new Error(`Erro ao enviar lote: ${responseBatch.status}`);
-                        }
-                        
-                        const batchData = await responseBatch.json();
-                        if (!batchData.sucesso) {
-                            throw new Error(batchData.erro || 'Erro no envio do lote');
-                        }
-                        
-                        concluidos += batch.length;
-                        const percentual = 20 + (concluidos / arquivos.length) * 70;
-                        atualizarProgresso(percentual, `Enviados ${concluidos}/${arquivos.length} arquivos`);
-                    }
-                    
-                    // PASSO 3: Finalizar cadastro
-                    atualizarProgresso(95, 'Finalizando cadastro...');
-                    
-                    const finalFormData = new FormData();
-                    finalFormData.append('id_aluno', idAluno);
-                    finalFormData.append('num_inscricao', numInscricao);
-                    finalFormData.append('finalizar', 'true');
-                    
-                    const responseFinal = await fetch('/api/alunos/finalizar-cadastro', {
-                        method: 'POST',
-                        body: finalFormData
-                    });
-                    
-                    if (!responseFinal.ok) {
-                        throw new Error(`Erro ao finalizar: ${responseFinal.status}`);
-                    }
-                    
-                    const dataFinal = await responseFinal.json();
-                    atualizarProgresso(100, 'Concluído!');
-                    
-                    resolve(dataFinal);
-                    
-                } catch (error) {
-                    console.error('❌ Erro no upload multi-etapas:', error);
-                    reject(error);
-                }
-            });
-        }
-
-        // ===== FUNÇÃO PARA REDIMENSIONAR IMAGEM =====
-        async function redimensionarImagem(dataURL, maxWidth = 800, maxHeight = 800, qualidade = 0.7) {
-            return new Promise((resolve, reject) => {
-                const img = new Image();
-                img.onload = () => {
-                    let width = img.width;
-                    let height = img.height;
-                    
-                    if (width > maxWidth) {
-                        height = (height * maxWidth) / width;
-                        width = maxWidth;
-                    }
-                    if (height > maxHeight) {
-                        width = (width * maxHeight) / height;
-                        height = maxHeight;
-                    }
-                    
-                    const canvas = document.createElement('canvas');
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    
-                    const newDataURL = canvas.toDataURL('image/jpeg', qualidade);
-                    resolve(newDataURL);
-                };
-                img.onerror = reject;
-                img.src = dataURL;
-            });
-        }
-
-        // ===== FUNÇÃO PARA PREPARAR ARQUIVOS =====
-        async function prepararArquivos(formData) {
-            const novosArquivos = [];
-            
-            for (let pair of formData.entries()) {
-                if (pair[1] instanceof File && pair[1].size > 0) {
-                    const file = pair[1];
-                    
-                    // Se for imagem, redimensiona para reduzir tamanho
-                    if (file.type.startsWith('image/')) {
-                        try {
-                            const reader = new FileReader();
-                            const dataURL = await new Promise((resolve) => {
-                                reader.onload = (e) => resolve(e.target.result);
-                                reader.readAsDataURL(file);
-                            });
-                            
-                            const redimensionada = await redimensionarImagem(dataURL, 1200, 1200, 0.7);
-                            const blob = await fetch(redimensionada).then(r => r.blob());
-                            const novoFile = new File([blob], file.name.replace(/\.(jpg|jpeg|png|gif)$/i, '.jpg'), { type: 'image/jpeg' });
-                            
-                            novosArquivos.push({ campo: pair[0], arquivo: novoFile });
-                        } catch (err) {
-                            console.warn(`Erro ao redimensionar ${pair[0]}:`, err);
-                            novosArquivos.push({ campo: pair[0], arquivo: file });
-                        }
-                    } else {
-                        novosArquivos.push({ campo: pair[0], arquivo: file });
-                    }
-                }
-            }
-            
-            // Criar novo FormData com os arquivos processados
-            const novoFormData = new FormData();
-            for (let pair of formData.entries()) {
-                if (!(pair[1] instanceof File)) {
-                    novoFormData.append(pair[0], pair[1]);
-                }
-            }
-            for (const item of novosArquivos) {
-                novoFormData.append(item.campo, item.arquivo);
-            }
-            
-            return novoFormData;
-        }
-
-        // ===== FUNÇÃO PARA CAPTURAR FOTO DA CÂMERA =====
-        async function capturarFoto(id) {
-            const video = document.getElementById(id + '_video');
-            const canvas = document.getElementById(id + '_canvas');
-            const img = document.getElementById(id + '_img');
-            
-            if (!video.classList.contains('active')) {
-                mostrarNotificacao('Abra a câmera primeiro!', 'warning');
-                return;
-            }
-            
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            
-            const dataURL = canvas.toDataURL('image/jpeg', 0.7);
-            const imagemRedimensionada = await redimensionarImagem(dataURL, 800, 800, 0.65);
-            
-            img.src = imagemRedimensionada;
-            img.classList.add('active');
-            
-            const prefix = id.split('_')[0];
-            const reviewDiv = document.getElementById('review-foto-' + prefix);
-            if (reviewDiv) {
-                reviewDiv.innerHTML = `<img src="${imagemRedimensionada}" class="photo-thumbnail">`;
-            }
-            
-            fecharCamera(id);
-            mostrarNotificacao('Foto capturada com sucesso!', 'success');
-        }
-
-        // ===== FUNÇÃO PARA PREVIEW DE ARQUIVO =====
-        async function previewArquivo(input, imgId) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                mostrarLoading(true);
-                
-                try {
-                    // Redimensiona a imagem se for o caso
-                    let arquivoFinal = file;
-                    if (file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        const dataURL = await new Promise((resolve) => {
-                            reader.onload = (e) => resolve(e.target.result);
-                            reader.readAsDataURL(file);
-                        });
-                        const redimensionada = await redimensionarImagem(dataURL, 1024, 1024, 0.7);
-                        const blob = await fetch(redimensionada).then(r => r.blob());
-                        arquivoFinal = new File([blob], file.name.replace(/\.(jpg|jpeg|png|gif)$/i, '.jpg'), { type: 'image/jpeg' });
-                    }
-                    
-                    // Atualiza o input com o arquivo processado
-                    const dataTransfer = new DataTransfer();
-                    dataTransfer.items.add(arquivoFinal);
-                    input.files = dataTransfer.files;
-                    
-                    // Mostra preview
-                    if (arquivoFinal.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            const img = document.getElementById(imgId);
-                            if (img) {
-                                img.src = e.target.result;
-                                img.classList.add('active');
-                                
-                                const prefix = imgId.split('_')[0];
-                                const reviewDiv = document.getElementById('review-foto-' + prefix);
-                                if (reviewDiv) {
-                                    reviewDiv.innerHTML = `<img src="${e.target.result}" class="photo-thumbnail">`;
-                                }
-                            }
-                        };
-                        reader.readAsDataURL(arquivoFinal);
-                    }
-                    
-                    mostrarNotificacao('Arquivo anexado com sucesso!', 'success');
-                } catch (err) {
-                    console.error('Erro ao processar arquivo:', err);
-                    mostrarNotificacao('Erro ao processar arquivo.', 'error');
-                } finally {
-                    mostrarLoading(false);
-                }
-            }
-        }
-
-        // ===== FUNÇÃO PRINCIPAL DE SALVAR =====
-        function salvarCadastro() {
-            // Verifica se é modo edição
-            const isEditing = alunoParaEditar && alunoParaEditar !== 'null';
-            
-            // Obtém o número de inscrição atual
-            const numInscricao = document.getElementById('num_inscricao').value;
-            
-            // Se for edição e o número não corresponder ao original, corrige
-            if (isEditing && numInscricao !== alunoParaEditar.num_inscricao) {
-                console.warn('⚠️ Número de inscrição foi alterado! Corrigindo...');
-                document.getElementById('num_inscricao').value = alunoParaEditar.num_inscricao;
-            }
-            
-            // Valida os campos obrigatórios
-            for (let i = 1; i <= 2; i++) {
-                if (!validarPasso(i)) {
-                    passoAtual = i;
-                    atualizarPasso(i);
-                    atualizarBotoes();
-                    mostrarNotificacao('Complete todos os campos obrigatórios antes de finalizar!', 'warning');
-                    rolarAteCampoVazio(i);
-                    return;
-                }
-            }
-            
-            // Na edição, não precisa validar fotos
-            if (!isEditing) {
-                if (!validarPasso(3)) {
-                    passoAtual = 3;
-                    atualizarPasso(3);
-                    atualizarBotoes();
-                    mostrarNotificacao('Complete todos os campos obrigatórios antes de finalizar!', 'warning');
-                    rolarAteCampoVazio(3);
-                    return;
-                }
-            }
-            
-            mostrarNotificacao('Preparando arquivos...', 'success');
-            mostrarLoading(true);
-            
-            // Cria o FormData com os dados do formulário
-            const formDataOriginal = new FormData(document.getElementById('formCadastroAluno'));
-            
-            // Se for edição, adiciona o número de inscrição
-            if (isEditing) {
-                formDataOriginal.append('modo_edicao', 'true');
-                formDataOriginal.append('num_inscricao_original', alunoParaEditar.num_inscricao);
-            }
-            
-            // ===== PROCESSAMENTO DE FOTOS =====
-            console.log('\n🔍 PROCESSANDO FOTOS...');
-            console.log('=' .repeat(60));
-            
-            // Lista de todas as possíveis fotos
-            const fotosParaProcessar = [
-                { id: 'aluno_foto_img', nome: 'foto_aluno' },
-                { id: 'resp_foto_img', nome: 'foto_responsavel1' }
+        if (passo === 3) {
+            const docsAluno = [
+                { id: 'aluno_foto_img', msg: 'msg-aluno-foto', tipo: 'foto' },
+                { id: 'aluno_certidao', msg: 'msg-aluno-certidao', tipo: 'file' },
+                { id: 'aluno_rg', msg: 'msg-aluno-rg', tipo: 'file' },
+                { id: 'aluno_vacinacao', msg: 'msg-aluno-vacinacao', tipo: 'file' }
             ];
             
-            for (let i = 2; i <= 5; i++) {
-                fotosParaProcessar.push({ id: `resp${i}_foto_img`, nome: `foto_responsavel${i}` });
-            }
-            for (let i = 1; i <= 3; i++) {
-                fotosParaProcessar.push({ id: `terceiro${i}_foto_img`, nome: `foto_terceiro${i}` });
-            }
-            fotosParaProcessar.push({ id: 'transporte_foto_img', nome: 'foto_transporte' });
-            
-            // Função para converter dataURL para File
-            function dataURLtoFile(dataurl, filename) {
-                try {
-                    if (!dataurl || !dataurl.startsWith('data:')) return null;
-                    
-                    const arr = dataurl.split(',');
-                    const mime = arr[0].match(/:(.*?);/)[1];
-                    const bstr = atob(arr[1]);
-                    let n = bstr.length;
-                    const u8arr = new Uint8Array(n);
-                    
-                    while (n--) {
-                        u8arr[n] = bstr.charCodeAt(n);
-                    }
-                    
-                    return new File([u8arr], filename, { type: mime });
-                } catch(e) {
-                    return null;
-                }
-            }
-            
-            // Processa as fotos
-            fotosParaProcessar.forEach(foto => {
-                const imgElement = document.getElementById(foto.id);
+            docsAluno.forEach(doc => {
+                const elemento = document.getElementById(doc.id);
+                const msg = document.getElementById(doc.msg);
                 
-                if (imgElement && imgElement.classList.contains('active') && imgElement.src && imgElement.src.startsWith('data:')) {
-                    const file = dataURLtoFile(imgElement.src, `${foto.nome}.jpg`);
-                    if (file) {
-                        if (formDataOriginal.has(foto.nome)) {
-                            formDataOriginal.delete(foto.nome);
-                        }
-                        formDataOriginal.append(foto.nome, file);
-                        console.log(`✅ Foto processada: ${foto.nome} (${file.size} bytes)`);
+                if (doc.tipo === 'foto') {
+                    if (!elemento.classList.contains('active')) {
+                        msg.style.display = 'block';
+                        valido = false;
+                    }
+                } else {
+                    if (!elemento.files || elemento.files.length === 0) {
+                        msg.style.display = 'block';
+                        valido = false;
                     }
                 }
             });
             
-            // Prepara os arquivos (redimensiona imagens)
-            prepararArquivos(formDataOriginal).then(formDataPreparado => {
-                // Verifica se o servidor suporta upload multi-etapas
-                // Por enquanto, usamos o método tradicional mas com otimizações
-                
-                const url = isEditing ? '/api/alunos/atualizar' : '/api/alunos/cadastrar';
-                
-                console.log(`\n📦 Enviando para o servidor: ${url}`);
-                
-                // Calcula tamanho total
-                let tamanhoTotal = 0;
-                for (let pair of formDataPreparado.entries()) {
-                    if (pair[1] instanceof File) {
-                        tamanhoTotal += pair[1].size;
-                    }
-                }
-                
-                console.log(`📊 Tamanho total após compressão: ${(tamanhoTotal/1024/1024).toFixed(2)}MB`);
-                
-                if (tamanhoTotal > 4.5 * 1024 * 1024) {
-                    console.log('⚠️ Ainda excedendo limite, usando modo de upload em partes...');
-                    
-                    // Usa o upload multi-etapas se disponível
-                    uploadMultiEtapas(formDataPreparado, numInscricao)
-                        .then(data => {
-                            mostrarLoading(false);
-                            if (data.sucesso) {
-                                mostrarNotificacao('✅ Cadastro realizado com sucesso!', 'success');
-                                setTimeout(() => {
-                                    window.location.href = '/';
-                                }, 2000);
-                            } else {
-                                mostrarNotificacao('Erro: ' + (data.erro || 'Erro desconhecido'), 'error');
-                            }
-                        })
-                        .catch(error => {
-                            mostrarLoading(false);
-                            console.error('Erro no upload multi-etapas:', error);
-                            mostrarNotificacao('Erro ao salvar. Tente novamente com arquivos menores.', 'error');
-                        });
-                    return;
-                }
-                
-                // Se estiver dentro do limite, faz upload normal
-                atualizarProgresso(30, 'Enviando...');
-                
-                fetch(url, {
-                    method: 'POST',
-                    body: formDataPreparado
-                })
-                .then(async response => {
-                    console.log(`   📥 Status HTTP: ${response.status}`);
-                    atualizarProgresso(80, 'Processando resposta...');
-                    
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 100)}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    mostrarLoading(false);
-                    atualizarProgresso(100, 'Concluído!');
-                    
-                    if (data.sucesso) {
-                        const mensagem = isEditing ? '✅ Cadastro atualizado com sucesso!' : '✅ Cadastro realizado com sucesso!';
-                        mostrarNotificacao(mensagem, 'success');
-                        
-                        setTimeout(() => {
-                            window.location.href = '/';
-                        }, 2000);
-                    } else {
-                        console.error('❌ Erro no servidor:', data.erro);
-                        mostrarNotificacao('Erro ao salvar: ' + (data.erro || 'Erro desconhecido'), 'error');
-                    }
-                })
-                .catch(error => {
-                    mostrarLoading(false);
-                    console.error('❌ ERRO:', error);
-                    mostrarNotificacao('Erro de conexão: ' + error.message, 'error');
-                });
-            }).catch(error => {
-                mostrarLoading(false);
-                console.error('Erro ao preparar arquivos:', error);
-                mostrarNotificacao('Erro ao processar arquivos', 'error');
-            });
-        }
-
-        // Função para resetar erros em tempo real
-        function configurarResetDeErros() {
-            document.querySelectorAll('input, select, textarea').forEach(campo => {
-                campo.addEventListener('input', function() {
-                    this.classList.remove('input-error');
-                    if (this.id) {
-                        const msgId = `msg-${this.id}`;
-                        const msgElement = document.getElementById(msgId);
-                        if (msgElement) msgElement.style.display = 'none';
-                    }
-                });
-                campo.addEventListener('change', function() {
-                    this.classList.remove('input-error');
-                    if (this.id) {
-                        const msgId = `msg-${this.id}`;
-                        const msgElement = document.getElementById(msgId);
-                        if (msgElement) msgElement.style.display = 'none';
-                    }
-                });
-            });
+            const docsResp = [
+                { id: 'resp_rg', msg: 'msg-resp-rg-doc' },
+                { id: 'resp_cpf', msg: 'msg-resp-cpf-doc' },
+                { id: 'resp_comprovante', msg: 'msg-resp-comprovante' }
+            ];
             
-            document.querySelectorAll('input[type="file"]').forEach(campo => {
-                campo.addEventListener('change', function() {
-                    this.classList.remove('input-error');
-                    if (this.id) {
-                        const msgId = `msg-${this.id}`;
-                        const msgElement = document.getElementById(msgId);
-                        if (msgElement) msgElement.style.display = 'none';
-                    }
-                });
+            docsResp.forEach(doc => {
+                const elemento = document.getElementById(doc.id);
+                const msg = document.getElementById(doc.msg);
+                
+                if (!elemento.files || elemento.files.length === 0) {
+                    msg.style.display = 'block';
+                    valido = false;
+                }
             });
-        }
-
-        function toggleTerceiros() {
-            const container = document.getElementById('terceiros-container');
-            const docsSection = document.getElementById('terceiros-docs-section');
-            
-            terceirosAtivos = !terceirosAtivos;
             
             if (terceirosAtivos) {
-                container.style.display = 'block';
-                docsSection.style.display = 'block';
-            } else {
-                container.style.display = 'none';
-                docsSection.style.display = 'none';
-            }
-        }
-
-        function mudarPasso(direcao) {
-            const passoAtualElement = document.querySelector(`.step-item[data-step="${passoAtual}"]`);
-
-            if (direcao === 'next') {
-                if (!validarPasso(passoAtual)) {
-                    mostrarNotificacao('Preencha todos os campos obrigatórios marcados em vermelho', 'warning');
-                    rolarAteCampoVazio(passoAtual);
-                    return;
-                }
-                passoAtualElement.classList.add('completed');
-                passoAtual++;
-            } else {
-                passoAtual--;
-            }
-
-            atualizarPasso(passoAtual);
-            atualizarBotoes();
-            
-            if (passoAtual === 4) {
-                atualizarResumo();
-            }
-        }
-
-        function irParaPasso(passo) {
-            for (let i = 1; i < passo; i++) {
-                if (!verificarPassoCompleto(i)) {
-                    mostrarNotificacao('Complete os passos anteriores primeiro!', 'warning');
-                    rolarAteCampoVazio(i);
-                    return;
-                }
-            }
-            
-            passoAtual = passo;
-            atualizarPasso(passoAtual);
-            atualizarBotoes();
-            
-            if (passoAtual === 4) {
-                atualizarResumo();
-            }
-        }
-
-        function rolarAteCampoVazio(passo) {
-            atualizarPasso(passo);
-            
-            if (passo === 1) {
-                const campos = ['nome', 'data_nasc', 'sexo', 'cep', 'endereco', 'numero', 'bairro', 'cidade', 'uf', 'unidade', 'turma', 'periodo', 'ano_letivo', 'tipo_sanguineo'];
-                for (let campo of campos) {
-                    const elemento = document.getElementById(campo);
-                    if (elemento && !elemento.value) {
-                        elemento.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        elemento.focus();
-                        break;
-                    }
-                }
-            } else if (passo === 2) {
-                const respNome = document.querySelector('input[name="responsavel1_nome"]');
-                const respTelefone = document.querySelector('input[name="responsavel1_telefone"]');
-                const respCpf = document.querySelector('input[name="responsavel1_cpf"]');
-                const respRg = document.querySelector('input[name="responsavel1_rg"]');
+                const terceiroRg = document.getElementById('terceiro_rg');
+                const msg = document.getElementById('msg-terceiro-rg-doc');
                 
-                if (respNome && !respNome.value) {
-                    respNome.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    respNome.focus();
-                    return;
+                if (!terceiroRg.files || terceiroRg.files.length === 0) {
+                    msg.style.display = 'block';
+                    valido = false;
                 }
-                if (respTelefone && !respTelefone.value) {
-                    respTelefone.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    respTelefone.focus();
-                    return;
-                }
-                if (respCpf && !respCpf.value) {
-                    respCpf.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    respCpf.focus();
-                    return;
-                }
-                if (respRg && !respRg.value) {
-                    respRg.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    respRg.focus();
-                    return;
-                }
-                
-                if (terceirosAtivos) {
-                    const terceiros = document.querySelectorAll('.terceiro-card');
-                    for (let terceiro of terceiros) {
-                        const nomeInput = terceiro.querySelector('input[name*="_nome"]');
-                        if (nomeInput && !nomeInput.value) {
-                            nomeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            nomeInput.focus();
-                            return;
-                        }
-                    }
-                }
-                
-                if (transporteAtivo) {
-                    const transpNome = document.querySelector('input[name="transporte_nome"]');
-                    if (transpNome && !transpNome.value) {
-                        transpNome.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        transpNome.focus();
-                    }
-                }
-            } else if (passo === 3) {
-                const docs = [
-                    { id: 'aluno_foto_img', tipo: 'foto' },
-                    { id: 'aluno_certidao', tipo: 'file' },
-                    { id: 'aluno_rg', tipo: 'file' },
-                    { id: 'aluno_vacinacao', tipo: 'file' },
-                    { id: 'resp_rg', tipo: 'file' },
-                    { id: 'resp_cpf', tipo: 'file' },
-                    { id: 'resp_comprovante', tipo: 'file' }
+            }
+            
+            if (transporteAtivo) {
+                const docsTransp = [
+                    { id: 'transporte_rg', msg: 'msg-transporte-rg-doc' },
+                    { id: 'transporte_cpf', msg: 'msg-transporte-cpf-doc' },
+                    { id: 'transporte_cnh', msg: 'msg-transporte-cnh-doc' }
                 ];
                 
-                for (let doc of docs) {
-                    const elemento = document.getElementById(doc.id);
-                    if (doc.tipo === 'foto') {
-                        if (!elemento.classList.contains('active')) {
-                            elemento.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            break;
-                        }
-                    } else {
-                        if (!elemento.files || elemento.files.length === 0) {
-                            elemento.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        function verificarPassoCompleto(passo) {
-            if (passo === 1) {
-                const campos = ['nome', 'data_nasc', 'sexo', 'cep', 'endereco', 'numero', 'bairro', 'cidade', 'uf', 'unidade', 'turma', 'periodo', 'ano_letivo', 'tipo_sanguineo'];
-                return campos.every(campo => {
-                    const elemento = document.getElementById(campo);
-                    return elemento && elemento.value;
-                });
-            }
-            if (passo === 2) {
-                const respNome = document.querySelector('input[name="responsavel1_nome"]');
-                const respTelefone = document.querySelector('input[name="responsavel1_telefone"]');
-                const respCpf = document.querySelector('input[name="responsavel1_cpf"]');
-                const respRg = document.querySelector('input[name="responsavel1_rg"]');
-                const respFoto = document.getElementById('resp_foto_img');
-                
-                let valido = respNome && respNome.value && 
-                            respTelefone && respTelefone.value && 
-                            respCpf && respCpf.value && 
-                            respRg && respRg.value &&
-                            respFoto && respFoto.classList.contains('active');
-                
-                if (terceirosAtivos) {
-                    const terceiros = document.querySelectorAll('.terceiro-card');
-                    if (terceiros.length === 0) return false;
-                    
-                    for (let terceiro of terceiros) {
-                        const nomeInput = terceiro.querySelector('input[name*="_nome"]');
-                        const telefoneInput = terceiro.querySelector('input[name*="_telefone"]');
-                        const cpfInput = terceiro.querySelector('input[name*="_cpf"]');
-                        const rgInput = terceiro.querySelector('input[name*="_rg"]');
-                        
-                        if (!nomeInput.value || !telefoneInput.value || !cpfInput.value || !rgInput.value) {
-                            return false;
-                        }
-                    }
-                }
-                
-                if (transporteAtivo) {
-                    const transpNome = document.querySelector('input[name="transporte_nome"]');
-                    const transpCnpj = document.querySelector('input[name="transporte_cnpj"]');
-                    const transpCpf = document.querySelector('input[name="transporte_cpf"]');
-                    const transpRg = document.querySelector('input[name="transporte_rg"]');
-                    const transpTelefone = document.querySelector('input[name="transporte_telefone"]');
-                    const transpFoto = document.getElementById('transporte_foto_img');
-                    
-                    valido = valido && 
-                            transpNome && transpNome.value &&
-                            transpCnpj && transpCnpj.value &&
-                            transpCpf && transpCpf.value &&
-                            transpRg && transpRg.value &&
-                            transpTelefone && transpTelefone.value &&
-                            transpFoto && transpFoto.classList.contains('active');
-                }
-                
-                return valido;
-            }
-            if (passo === 3) {
-                const alunoFoto = document.getElementById('aluno_foto_img');
-                const alunoCertidao = document.getElementById('aluno_certidao');
-                const alunoRg = document.getElementById('aluno_rg');
-                const alunoVacinacao = document.getElementById('aluno_vacinacao');
-                const respRgDoc = document.getElementById('resp_rg');
-                const respCpfDoc = document.getElementById('resp_cpf');
-                const respComprovante = document.getElementById('resp_comprovante');
-                
-                let valido = alunoFoto.classList.contains('active') &&
-                            alunoCertidao.files.length > 0 &&
-                            alunoRg.files.length > 0 &&
-                            alunoVacinacao.files.length > 0 &&
-                            respRgDoc.files.length > 0 &&
-                            respCpfDoc.files.length > 0 &&
-                            respComprovante.files.length > 0;
-                
-                if (terceirosAtivos) {
-                    const terceiroRg = document.getElementById('terceiro_rg');
-                    valido = valido && terceiroRg.files.length > 0;
-                }
-                
-                if (transporteAtivo) {
-                    const transporteRg = document.getElementById('transporte_rg');
-                    const transporteCpf = document.getElementById('transporte_cpf');
-                    const transporteCnh = document.getElementById('transporte_cnh');
-                    valido = valido && 
-                            transporteRg.files.length > 0 &&
-                            transporteCpf.files.length > 0 &&
-                            transporteCnh.files.length > 0;
-                }
-                
-                return valido;
-            }
-            return true;
-        }
-
-        function validarPasso(passo) {
-            if (passo === 3 && alunoParaEditar && alunoParaEditar !== 'null') {
-                console.log('📝 Modo edição - ignorando validação de fotos novas');
-                return true;
-            }
-            
-            let valido = true;
-            
-            document.querySelectorAll('.input-error').forEach(el => {
-                el.classList.remove('input-error');
-            });
-            document.querySelectorAll('.field-message').forEach(msg => {
-                msg.style.display = 'none';
-            });
-            
-            if (passo === 1) {
-                const campos = [
-                    'nome', 'data_nasc', 'sexo', 'cep', 'endereco', 
-                    'numero', 'bairro', 'cidade', 'uf', 'unidade', 
-                    'turma', 'periodo', 'ano_letivo', 'tipo_sanguineo'
-                ];
-                
-                campos.forEach(campo => {
-                    const elemento = document.getElementById(campo);
-                    const msg = document.getElementById(`msg-${campo}`);
-                    if (elemento && !elemento.value) {
-                        if (msg) {
-                            msg.style.display = 'block';
-                            elemento.classList.add('input-error');
-                        }
-                        valido = false;
-                    }
-                });
-            }
-            
-            if (passo === 2) {
-                const respNome = document.querySelector('input[name="responsavel1_nome"]');
-                const respTelefone = document.querySelector('input[name="responsavel1_telefone"]');
-                const respCpf = document.querySelector('input[name="responsavel1_cpf"]');
-                const respRg = document.querySelector('input[name="responsavel1_rg"]');
-                const respFoto = document.getElementById('resp_foto_img');
-                
-                if (respNome && !respNome.value) {
-                    document.getElementById('msg-resp-nome').style.display = 'block';
-                    respNome.classList.add('input-error');
-                    valido = false;
-                }
-                
-                if (respTelefone && !respTelefone.value) {
-                    document.getElementById('msg-resp-telefone').style.display = 'block';
-                    respTelefone.classList.add('input-error');
-                    valido = false;
-                }
-                
-                if (respCpf && !respCpf.value) {
-                    document.getElementById('msg-resp-cpf').style.display = 'block';
-                    respCpf.classList.add('input-error');
-                    valido = false;
-                } else if (respCpf && respCpf.value && !validarCPF(respCpf.value)) {
-                    document.getElementById('msg-resp-cpf').textContent = 'CPF inválido';
-                    document.getElementById('msg-resp-cpf').style.display = 'block';
-                    respCpf.classList.add('input-error');
-                    valido = false;
-                }
-                
-                if (respRg && !respRg.value) {
-                    document.getElementById('msg-resp-rg').style.display = 'block';
-                    respRg.classList.add('input-error');
-                    valido = false;
-                }
-                
-                if (respFoto && !respFoto.classList.contains('active')) {
-                    document.getElementById('msg-resp-foto').style.display = 'block';
-                    valido = false;
-                }
-
-                if (terceirosAtivos) {
-                    const terceiros = document.querySelectorAll('.terceiro-card');
-                    if (terceiros.length === 0) {
-                        mostrarNotificacao('Adicione pelo menos um terceiro autorizado', 'warning');
-                        valido = false;
-                    } else {
-                        terceiros.forEach((terceiro, index) => {
-                            const num = index + 1;
-                            
-                            const nomeInput = terceiro.querySelector(`input[name="terceiro${num}_nome"]`);
-                            const telefoneInput = terceiro.querySelector(`input[name="terceiro${num}_telefone"]`);
-                            const cpfInput = terceiro.querySelector(`input[name="terceiro${num}_cpf"]`);
-                            const rgInput = terceiro.querySelector(`input[name="terceiro${num}_rg"]`);
-                            const fotoImg = document.getElementById(`terceiro${num}_foto_img`);
-                            
-                            if (nomeInput && !nomeInput.value) {
-                                document.getElementById(`msg-terceiro${num}-nome`).style.display = 'block';
-                                nomeInput.classList.add('input-error');
-                                valido = false;
-                            }
-                            
-                            if (telefoneInput && !telefoneInput.value) {
-                                document.getElementById(`msg-terceiro${num}-telefone`).style.display = 'block';
-                                telefoneInput.classList.add('input-error');
-                                valido = false;
-                            }
-                            
-                            if (cpfInput && !cpfInput.value) {
-                                document.getElementById(`msg-terceiro${num}-cpf`).style.display = 'block';
-                                cpfInput.classList.add('input-error');
-                                valido = false;
-                            } else if (cpfInput && cpfInput.value && !validarCPF(cpfInput.value)) {
-                                document.getElementById(`msg-terceiro${num}-cpf`).textContent = 'CPF inválido';
-                                document.getElementById(`msg-terceiro${num}-cpf`).style.display = 'block';
-                                cpfInput.classList.add('input-error');
-                                valido = false;
-                            }
-                            
-                            if (rgInput && !rgInput.value) {
-                                document.getElementById(`msg-terceiro${num}-rg`).style.display = 'block';
-                                rgInput.classList.add('input-error');
-                                valido = false;
-                            }
-                            
-                            if (fotoImg && !fotoImg.classList.contains('active')) {
-                                document.getElementById(`msg-terceiro${num}-foto`).style.display = 'block';
-                                valido = false;
-                            }
-                        });
-                    }
-                }
-
-                if (transporteAtivo) {
-                    const transpNome = document.querySelector('input[name="transporte_nome"]');
-                    const transpCnpj = document.querySelector('input[name="transporte_cnpj"]');
-                    const transpCpf = document.querySelector('input[name="transporte_cpf"]');
-                    const transpRg = document.querySelector('input[name="transporte_rg"]');
-                    const transpTelefone = document.querySelector('input[name="transporte_telefone"]');
-                    const transpFoto = document.getElementById('transporte_foto_img');
-                    
-                    if (transpNome && !transpNome.value) {
-                        document.getElementById('msg-transporte-nome').style.display = 'block';
-                        transpNome.classList.add('input-error');
-                        valido = false;
-                    }
-                    
-                    if (transpCnpj && !transpCnpj.value) {
-                        document.getElementById('msg-transporte-cnpj').style.display = 'block';
-                        transpCnpj.classList.add('input-error');
-                        valido = false;
-                    }
-                    
-                    if (transpCpf && !transpCpf.value) {
-                        document.getElementById('msg-transporte-cpf').style.display = 'block';
-                        transpCpf.classList.add('input-error');
-                        valido = false;
-                    } else if (transpCpf && transpCpf.value && !validarCPF(transpCpf.value)) {
-                        document.getElementById('msg-transporte-cpf').textContent = 'CPF inválido';
-                        document.getElementById('msg-transporte-cpf').style.display = 'block';
-                        transpCpf.classList.add('input-error');
-                        valido = false;
-                    }
-                    
-                    if (transpRg && !transpRg.value) {
-                        document.getElementById('msg-transporte-rg').style.display = 'block';
-                        transpRg.classList.add('input-error');
-                        valido = false;
-                    }
-                    
-                    if (transpTelefone && !transpTelefone.value) {
-                        document.getElementById('msg-transporte-telefone').style.display = 'block';
-                        transpTelefone.classList.add('input-error');
-                        valido = false;
-                    }
-                    
-                    if (transpFoto && !transpFoto.classList.contains('active')) {
-                        document.getElementById('msg-transporte-foto').style.display = 'block';
-                        valido = false;
-                    }
-                }
-            }
-            
-            if (passo === 3) {
-                const docsAluno = [
-                    { id: 'aluno_foto_img', msg: 'msg-aluno-foto', tipo: 'foto' },
-                    { id: 'aluno_certidao', msg: 'msg-aluno-certidao', tipo: 'file' },
-                    { id: 'aluno_rg', msg: 'msg-aluno-rg', tipo: 'file' },
-                    { id: 'aluno_vacinacao', msg: 'msg-aluno-vacinacao', tipo: 'file' }
-                ];
-                
-                docsAluno.forEach(doc => {
-                    const elemento = document.getElementById(doc.id);
-                    const msg = document.getElementById(doc.msg);
-                    
-                    if (doc.tipo === 'foto') {
-                        if (!elemento.classList.contains('active')) {
-                            msg.style.display = 'block';
-                            valido = false;
-                        }
-                    } else {
-                        if (!elemento.files || elemento.files.length === 0) {
-                            msg.style.display = 'block';
-                            valido = false;
-                        }
-                    }
-                });
-                
-                const docsResp = [
-                    { id: 'resp_rg', msg: 'msg-resp-rg-doc' },
-                    { id: 'resp_cpf', msg: 'msg-resp-cpf-doc' },
-                    { id: 'resp_comprovante', msg: 'msg-resp-comprovante' }
-                ];
-                
-                docsResp.forEach(doc => {
+                docsTransp.forEach(doc => {
                     const elemento = document.getElementById(doc.id);
                     const msg = document.getElementById(doc.msg);
                     
@@ -3237,534 +2674,734 @@
                         valido = false;
                     }
                 });
-                
-                if (terceirosAtivos) {
-                    const terceiroRg = document.getElementById('terceiro_rg');
-                    const msg = document.getElementById('msg-terceiro-rg-doc');
-                    
-                    if (!terceiroRg.files || terceiroRg.files.length === 0) {
-                        msg.style.display = 'block';
-                        valido = false;
-                    }
-                }
-                
-                if (transporteAtivo) {
-                    const docsTransp = [
-                        { id: 'transporte_rg', msg: 'msg-transporte-rg-doc' },
-                        { id: 'transporte_cpf', msg: 'msg-transporte-cpf-doc' },
-                        { id: 'transporte_cnh', msg: 'msg-transporte-cnh-doc' }
-                    ];
-                    
-                    docsTransp.forEach(doc => {
-                        const elemento = document.getElementById(doc.id);
-                        const msg = document.getElementById(doc.msg);
-                        
-                        if (!elemento.files || elemento.files.length === 0) {
-                            msg.style.display = 'block';
-                            valido = false;
-                        }
-                    });
-                }
             }
-            
-            return valido;
         }
+        
+        return valido;
+    }
 
-        function atualizarPasso(passo) {
-            document.querySelectorAll('.step-item').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
-            
-            document.querySelector(`.step-item[data-step="${passo}"]`).classList.add('active');
-            document.getElementById(`step${passo}`).classList.add('active');
+    function atualizarPasso(passo) {
+        document.querySelectorAll('.step-item').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+        
+        document.querySelector(`.step-item[data-step="${passo}"]`).classList.add('active');
+        document.getElementById(`step${passo}`).classList.add('active');
+    }
+
+    function atualizarBotoes() {
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const btnSave = document.getElementById('btnSave');
+    
+    // Se estiver no primeiro passo, esconde o botão "Anterior"
+    if (passoAtual === 1) {
+        btnPrev.style.display = 'none';
+    } else {
+        btnPrev.style.display = 'inline-flex';
+        btnPrev.disabled = false;
+    }
+    
+    // Se estiver no último passo, mostra o botão "Salvar" e esconde "Próximo"
+    if (passoAtual === totalPassos) {
+        btnNext.style.display = 'none';
+        btnSave.style.display = 'inline-flex';
+    } else {
+        btnNext.style.display = 'inline-flex';
+        btnSave.style.display = 'none';
+    }
+}
+
+    function contarDocumentosAnexados() {
+        let docs = {
+            aluno: [],
+            responsavel: [],
+            terceiros: [],
+            transporte: []
+        };
+        
+        const alunoCertidao = document.getElementById('aluno_certidao');
+        const alunoRg = document.getElementById('aluno_rg');
+        const alunoVacinacao = document.getElementById('aluno_vacinacao');
+        const alunoLaudos = document.getElementById('aluno_laudos');
+        
+        if (alunoCertidao && alunoCertidao.files.length > 0) docs.aluno.push('Certidão');
+        if (alunoRg && alunoRg.files.length > 0) docs.aluno.push('RG');
+        if (alunoVacinacao && alunoVacinacao.files.length > 0) docs.aluno.push('Vacinação');
+        if (alunoLaudos && alunoLaudos.files.length > 0) docs.aluno.push('Laudos');
+        
+        // Também verificar se o card está marcado (para arquivos existentes)
+        const laudosCard = document.getElementById('laudos-card');
+        if (laudosCard && laudosCard.classList.contains('has-file')) {
+            if (!docs.aluno.includes('Laudos')) {
+                docs.aluno.push('Laudos');
+            }
         }
-
-        function atualizarBotoes() {
-            const btnPrev = document.getElementById('btnPrev');
-            const btnNext = document.getElementById('btnNext');
-            const btnSave = document.getElementById('btnSave');
+        
+        const respRg = document.getElementById('resp_rg');
+        const respCpf = document.getElementById('resp_cpf');
+        const respComprovante = document.getElementById('resp_comprovante');
+        
+        if (respRg && respRg.files.length > 0) docs.responsavel.push('RG');
+        if (respCpf && respCpf.files.length > 0) docs.responsavel.push('CPF');
+        if (respComprovante && respComprovante.files.length > 0) docs.responsavel.push('Comprovante');
+        
+        if (terceirosAtivos) {
+            const terceiroRg = document.getElementById('terceiro_rg');
+            if (terceiroRg && terceiroRg.files.length > 0) docs.terceiros.push('RG');
+        }
+        
+        if (transporteAtivo) {
+            const transporteRg = document.getElementById('transporte_rg');
+            const transporteCpf = document.getElementById('transporte_cpf');
+            const transporteCnh = document.getElementById('transporte_cnh');
             
-            if (passoAtual === 1) {
-                btnPrev.style.display = 'none';
+            if (transporteRg && transporteRg.files.length > 0) docs.transporte.push('RG');
+            if (transporteCpf && transporteCpf.files.length > 0) docs.transporte.push('CPF');
+            if (transporteCnh && transporteCnh.files.length > 0) docs.transporte.push('CNH');
+        }
+        
+        return docs;
+    }
+
+    function atualizarResumo() {
+        document.getElementById('review-nome').textContent = document.getElementById('nome').value || '-';
+        document.getElementById('review-data').textContent = document.getElementById('data_nasc').value || '-';
+        document.getElementById('review-ra').textContent = document.getElementById('ra').value || 'Não informado';
+        document.getElementById('review-endereco').textContent = 
+            `${document.getElementById('endereco').value || ''}, ${document.getElementById('numero').value || ''} - ${document.getElementById('bairro').value || ''}`;
+        document.getElementById('review-turma').textContent = document.getElementById('turma').value || '-';
+        document.getElementById('review-unidade').textContent = document.getElementById('unidade').value || '-';
+        
+        document.getElementById('review-tipo-sanguineo').textContent = document.getElementById('tipo_sanguineo').value || '-';
+        document.getElementById('review-plano-saude').textContent = document.getElementById('plano_saude').value || '-';
+        document.getElementById('review-alergias').textContent = document.getElementById('alergias').value || '-';
+        
+        const deficiencia = document.getElementById('deficiencia').value;
+        document.getElementById('review-deficiencia').textContent = deficiencia === 'sim' ? 'Sim' : 'Não';
+        
+        document.getElementById('review-resp-nome').textContent = document.querySelector('input[name="responsavel1_nome"]').value || '-';
+        document.getElementById('review-resp-parentesco').textContent = document.querySelector('select[name="responsavel1_parentesco"]').value || '-';
+        document.getElementById('review-resp-telefone').textContent = document.querySelector('input[name="responsavel1_telefone"]').value || '-';
+        document.getElementById('review-resp-telefone-contato').textContent = document.querySelector('input[name="responsavel1_telefone_contato"]').value || '-';
+        document.getElementById('review-resp-cpf').textContent = document.querySelector('input[name="responsavel1_cpf"]').value || '-';
+        
+        const docs = contarDocumentosAnexados();
+        
+        const docsAlunoEl = document.getElementById('review-docs-aluno');
+        const docsRespEl = document.getElementById('review-docs-resp');
+        const docsTerceirosEl = document.getElementById('review-docs-terceiros');
+        const docsTransporteEl = document.getElementById('review-docs-transporte');
+        
+        if (docsAlunoEl) docsAlunoEl.textContent = docs.aluno.length > 0 ? docs.aluno.join(', ') : 'Nenhum';
+        if (docsRespEl) docsRespEl.textContent = docs.responsavel.length > 0 ? docs.responsavel.join(', ') : 'Nenhum';
+        if (docsTerceirosEl) docsTerceirosEl.textContent = docs.terceiros.length > 0 ? docs.terceiros.join(', ') : 'Nenhum';
+        if (docsTransporteEl) docsTransporteEl.textContent = docs.transporte.length > 0 ? docs.transporte.join(', ') : 'Nenhum';
+    }
+
+    function limparFormulario() {
+    document.querySelectorAll('input:not([readonly]), select, textarea').forEach(campo => {
+        if (campo.type === 'checkbox') {
+            campo.checked = false;
+        } else {
+            campo.value = '';
+        }
+    });
+    
+    document.querySelectorAll('.foto-capturada').forEach(img => {
+        img.classList.remove('active');
+        img.src = '';
+    });
+    
+    document.querySelectorAll('[id^="review-foto-"]').forEach(div => {
+        div.innerHTML = '';
+    });
+    
+    document.querySelectorAll('.input-error').forEach(el => {
+        el.classList.remove('input-error');
+    });
+    
+    document.querySelectorAll('.field-message').forEach(msg => {
+        msg.style.display = 'none';
+    });
+    
+    document.querySelectorAll('.upload-card-clean').forEach(card => {
+        card.classList.remove('has-file');
+    });
+    
+    terceirosAtivos = false;
+    transporteAtivo = false;
+    document.getElementById('terceiros-container').style.display = 'none';
+    document.getElementById('terceiros-docs-section').style.display = 'none';
+    document.getElementById('transporte-container').style.display = 'none';
+    document.getElementById('transporte_docs_section').style.display = 'none';
+    
+    passoAtual = 1;
+    atualizarPasso(1);
+    atualizarBotoes();
+    
+    // Só gera novo número se NÃO for modo edição
+    const isEditing = typeof alunoParaEditar !== 'undefined' && alunoParaEditar && alunoParaEditar !== 'null';
+    if (!isEditing) {
+        gerarNumeroInscricao();
+    }
+    
+    mostrarNotificacao('Cadastro limpo! Pronto para novo registro.', 'success');
+}
+
+// ===== FUNÇÃO PARA ABRIR A CÂMERA =====
+async function abrirCamera(id) {
+    console.log(`📷 Abrindo câmera: ${id}`);
+    fecharCamera(id);
+    const video = document.getElementById(id + '_video');
+    
+    if (!video) {
+        console.error(`❌ Video não encontrado: ${id}_video`);
+        mostrarNotificacao('Erro: elemento de vídeo não encontrado', 'error');
+        return;
+    }
+    
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        video.classList.add('active');
+        cameraStreams[id] = stream;
+        console.log(`✅ Câmera aberta: ${id}`);
+        mostrarNotificacao('Câmera aberta! Clique em "Capturar"', 'success');
+    } catch (err) {
+        console.error(`❌ Erro ao abrir câmera:`, err);
+        let mensagem = 'Erro ao acessar câmera. ';
+        if (err.name === 'NotAllowedError') {
+            mensagem += 'Permissão negada. Autorize o acesso.';
+        } else if (err.name === 'NotFoundError') {
+            mensagem += 'Nenhuma câmera encontrada.';
+        } else {
+            mensagem += err.message;
+        }
+        mostrarNotificacao(mensagem, 'error');
+    }
+}
+    function capturarFoto(id) {
+        const video = document.getElementById(id + '_video');
+        const canvas = document.getElementById(id + '_canvas');
+        const img = document.getElementById(id + '_img');
+        
+        if (!video.classList.contains('active')) {
+            mostrarNotificacao('Abra a câmera primeiro!', 'warning');
+            return;
+        }
+        
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        
+        img.src = canvas.toDataURL('image/jpeg');
+        img.classList.add('active');
+        
+        const prefix = id.split('_')[0];
+        const reviewDiv = document.getElementById('review-foto-' + prefix);
+        if (reviewDiv) {
+            reviewDiv.innerHTML = `<img src="${img.src}" class="photo-thumbnail">`;
+        }
+        
+        fecharCamera(id);
+        mostrarNotificacao('Foto capturada com sucesso!', 'success');
+    }
+
+    function fecharCamera(id) {
+        const video = document.getElementById(id + '_video');
+        if (cameraStreams[id]) {
+            cameraStreams[id].getTracks().forEach(track => {
+                track.stop();
+            });
+            delete cameraStreams[id];
+        }
+        if (video) {
+            video.classList.remove('active');
+            video.srcObject = null;
+        }
+    }
+
+    function previewArquivo(input, imgId) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById(imgId);
+                img.src = e.target.result;
+                img.classList.add('active');
+                
+                const prefix = imgId.split('_')[0];
+                const reviewDiv = document.getElementById('review-foto-' + prefix);
+                if (reviewDiv) {
+                    reviewDiv.innerHTML = `<img src="${e.target.result}" class="photo-thumbnail">`;
+                }
+                
+                mostrarNotificacao('Arquivo anexado com sucesso!', 'success');
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function mostrarFotoPreview(img, prefix) {
+        const reviewDiv = document.getElementById('review-foto-' + prefix);
+        if (reviewDiv && img.src) {
+            reviewDiv.innerHTML = `<img src="${img.src}" class="photo-thumbnail">`;
+        }
+    }
+
+    function toggleTransporte(checkbox) {
+        const container = document.getElementById('transporte-container');
+        const docsSection = document.getElementById('transporte_docs_section');
+        
+        transporteAtivo = checkbox.checked;
+        
+        const display = checkbox.checked ? 'block' : 'none';
+        container.style.display = display;
+        docsSection.style.display = display;
+    }
+
+    function toggleDeficiencia(select) {
+        const divDescricao = document.getElementById('deficiencia-descricao');
+        divDescricao.style.display = select.value === 'sim' ? 'block' : 'none';
+    }
+
+    function formatarCEP(input) {
+        let value = input.value.replace(/\D/g, '');
+        if (value.length > 5) {
+            value = value.substring(0, 5) + '-' + value.substring(5, 8);
+        }
+        input.value = value;
+    }
+
+    async function buscarCEP() {
+        const cep = document.getElementById('cep').value.replace(/\D/g, '');
+        
+        if (cep.length !== 8) {
+            return;
+        }
+        
+        document.getElementById('loading-cep').style.display = 'inline-block';
+        
+        try {
+            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+            const data = await response.json();
+            
+            if (!data.erro) {
+                document.getElementById('endereco').value = data.logradouro || '';
+                document.getElementById('bairro').value = data.bairro || '';
+                document.getElementById('cidade').value = data.localidade || '';
+                document.getElementById('uf').value = data.uf || '';
+                mostrarNotificacao('CEP encontrado!', 'success');
             } else {
-                btnPrev.style.display = 'inline-flex';
-                btnPrev.disabled = false;
+                mostrarNotificacao('CEP não encontrado', 'error');
             }
-            
-            if (passoAtual === totalPassos) {
-                btnNext.style.display = 'none';
-                btnSave.style.display = 'inline-flex';
-            } else {
-                btnNext.style.display = 'inline-flex';
-                btnSave.style.display = 'none';
-            }
+        } catch (error) {
+            mostrarNotificacao('Erro ao buscar CEP', 'error');
+        } finally {
+            document.getElementById('loading-cep').style.display = 'none';
         }
+    }
 
-        function contarDocumentosAnexados() {
-            let docs = {
-                aluno: [],
-                responsavel: [],
-                terceiros: [],
-                transporte: []
-            };
-            
-            const alunoCertidao = document.getElementById('aluno_certidao');
-            const alunoRg = document.getElementById('aluno_rg');
-            const alunoVacinacao = document.getElementById('aluno_vacinacao');
-            const alunoLaudos = document.getElementById('aluno_laudos');
-            
-            if (alunoCertidao && alunoCertidao.files.length > 0) docs.aluno.push('Certidão');
-            if (alunoRg && alunoRg.files.length > 0) docs.aluno.push('RG');
-            if (alunoVacinacao && alunoVacinacao.files.length > 0) docs.aluno.push('Vacinação');
-            if (alunoLaudos && alunoLaudos.files.length > 0) docs.aluno.push('Laudos');
-            
-            const laudosCard = document.getElementById('laudos-card');
-            if (laudosCard && laudosCard.classList.contains('has-file')) {
-                if (!docs.aluno.includes('Laudos')) {
-                    docs.aluno.push('Laudos');
-                }
-            }
-            
-            const respRg = document.getElementById('resp_rg');
-            const respCpf = document.getElementById('resp_cpf');
-            const respComprovante = document.getElementById('resp_comprovante');
-            
-            if (respRg && respRg.files.length > 0) docs.responsavel.push('RG');
-            if (respCpf && respCpf.files.length > 0) docs.responsavel.push('CPF');
-            if (respComprovante && respComprovante.files.length > 0) docs.responsavel.push('Comprovante');
-            
-            if (terceirosAtivos) {
-                const terceiroRg = document.getElementById('terceiro_rg');
-                if (terceiroRg && terceiroRg.files.length > 0) docs.terceiros.push('RG');
-            }
-            
-            if (transporteAtivo) {
-                const transporteRg = document.getElementById('transporte_rg');
-                const transporteCpf = document.getElementById('transporte_cpf');
-                const transporteCnh = document.getElementById('transporte_cnh');
-                
-                if (transporteRg && transporteRg.files.length > 0) docs.transporte.push('RG');
-                if (transporteCpf && transporteCpf.files.length > 0) docs.transporte.push('CPF');
-                if (transporteCnh && transporteCnh.files.length > 0) docs.transporte.push('CNH');
-            }
-            
-            return docs;
-        }
-
-        function atualizarResumo() {
-            document.getElementById('review-nome').textContent = document.getElementById('nome').value || '-';
-            document.getElementById('review-data').textContent = document.getElementById('data_nasc').value || '-';
-            document.getElementById('review-ra').textContent = document.getElementById('ra').value || 'Não informado';
-            document.getElementById('review-endereco').textContent = 
-                `${document.getElementById('endereco').value || ''}, ${document.getElementById('numero').value || ''} - ${document.getElementById('bairro').value || ''}`;
-            document.getElementById('review-turma').textContent = document.getElementById('turma').value || '-';
-            document.getElementById('review-unidade').textContent = document.getElementById('unidade').value || '-';
-            
-            document.getElementById('review-tipo-sanguineo').textContent = document.getElementById('tipo_sanguineo').value || '-';
-            document.getElementById('review-plano-saude').textContent = document.getElementById('plano_saude').value || '-';
-            document.getElementById('review-alergias').textContent = document.getElementById('alergias').value || '-';
-            
-            const deficiencia = document.getElementById('deficiencia').value;
-            document.getElementById('review-deficiencia').textContent = deficiencia === 'sim' ? 'Sim' : 'Não';
-            
-            document.getElementById('review-resp-nome').textContent = document.querySelector('input[name="responsavel1_nome"]').value || '-';
-            document.getElementById('review-resp-parentesco').textContent = document.querySelector('select[name="responsavel1_parentesco"]').value || '-';
-            document.getElementById('review-resp-telefone').textContent = document.querySelector('input[name="responsavel1_telefone"]').value || '-';
-            document.getElementById('review-resp-telefone-contato').textContent = document.querySelector('input[name="responsavel1_telefone_contato"]').value || '-';
-            document.getElementById('review-resp-cpf').textContent = document.querySelector('input[name="responsavel1_cpf"]').value || '-';
-            
-            const docs = contarDocumentosAnexados();
-            
-            const docsAlunoEl = document.getElementById('review-docs-aluno');
-            const docsRespEl = document.getElementById('review-docs-resp');
-            const docsTerceirosEl = document.getElementById('review-docs-terceiros');
-            const docsTransporteEl = document.getElementById('review-docs-transporte');
-            
-            if (docsAlunoEl) docsAlunoEl.textContent = docs.aluno.length > 0 ? docs.aluno.join(', ') : 'Nenhum';
-            if (docsRespEl) docsRespEl.textContent = docs.responsavel.length > 0 ? docs.responsavel.join(', ') : 'Nenhum';
-            if (docsTerceirosEl) docsTerceirosEl.textContent = docs.terceiros.length > 0 ? docs.terceiros.join(', ') : 'Nenhum';
-            if (docsTransporteEl) docsTransporteEl.textContent = docs.transporte.length > 0 ? docs.transporte.join(', ') : 'Nenhum';
-        }
-
-        function limparFormulario() {
-            document.querySelectorAll('input:not([readonly]), select, textarea').forEach(campo => {
-                if (campo.type === 'checkbox') {
-                    campo.checked = false;
-                } else {
-                    campo.value = '';
-                }
-            });
-            
-            document.querySelectorAll('.foto-capturada').forEach(img => {
-                img.classList.remove('active');
-                img.src = '';
-            });
-            
-            document.querySelectorAll('[id^="review-foto-"]').forEach(div => {
-                div.innerHTML = '';
-            });
-            
-            document.querySelectorAll('.input-error').forEach(el => {
-                el.classList.remove('input-error');
-            });
-            
-            document.querySelectorAll('.field-message').forEach(msg => {
-                msg.style.display = 'none';
-            });
-            
-            document.querySelectorAll('.upload-card-clean').forEach(card => {
-                card.classList.remove('has-file');
-            });
-            
+    function removerTerceiro(botao) {
+        const card = botao.parentElement;
+        card.remove();
+        
+        if (document.querySelectorAll('.terceiro-card').length === 0) {
             terceirosAtivos = false;
-            transporteAtivo = false;
             document.getElementById('terceiros-container').style.display = 'none';
             document.getElementById('terceiros-docs-section').style.display = 'none';
-            document.getElementById('transporte-container').style.display = 'none';
-            document.getElementById('transporte_docs_section').style.display = 'none';
-            
-            passoAtual = 1;
-            atualizarPasso(1);
-            atualizarBotoes();
-            
-            const isEditing = typeof alunoParaEditar !== 'undefined' && alunoParaEditar && alunoParaEditar !== 'null';
-            if (!isEditing) {
-                gerarNumeroInscricao();
-            }
-            
-            mostrarNotificacao('Cadastro limpo! Pronto para novo registro.', 'success');
         }
+    }
 
-        // ===== FUNÇÃO PARA ABRIR A CÂMERA =====
-        async function abrirCamera(id, tentativa = 1) {
-            console.log(`📷 Abrindo câmera: ${id} (tentativa ${tentativa})`);
-            fecharCamera(id);
-            const video = document.getElementById(id + '_video');
-            
-            if (!video) {
-                console.error(`❌ Video não encontrado: ${id}_video`);
-                mostrarNotificacao('Erro: elemento de vídeo não encontrado', 'error');
+    function adicionarResponsavel() {
+        const container = document.getElementById('responsaveis-adicionais');
+        const numero = container.children.length + 2;
+        
+        const div = document.createElement('div');
+        div.className = 'responsavel-card';
+        div.innerHTML = `
+            <button type="button" class="btn-remover" onclick="this.parentElement.remove()">×</button>
+            <h3>Responsável Adicional ${numero - 1}</h3>
+            <div class="form-grid">
+                <div class="input-wrapper">
+                    <label>Nome Completo</label>
+                    <input type="text" name="responsavel${numero}_nome" placeholder="Nome do responsável" class="input-moderno">
+                </div>
+                <div class="input-wrapper">
+                    <label>Parentesco</label>
+                    <select name="responsavel${numero}_parentesco" class="select-moderno">
+                        <option value="">Selecione...</option>
+                        <option value="pai">Pai</option>
+                        <option value="mae">Mãe</option>
+                        <option value="avo">Avô/Avó</option>
+                        <option value="tio">Tio/Tia</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </div>
+                <div class="input-wrapper">
+                    <label>Telefone</label>
+                    <input type="text" name="responsavel${numero}_telefone" placeholder="(00) 00000-0000" maxlength="15" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                </div>
+                <div class="input-wrapper">
+                    <label>Telefone de Contato</label>
+                    <input type="text" name="responsavel${numero}_telefone_contato" placeholder="(00) 00000-0000" maxlength="15" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                    <small class="small-text">Telefone alternativo para contato</small>
+                </div>
+                <div class="input-wrapper">
+                    <label>CPF</label>
+                    <input type="text" name="responsavel${numero}_cpf" placeholder="Apenas números" maxlength="11" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                </div>
+                <div class="input-wrapper">
+                    <label>RG / CIN</label>
+                    <input type="text" name="responsavel${numero}_rg" placeholder="RG ou CIN" class="input-moderno">
+                </div>
+                <div class="input-wrapper">
+                    <label>E-mail</label>
+                    <input type="email" name="responsavel${numero}_email" placeholder="email@exemplo.com" class="input-moderno">
+                </div>
+            </div>
+            <div class="camera-section">
+                <label class="section-label">Foto do Responsável</label>
+                <div class="camera-controls">
+                    <button type="button" class="btn-clean" onclick="abrirCamera('resp${numero}_foto')">Abrir Câmera</button>
+                    <button type="button" class="btn-clean primary" onclick="capturarFoto('resp${numero}_foto')">Capturar</button>
+                    <button type="button" class="btn-clean" onclick="document.getElementById('resp${numero}_foto_arquivo').click()">Anexar Arquivo</button>
+                </div>
+                <video id="resp${numero}_foto_video" class="camera-preview" autoplay></video>
+                <canvas id="resp${numero}_foto_canvas" style="display: none;"></canvas>
+                <img id="resp${numero}_foto_img" class="foto-capturada" onload="mostrarFotoPreview(this, 'resp${numero}')">
+                <input type="file" id="resp${numero}_foto_arquivo" name="foto_responsavel${numero}" accept="image/*" style="display: none;" onchange="previewArquivo(this, 'resp${numero}_foto_img')">
+            </div>
+        `;
+        container.appendChild(div);
+    }
+
+    function adicionarTerceiro() {
+        const container = document.getElementById('terceiros-container');
+        const numero = container.children.length + 1;
+        
+        const div = document.createElement('div');
+        div.className = 'terceiro-card';
+        div.innerHTML = `
+            <button type="button" class="btn-remover" onclick="this.parentElement.remove()">×</button>
+            <h3>Terceiro Autorizado ${numero}</h3>
+            <div class="form-grid">
+                <div class="input-wrapper">
+                    <label>Nome Completo <span class="required">*</span></label>
+                    <input type="text" name="terceiro${numero}_nome" placeholder="Nome completo" class="input-moderno">
+                    <div class="field-message" id="msg-terceiro${numero}-nome">Campo obrigatório</div>
+                </div>
+                <div class="input-wrapper">
+                    <label>Telefone <span class="required">*</span></label>
+                    <input type="text" name="terceiro${numero}_telefone" placeholder="(00) 00000-0000" maxlength="15" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                    <div class="field-message" id="msg-terceiro${numero}-telefone">Campo obrigatório</div>
+                </div>
+                <div class="input-wrapper">
+                    <label>CPF <span class="required">*</span></label>
+                    <input type="text" name="terceiro${numero}_cpf" placeholder="Apenas números" maxlength="11" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                    <div class="field-message" id="msg-terceiro${numero}-cpf">Campo obrigatório</div>
+                </div>
+                <div class="input-wrapper">
+                    <label>RG / CIN <span class="required">*</span></label>
+                    <input type="text" name="terceiro${numero}_rg" placeholder="RG ou CIN" class="input-moderno">
+                    <div class="field-message" id="msg-terceiro${numero}-rg">Campo obrigatório</div>
+                </div>
+                <div class="input-wrapper">
+                    <label>E-mail</label>
+                    <input type="email" name="terceiro${numero}_email" placeholder="email@exemplo.com" class="input-moderno">
+                </div>
+            </div>
+            <div class="camera-section">
+                <label class="section-label">Foto do Terceiro <span class="required">*</span></label>
+                <div class="camera-controls">
+                    <button type="button" class="btn-clean" onclick="abrirCamera('terceiro${numero}_foto')">Abrir Câmera</button>
+                    <button type="button" class="btn-clean primary" onclick="capturarFoto('terceiro${numero}_foto')">Capturar</button>
+                    <button type="button" class="btn-clean" onclick="document.getElementById('terceiro${numero}_foto_arquivo').click()">Anexar Arquivo</button>
+                </div>
+                <video id="terceiro${numero}_foto_video" class="camera-preview" autoplay></video>
+                <canvas id="terceiro${numero}_foto_canvas" style="display: none;"></canvas>
+                <img id="terceiro${numero}_foto_img" class="foto-capturada" onload="mostrarFotoPreview(this, 'terceiro${numero}')">
+                <input type="file" id="terceiro${numero}_foto_arquivo" name="foto_terceiro${numero}" accept="image/*" style="display: none;" onchange="previewArquivo(this, 'terceiro${numero}_foto_img')">
+                <div class="field-message" id="msg-terceiro${numero}-foto">Foto obrigatória</div>
+            </div>
+        `;
+        container.appendChild(div);
+    }
+
+    // Função para converter dataURL para Blob
+    function dataURLToBlob(dataURL) {
+        const parts = dataURL.split(';base64,');
+        const contentType = parts[0].split(':')[1];
+        const raw = window.atob(parts[1]);
+        const rawLength = raw.length;
+        const array = new Uint8Array(new ArrayBuffer(rawLength));
+        
+        for (let i = 0; i < rawLength; i++) {
+            array[i] = raw.charCodeAt(i);
+        }
+        
+        return new Blob([array], { type: contentType });
+    }
+
+   function gerarNumeroInscricao() {
+    // Verifica se é modo edição
+    const isEditing = typeof alunoParaEditar !== 'undefined' && alunoParaEditar && alunoParaEditar !== 'null';
+    
+    // Verifica se já existe um número
+    const campoNumero = document.getElementById('num_inscricao');
+    
+    // Se for modo edição, NUNCA gera novo número
+    if (isEditing) {
+        console.log('📝 Modo edição - mantendo número existente');
+        return;
+    }
+    
+    // Se o campo já tem valor (caso já tenha sido gerado antes), não gera novo
+    if (campoNumero && campoNumero.value && campoNumero.value !== '') {
+        console.log('⚠️ Número já existe, não será gerado novo:', campoNumero.value);
+        return;
+    }
+    
+    console.log('🆕 Gerando novo número de inscrição...');
+    
+    // Busca o próximo número apenas para novos cadastros
+    fetch('/api/alunos/proximo-numero')
+        .then(response => response.json())
+        .then(data => {
+            if (data.sucesso && campoNumero) {
+                campoNumero.value = data.numero;
+                console.log(`   ✅ Número gerado: ${data.numero}`);
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao buscar número:', error);
+            const data = new Date();
+            const ano = data.getFullYear();
+            if (campoNumero) {
+                campoNumero.value = `001-${ano}`;
+                console.log(`   ⚠️ Número temporário: ${campoNumero.value}`);
+            }
+        });
+}
+
+    // Função principal de salvar - VERSÃO CORRIGIDA COM EDIÇÃO
+   function salvarCadastro() {
+    // Verifica se é modo edição
+    const isEditing = alunoParaEditar && alunoParaEditar !== 'null';
+    
+    // Obtém o número de inscrição atual
+    const numInscricao = document.getElementById('num_inscricao').value;
+    
+    // Se for edição e o número não corresponder ao original, corrige
+    if (isEditing && numInscricao !== alunoParaEditar.num_inscricao) {
+        console.warn('⚠️ Número de inscrição foi alterado! Corrigindo...');
+        document.getElementById('num_inscricao').value = alunoParaEditar.num_inscricao;
+    }
+        
+        // Valida apenas os passos 1 e 2 (pula validação de fotos na edição)
+        for (let i = 1; i <= 2; i++) {
+            if (!validarPasso(i)) {
+                passoAtual = i;
+                atualizarPasso(i);
+                atualizarBotoes();
+                mostrarNotificacao('Complete todos os campos obrigatórios antes de finalizar!', 'warning');
+                rolarAteCampoVazio(i);
                 return;
             }
-            
-            await new Promise(resolve => setTimeout(resolve, 300));
-            
+        }
+        
+        // Na edição, não precisa validar fotos
+        if (!isEditing) {
+            // Valida passo 3 apenas para novos cadastros
+            if (!validarPasso(3)) {
+                passoAtual = 3;
+                atualizarPasso(3);
+                atualizarBotoes();
+                mostrarNotificacao('Complete todos os campos obrigatórios antes de finalizar!', 'warning');
+                rolarAteCampoVazio(3);
+                return;
+            }
+        }
+        
+        mostrarNotificacao('Salvando cadastro...', 'success');
+        
+        // Cria o FormData com os dados do formulário
+        const formData = new FormData(document.getElementById('formCadastroAluno'));
+        
+        // Se for edição, adiciona o número de inscrição para identificar o aluno
+        if (isEditing) {
+            formData.append('modo_edicao', 'true');
+            formData.append('num_inscricao_original', alunoParaEditar.num_inscricao);
+        }
+        
+        // ===== FUNÇÃO AUXILIAR PARA CONVERTER DATAURL PARA FILE =====
+        function dataURLtoFile(dataurl, filename) {
             try {
-                const devices = await navigator.mediaDevices.enumerateDevices();
-                const videoDevices = devices.filter(device => device.kind === 'videoinput');
-                
-                console.log('📹 Dispositivos de vídeo encontrados:', videoDevices.length);
-                videoDevices.forEach((device, index) => {
-                    console.log(`   ${index + 1}: ${device.label || 'Câmera sem nome'}`);
-                });
-                
-                let stream = null;
-                
-                try {
-                    console.log('🎯 Estratégia 1: Tentando câmera padrão...');
-                    stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                    console.log('✅ Sucesso na câmera padrão!');
-                } catch (err) {
-                    console.log(`⚠️ Câmera padrão falhou: ${err.name}`);
+                if (!dataurl || !dataurl.startsWith('data:')) {
+                    console.log(`   ❌ DataURL inválida para ${filename}`);
+                    return null;
                 }
                 
-                if (!stream && videoDevices.length > 0) {
-                    for (const device of videoDevices) {
-                        try {
-                            console.log(`🎯 Estratégia 2: Tentando câmera ${device.label || 'sem nome'}`);
-                            stream = await navigator.mediaDevices.getUserMedia({ 
-                                video: { deviceId: { exact: device.deviceId } } 
-                            });
-                            console.log(`✅ Sucesso na câmera: ${device.label || 'Câmera'}`);
-                            break;
-                        } catch (err) {
-                            console.log(`   ❌ Falhou: ${err.name}`);
-                            continue;
-                        }
+                // Divide a dataURL em cabeçalho e dados base64
+                const arr = dataurl.split(',');
+                const mime = arr[0].match(/:(.*?);/)[1];
+                const bstr = atob(arr[1]);
+                let n = bstr.length;
+                const u8arr = new Uint8Array(n);
+                
+                while (n--) {
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                
+                // Cria o arquivo
+                const file = new File([u8arr], filename, {type: mime});
+                console.log(`   ✅ Convertido: ${filename}, tamanho: ${file.size} bytes`);
+                return file;
+            } catch(e) {
+                console.error(`   ❌ Erro na conversão:`, e);
+                return null;
+            }
+        }
+        
+        // ===== PROCESSAMENTO DE FOTOS =====
+        console.log('\n🔍 PROCESSANDO FOTOS...');
+        console.log('=' .repeat(60));
+        
+        // Lista de todas as possíveis fotos
+        const fotosParaProcessar = [
+            { id: 'aluno_foto_img', nome: 'foto_aluno' },
+            { id: 'resp_foto_img', nome: 'foto_responsavel1' }
+        ];
+        
+        // Responsáveis adicionais (até 5)
+        for (let i = 2; i <= 5; i++) {
+            fotosParaProcessar.push({ id: `resp${i}_foto_img`, nome: `foto_responsavel${i}` });
+        }
+        
+        // Terceiros (até 3)
+        for (let i = 1; i <= 3; i++) {
+            fotosParaProcessar.push({ id: `terceiro${i}_foto_img`, nome: `foto_terceiro${i}` });
+        }
+        
+        // Transporte
+        fotosParaProcessar.push({ id: 'transporte_foto_img', nome: 'foto_transporte' });
+        
+        let fotosProcessadas = 0;
+        let fotosDetalhes = [];
+        
+        fotosParaProcessar.forEach(foto => {
+            const imgElement = document.getElementById(foto.id);
+            
+            // Verifica se a foto existe e está ativa (e é nova, não carregada da edição)
+            if (imgElement && imgElement.classList.contains('active') && imgElement.src && imgElement.src.startsWith('data:')) {
+                console.log(`\n📸 Verificando ${foto.nome}:`);
+                console.log(`   - Classe active: ${imgElement.classList.contains('active')}`);
+                console.log(`   - Tem src: ${!!imgElement.src}`);
+                console.log(`   - É dataURL: ${imgElement.src.startsWith('data:')}`);
+                console.log(`   - Tamanho do src: ${imgElement.src.length} caracteres`);
+                
+                const file = dataURLtoFile(imgElement.src, `${foto.nome}.jpg`);
+                if (file) {
+                    // Remove qualquer campo existente com mesmo nome
+                    if (formData.has(foto.nome)) {
+                        formData.delete(foto.nome);
                     }
+                    formData.append(foto.nome, file);
+                    fotosProcessadas++;
+                    fotosDetalhes.push({
+                        nome: foto.nome,
+                        tamanho: file.size
+                    });
+                    console.log(`   ✅ ADICIONADO: ${foto.nome} (${file.size} bytes)`);
                 }
-                
-                if (!stream) {
-                    throw new Error('Nenhuma câmera disponível');
+            } else {
+                if (imgElement && imgElement.classList.contains('active')) {
+                    console.log(`   ⚠️ ${foto.nome} é uma foto existente (não será reenviada)`);
                 }
+            }
+        });
+        
+        console.log('\n' + '=' .repeat(60));
+        console.log(`📊 RESUMO DAS FOTOS:`);
+        console.log(`   Total de novas fotos processadas: ${fotosProcessadas}`);
+        if (fotosDetalhes.length > 0) {
+            console.log(`   Detalhes:`);
+            fotosDetalhes.forEach(f => {
+                console.log(`      - ${f.nome}: ${f.tamanho} bytes`);
+            });
+        } else {
+            console.log(`   ℹ️ Nenhuma nova foto foi capturada`);
+        }
+        console.log('=' .repeat(60));
+        
+        // ===== LOG DOS CAMPOS DO FORMULÁRIO =====
+        console.log('\n📋 CAMPOS DO FORMULÁRIO:');
+        const camposTexto = [];
+        const camposArquivo = [];
+        
+        for (let pair of formData.entries()) {
+            if (pair[1] instanceof File) {
+                camposArquivo.push(`${pair[0]} (${pair[1].name}, ${pair[1].size} bytes)`);
+            } else {
+                camposTexto.push(`${pair[0]}: ${pair[1].substring(0, 30)}${pair[1].length > 30 ? '...' : ''}`);
+            }
+        }
+        
+        console.log('   📝 Campos de texto:', camposTexto.length);
+        camposTexto.slice(0, 5).forEach(c => console.log(`      - ${c}`));
+        if (camposTexto.length > 5) console.log(`      ... e mais ${camposTexto.length - 5} campos`);
+        
+        console.log('   📁 Campos de arquivo:', camposArquivo.length);
+        camposArquivo.forEach(c => console.log(`      - ${c}`));
+        
+        // Determinar a URL correta (edição ou novo cadastro)
+        const url = isEditing ? '/api/alunos/atualizar' : '/api/alunos/cadastrar';
+        
+        console.log(`\n📦 Enviando para o servidor: ${url}`);
+        console.log('   Método: POST');
+        console.log('   Total de campos:', [...formData.keys()].length);
+        
+        fetch(url, {
+            method: 'POST',
+            body: formData
+        })
+        .then(async response => {
+            console.log(`   📥 Status HTTP: ${response.status} ${response.statusText}`);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 100)}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('\n📥 RESPOSTA DO SERVIDOR:');
+            console.log(JSON.stringify(data, null, 2));
+            
+            if (data.sucesso) {
+                const mensagem = isEditing ? '✅ Cadastro atualizado com sucesso!' : '✅ Cadastro realizado com sucesso!';
+                mostrarNotificacao(mensagem, 'success');
+                console.log(`\n🎉 OPERAÇÃO CONCLUÍDA!`);
+                console.log(`   📌 Número de inscrição: ${data.num_inscricao}`);
                 
-                video.srcObject = stream;
-                video.classList.add('active');
-                cameraStreams[id] = stream;
-                
-                console.log(`✅ Câmera aberta com sucesso!`);
-                mostrarNotificacao(`✅ Câmera aberta!`, 'success');
-                
-            } catch (err) {
-                console.error(`❌ Erro ao abrir câmera:`, err);
-                
-                if (tentativa === 1) {
-                    try {
-                        console.log('🔄 Última tentativa: modo simples...');
-                        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                        video.srcObject = stream;
-                        video.classList.add('active');
-                        cameraStreams[id] = stream;
-                        console.log(`✅ Câmera aberta!`);
-                        mostrarNotificacao(`✅ Câmera aberta!`, 'success');
-                        return;
-                    } catch (finalErr) {}
-                }
-                
-                let mensagem = 'Erro ao acessar câmera. ';
-                if (err.name === 'NotAllowedError') {
-                    mensagem += 'Permissão negada. Autorize o acesso.';
-                } else if (err.name === 'NotFoundError') {
-                    mensagem += 'Nenhuma câmera encontrada.';
-                } else if (err.name === 'NotReadableError') {
-                    mensagem += 'Câmera ocupada. Feche outros programas (Teams, Zoom, OBS).';
-                } else if (err.name === 'OverconstrainedError') {
-                    mensagem += 'Problema de configuração. Tentando modo simples...';
-                    setTimeout(() => abrirCamera(id, 2), 1000);
-                    return;
-                } else {
-                    mensagem += err.message;
-                }
-                mostrarNotificacao(mensagem, 'error');
+                // Redireciona após 2 segundos
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            } else {
+                console.error('❌ Erro no servidor:', data.erro);
+                mostrarNotificacao('Erro ao salvar: ' + (data.erro || 'Erro desconhecido'), 'error');
             }
-        }
+        })
+        .catch(error => {
+            console.error('\n❌ ERRO DETALHADO:');
+            console.error(`   Mensagem: ${error.message}`);
+            console.error(`   Stack: ${error.stack}`);
+            mostrarNotificacao('Erro de conexão: ' + error.message, 'error');
+        });
+    }
 
-        function fecharCamera(id) {
-            const video = document.getElementById(id + '_video');
-            if (cameraStreams[id]) {
-                cameraStreams[id].getTracks().forEach(track => {
-                    track.stop();
-                });
-                delete cameraStreams[id];
-            }
-            if (video) {
-                video.classList.remove('active');
-                video.srcObject = null;
-            }
-        }
-
-        function mostrarFotoPreview(img, prefix) {
-            const reviewDiv = document.getElementById('review-foto-' + prefix);
-            if (reviewDiv && img.src) {
-                reviewDiv.innerHTML = `<img src="${img.src}" class="photo-thumbnail">`;
-            }
-        }
-
-        function toggleTransporte(checkbox) {
-            const container = document.getElementById('transporte-container');
-            const docsSection = document.getElementById('transporte_docs_section');
-            
-            transporteAtivo = checkbox.checked;
-            
-            const display = checkbox.checked ? 'block' : 'none';
-            container.style.display = display;
-            docsSection.style.display = display;
-        }
-
-        function toggleDeficiencia(select) {
-            const divDescricao = document.getElementById('deficiencia-descricao');
-            divDescricao.style.display = select.value === 'sim' ? 'block' : 'none';
-        }
-
-        function formatarCEP(input) {
-            let value = input.value.replace(/\D/g, '');
-            if (value.length > 5) {
-                value = value.substring(0, 5) + '-' + value.substring(5, 8);
-            }
-            input.value = value;
-        }
-
-        async function buscarCEP() {
-            const cep = document.getElementById('cep').value.replace(/\D/g, '');
-            
-            if (cep.length !== 8) {
-                return;
-            }
-            
-            document.getElementById('loading-cep').style.display = 'inline-block';
-            
-            try {
-                const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-                const data = await response.json();
-                
-                if (!data.erro) {
-                    document.getElementById('endereco').value = data.logradouro || '';
-                    document.getElementById('bairro').value = data.bairro || '';
-                    document.getElementById('cidade').value = data.localidade || '';
-                    document.getElementById('uf').value = data.uf || '';
-                    mostrarNotificacao('CEP encontrado!', 'success');
-                } else {
-                    mostrarNotificacao('CEP não encontrado', 'error');
-                }
-            } catch (error) {
-                mostrarNotificacao('Erro ao buscar CEP', 'error');
-            } finally {
-                document.getElementById('loading-cep').style.display = 'none';
-            }
-        }
-
-        function removerTerceiro(botao) {
-            const card = botao.parentElement;
-            card.remove();
-            
-            if (document.querySelectorAll('.terceiro-card').length === 0) {
-                terceirosAtivos = false;
-                document.getElementById('terceiros-container').style.display = 'none';
-                document.getElementById('terceiros-docs-section').style.display = 'none';
-            }
-        }
-
-        function adicionarResponsavel() {
-            const container = document.getElementById('responsaveis-adicionais');
-            const numero = container.children.length + 2;
-            
-            const div = document.createElement('div');
-            div.className = 'responsavel-card';
-            div.innerHTML = `
-                <button type="button" class="btn-remover" onclick="this.parentElement.remove()">×</button>
-                <h3>Responsável Adicional ${numero - 1}</h3>
-                <div class="form-grid">
-                    <div class="input-wrapper">
-                        <label>Nome Completo</label>
-                        <input type="text" name="responsavel${numero}_nome" placeholder="Nome do responsável" class="input-moderno">
-                    </div>
-                    <div class="input-wrapper">
-                        <label>Parentesco</label>
-                        <select name="responsavel${numero}_parentesco" class="select-moderno">
-                            <option value="">Selecione...</option>
-                            <option value="pai">Pai</option>
-                            <option value="mae">Mãe</option>
-                            <option value="avo">Avô/Avó</option>
-                            <option value="tio">Tio/Tia</option>
-                            <option value="outro">Outro</option>
-                        </select>
-                    </div>
-                    <div class="input-wrapper">
-                        <label>Telefone</label>
-                        <input type="text" name="responsavel${numero}_telefone" placeholder="(00) 00000-0000" maxlength="15" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-                    </div>
-                    <div class="input-wrapper">
-                        <label>Telefone de Contato</label>
-                        <input type="text" name="responsavel${numero}_telefone_contato" placeholder="(00) 00000-0000" maxlength="15" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-                        <small class="small-text">Telefone alternativo para contato</small>
-                    </div>
-                    <div class="input-wrapper">
-                        <label>CPF</label>
-                        <input type="text" name="responsavel${numero}_cpf" placeholder="Apenas números" maxlength="11" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-                    </div>
-                    <div class="input-wrapper">
-                        <label>RG / CIN</label>
-                        <input type="text" name="responsavel${numero}_rg" placeholder="RG ou CIN" class="input-moderno">
-                    </div>
-                    <div class="input-wrapper">
-                        <label>E-mail</label>
-                        <input type="email" name="responsavel${numero}_email" placeholder="email@exemplo.com" class="input-moderno">
-                    </div>
-                </div>
-                <div class="camera-section">
-                    <label class="section-label">Foto do Responsável</label>
-                    <div class="camera-controls">
-                        <button type="button" class="btn-clean" onclick="abrirCamera('resp${numero}_foto')">Abrir Câmera</button>
-                        <button type="button" class="btn-clean primary" onclick="capturarFoto('resp${numero}_foto')">Capturar</button>
-                        <button type="button" class="btn-clean" onclick="document.getElementById('resp${numero}_foto_arquivo').click()">Anexar Arquivo</button>
-                    </div>
-                    <video id="resp${numero}_foto_video" class="camera-preview" autoplay></video>
-                    <canvas id="resp${numero}_foto_canvas" style="display: none;"></canvas>
-                    <img id="resp${numero}_foto_img" class="foto-capturada" onload="mostrarFotoPreview(this, 'resp${numero}')">
-                    <input type="file" id="resp${numero}_foto_arquivo" name="foto_responsavel${numero}" accept="image/*" style="display: none;" onchange="previewArquivo(this, 'resp${numero}_foto_img')">
-                </div>
-            `;
-            container.appendChild(div);
-        }
-
-        function adicionarTerceiro() {
-            const container = document.getElementById('terceiros-container');
-            const numero = container.children.length + 1;
-            
-            const div = document.createElement('div');
-            div.className = 'terceiro-card';
-            div.innerHTML = `
-                <button type="button" class="btn-remover" onclick="this.parentElement.remove()">×</button>
-                <h3>Terceiro Autorizado ${numero}</h3>
-                <div class="form-grid">
-                    <div class="input-wrapper">
-                        <label>Nome Completo <span class="required">*</span></label>
-                        <input type="text" name="terceiro${numero}_nome" placeholder="Nome completo" class="input-moderno">
-                        <div class="field-message" id="msg-terceiro${numero}-nome">Campo obrigatório</div>
-                    </div>
-                    <div class="input-wrapper">
-                        <label>Telefone <span class="required">*</span></label>
-                        <input type="text" name="terceiro${numero}_telefone" placeholder="(00) 00000-0000" maxlength="15" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-                        <div class="field-message" id="msg-terceiro${numero}-telefone">Campo obrigatório</div>
-                    </div>
-                    <div class="input-wrapper">
-                        <label>CPF <span class="required">*</span></label>
-                        <input type="text" name="terceiro${numero}_cpf" placeholder="Apenas números" maxlength="11" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-                        <div class="field-message" id="msg-terceiro${numero}-cpf">Campo obrigatório</div>
-                    </div>
-                    <div class="input-wrapper">
-                        <label>RG / CIN <span class="required">*</span></label>
-                        <input type="text" name="terceiro${numero}_rg" placeholder="RG ou CIN" class="input-moderno">
-                        <div class="field-message" id="msg-terceiro${numero}-rg">Campo obrigatório</div>
-                    </div>
-                    <div class="input-wrapper">
-                        <label>E-mail</label>
-                        <input type="email" name="terceiro${numero}_email" placeholder="email@exemplo.com" class="input-moderno">
-                    </div>
-                </div>
-                <div class="camera-section">
-                    <label class="section-label">Foto do Terceiro <span class="required">*</span></label>
-                    <div class="camera-controls">
-                        <button type="button" class="btn-clean" onclick="abrirCamera('terceiro${numero}_foto')">Abrir Câmera</button>
-                        <button type="button" class="btn-clean primary" onclick="capturarFoto('terceiro${numero}_foto')">Capturar</button>
-                        <button type="button" class="btn-clean" onclick="document.getElementById('terceiro${numero}_foto_arquivo').click()">Anexar Arquivo</button>
-                    </div>
-                    <video id="terceiro${numero}_foto_video" class="camera-preview" autoplay></video>
-                    <canvas id="terceiro${numero}_foto_canvas" style="display: none;"></canvas>
-                    <img id="terceiro${numero}_foto_img" class="foto-capturada" onload="mostrarFotoPreview(this, 'terceiro${numero}')">
-                    <input type="file" id="terceiro${numero}_foto_arquivo" name="foto_terceiro${numero}" accept="image/*" style="display: none;" onchange="previewArquivo(this, 'terceiro${numero}_foto_img')">
-                    <div class="field-message" id="msg-terceiro${numero}-foto">Foto obrigatória</div>
-                </div>
-            `;
-            container.appendChild(div);
-        }
-
-        function gerarNumeroInscricao() {
-            const isEditing = typeof alunoParaEditar !== 'undefined' && alunoParaEditar && alunoParaEditar !== 'null';
-            const campoNumero = document.getElementById('num_inscricao');
-            
-            if (isEditing) {
-                console.log('📝 Modo edição - mantendo número existente');
-                return;
-            }
-            
-            if (campoNumero && campoNumero.value && campoNumero.value !== '') {
-                console.log('⚠️ Número já existe, não será gerado novo:', campoNumero.value);
-                return;
-            }
-            
-            console.log('🆕 Gerando novo número de inscrição...');
-            
-            fetch('/api/alunos/proximo-numero')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.sucesso && campoNumero) {
-                        campoNumero.value = data.numero;
-                        console.log(`   ✅ Número gerado: ${data.numero}`);
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro ao buscar número:', error);
-                    const data = new Date();
-                    const ano = data.getFullYear();
-                    if (campoNumero) {
-                        campoNumero.value = `001-${ano}`;
-                        console.log(`   ⚠️ Número temporário: ${campoNumero.value}`);
-                    }
-                });
-        }
-
-        // Inicialização
-        configurarResetDeErros();
+    // Inicialização
+    configurarResetDeErros();
     </script>
 </body>
 </html>

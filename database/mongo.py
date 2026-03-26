@@ -1,5 +1,7 @@
 # database/mongo.py
 from pymongo import MongoClient
+from gridfs import GridFS
+from bson import ObjectId
 import os
 from dotenv import load_dotenv
 import bcrypt
@@ -29,6 +31,9 @@ class MongoDB:
             
             # Seleciona o banco de dados
             cls._instance.db = cls._instance.client[db_name]
+            
+            # Inicializa GridFS
+            cls._instance._fs = None
             
             # Testar conexão
             try:
@@ -83,26 +88,26 @@ class MongoDB:
             
             # Lista de usuários padrão
             usuarios_padrao = [
-    {
-        'usuario': 'master',
-        'email': 'master@creche.com',
-        'senha_plana': 'code@@',
-        'nome': 'Administrador Master',
-        'perfil': 'master',  # <-- MUDAR DE 'admin' PARA 'master'
-        'unidade': 'Todas as Unidades',
-        'status': 'ativo',
-        'ativo': True
-    },
-    {
-        'usuario': 'admin',
-        'email': 'admin@creche.com',
-        'senha_plana': 'admin123',
-        'nome': 'Administração',
-        'perfil': 'admin',
-        'unidade': 'Todas as Unidades',
-        'status': 'ativo',
-        'ativo': True
-    },
+                {
+                    'usuario': 'master',
+                    'email': 'master@creche.com',
+                    'senha_plana': 'code@@',
+                    'nome': 'Administrador Master',
+                    'perfil': 'master',
+                    'unidade': 'Todas as Unidades',
+                    'status': 'ativo',
+                    'ativo': True
+                },
+                {
+                    'usuario': 'admin',
+                    'email': 'admin@creche.com',
+                    'senha_plana': 'admin123',
+                    'nome': 'Administração',
+                    'perfil': 'admin',
+                    'unidade': 'Todas as Unidades',
+                    'status': 'ativo',
+                    'ativo': True
+                },
                 {
                     'usuario': 'pedagogico',
                     'email': 'pedagogico@creche.com',
@@ -191,6 +196,12 @@ class MongoDB:
             print(f"Erro ao listar coleções: {e}")
             return []
     
+    def get_gridfs(self):
+        """Retorna uma instância do GridFS para armazenar arquivos grandes"""
+        if self._fs is None:
+            self._fs = GridFS(self.db)
+        return self._fs
+    
     def __getattr__(self, name):
         """Permite acesso direto às coleções (ex: db.usuarios)"""
         return self.db[name]
@@ -209,6 +220,64 @@ def get_db():
 def get_collection(collection_name):
     """Retorna uma coleção específica"""
     return db.get_collection(collection_name)
+
+
+def get_gridfs():
+    """Retorna a instância do GridFS"""
+    return db.get_gridfs()
+
+
+# ==================== FUNÇÕES PARA GRIDFS (ARQUIVOS GRANDES) ====================
+
+def salvar_arquivo_gridfs(file, nome_original, campo):
+    """Salva arquivo no GridFS e retorna o ID"""
+    try:
+        fs = get_gridfs()
+        
+        # Ler o arquivo
+        file_data = file.read()
+        
+        # Salvar no GridFS
+        file_id = fs.put(
+            file_data,
+            filename=nome_original,
+            metadata={
+                'campo': campo,
+                'original_name': nome_original,
+                'content_type': file.content_type,
+                'upload_date': datetime.now()
+            }
+        )
+        
+        print(f"   ✅ Arquivo salvo no GridFS: {nome_original} (ID: {file_id})")
+        
+        return str(file_id)
+        
+    except Exception as e:
+        print(f"   ❌ Erro ao salvar no GridFS: {e}")
+        return None
+
+
+def get_arquivo_gridfs(file_id):
+    """Recupera arquivo do GridFS pelo ID"""
+    try:
+        fs = get_gridfs()
+        return fs.get(ObjectId(file_id))
+    except Exception as e:
+        print(f"❌ Erro ao recuperar arquivo: {e}")
+        return None
+
+
+def excluir_arquivo_gridfs(file_id):
+    """Exclui arquivo do GridFS pelo ID"""
+    try:
+        fs = get_gridfs()
+        fs.delete(ObjectId(file_id))
+        print(f"✅ Arquivo excluído do GridFS: {file_id}")
+        return True
+    except Exception as e:
+        print(f"❌ Erro ao excluir arquivo: {e}")
+        return False
 
 
 # ==================== FUNÇÕES PARA USUÁRIOS ====================
@@ -412,10 +481,10 @@ def excluir_aluno(num_inscricao):
         return {'sucesso': False, 'erro': str(e)}
 
 
-# ==================== FUNÇÕES PARA ARQUIVOS ====================
+# ==================== FUNÇÕES PARA ARQUIVOS (LEGADO - DEPRECATED) ====================
 
 def salvar_arquivo(num_inscricao, campo, data_url, nome_arquivo=None):
-    """Salva referência de um arquivo no banco de dados"""
+    """Salva referência de um arquivo no banco de dados (LEGADO - Use GridFS para arquivos grandes)"""
     try:
         from datetime import datetime
         
@@ -439,7 +508,7 @@ def salvar_arquivo(num_inscricao, campo, data_url, nome_arquivo=None):
 
 
 def get_arquivo(num_inscricao, campo):
-    """Recupera um arquivo do banco de dados"""
+    """Recupera um arquivo do banco de dados (LEGADO - Use GridFS para arquivos grandes)"""
     try:
         return db.arquivos.find_one(
             {'num_inscricao': num_inscricao, 'campo': campo},
@@ -451,7 +520,7 @@ def get_arquivo(num_inscricao, campo):
 
 
 def listar_arquivos_aluno(num_inscricao):
-    """Lista todos os arquivos de um aluno"""
+    """Lista todos os arquivos de um aluno (LEGADO - Use GridFS para arquivos grandes)"""
     try:
         return list(db.arquivos.find(
             {'num_inscricao': num_inscricao},
