@@ -2963,12 +2963,8 @@ async function abrirCamera(id, tentativa = 1) {
         console.log(`🎯 Usando: ${tipoCamera} - ${selectedDevice.label || 'Webcam'}`);
         
         const constraints = {
-            video: { 
-                deviceId: { exact: selectedDevice.deviceId },
-                width: { ideal: 640 },
-                height: { ideal: 480 }
-            }
-        };
+    video: { deviceId: { exact: selectedDevice.deviceId } }
+};
         
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
         
