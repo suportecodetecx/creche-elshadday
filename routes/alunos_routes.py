@@ -45,13 +45,25 @@ def save_uploaded_file_to_db(file, campo):
     return None
 
 def save_uploaded_file(file, subfolder, campo):
-    """Salva um arquivo enviado (fallback para sistema de arquivos)"""
-    # Tenta salvar no MongoDB primeiro (para Vercel)
+    """Salva um arquivo enviado - Prioriza MongoDB no Vercel"""
+    # Detecta se está no Vercel
+    IS_VERCEL = os.environ.get('VERCEL') == '1' or os.environ.get('NOW') is not None
+    
+    # No Vercel: salva apenas no MongoDB (sem tentar sistema de arquivos)
+    if IS_VERCEL:
+        info_db = save_uploaded_file_to_db(file, campo)
+        if info_db:
+            return info_db
+        # Se falhou no MongoDB, retorna None sem tentar arquivo
+        print(f"   ⚠️ Falha ao salvar no MongoDB: {campo}")
+        return None
+    
+    # Fora do Vercel (desenvolvimento local): tenta MongoDB primeiro, depois arquivo
     info_db = save_uploaded_file_to_db(file, campo)
     if info_db:
         return info_db
     
-    # Fallback: salva no sistema de arquivos (local)
+    # Fallback: salva no sistema de arquivos (apenas local)
     if file and allowed_file(file.filename):
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         unique_id = str(uuid.uuid4())[:8]
@@ -61,8 +73,9 @@ def save_uploaded_file(file, subfolder, campo):
         upload_path = os.path.join('uploads', subfolder)
         try:
             os.makedirs(upload_path, exist_ok=True)
+            print(f"   📁 Pasta criada: {upload_path}")
         except Exception as e:
-            print(f"⚠️ Não foi possível criar {upload_path}: {e}")
+            print(f"   ⚠️ Não foi possível criar {upload_path}: {e}")
             upload_path = '/tmp'
         
         filepath = os.path.join(upload_path, filename)
