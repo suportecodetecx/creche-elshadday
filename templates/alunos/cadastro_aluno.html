@@ -2849,6 +2849,7 @@
     }
 
 // ===== FUNÇÃO PARA ABRIR A CÂMERA - PRIORIDADE PARA WEBCAM EXTERNA =====
+// ===== FUNÇÃO PARA ABRIR A CÂMERA - VERSÃO QUE FUNCIONA COM CÂMERAS SEM NOME =====
 async function abrirCamera(id, tentativa = 1) {
     console.log(`📷 Abrindo câmera: ${id} (tentativa ${tentativa})`);
     fecharCamera(id);
@@ -2860,140 +2861,84 @@ async function abrirCamera(id, tentativa = 1) {
         return;
     }
     
-    // Aguarda um pouco antes de tentar abrir
     await new Promise(resolve => setTimeout(resolve, 300));
     
     try {
         const devices = await navigator.mediaDevices.enumerateDevices();
         const videoDevices = devices.filter(device => device.kind === 'videoinput');
         
-        console.log('📹 Dispositivos de vídeo encontrados:');
-        if (videoDevices.length === 0) {
-            console.log('   Nenhum dispositivo encontrado!');
-            mostrarNotificacao('Nenhuma câmera encontrada. Verifique se a webcam está conectada.', 'error');
-            return;
-        }
-        
+        console.log('📹 Dispositivos de vídeo encontrados:', videoDevices.length);
         videoDevices.forEach((device, index) => {
             console.log(`   ${index + 1}: ${device.label || 'Câmera sem nome'}`);
         });
         
-        // PRIORIDADE - IGNORA CÂMERAS VIRTUAIS E PRIORIZA USB
-        let selectedDevice = null;
-        let tipoCamera = '';
+        let stream = null;
         
-        // Função para verificar se é câmera virtual (OBS, etc)
-        function isVirtualCamera(label) {
-            if (!label) return false;
-            const virtualKeywords = ['OBS', 'XSPLIT', 'MANYTHING', 'VIRTUAL', 'VCAM', 'SNAP', 'NVIDIA', 'STREAM', 'CAM'];
-            const upperLabel = label.toUpperCase();
-            return virtualKeywords.some(keyword => upperLabel.includes(keyword));
+        // ===== ESTRATÉGIA 1: Tenta câmera padrão (mais simples, funciona SEMPRE) =====
+        try {
+            console.log('🎯 Estratégia 1: Tentando câmera padrão...');
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            console.log('✅ Sucesso na câmera padrão!');
+        } catch (err) {
+            console.log(`⚠️ Câmera padrão falhou: ${err.name}`);
         }
         
-        // Função para verificar se é câmera do notebook (integrada)
-        function isIntegratedCamera(label) {
-            if (!label) return false;
-            const integratedKeywords = ['INTEGRATED', 'BUILT', 'FACE', 'HD', 'WEBCAM'];
-            const upperLabel = label.toUpperCase();
-            return integratedKeywords.some(keyword => upperLabel.includes(keyword));
-        }
-        
-        // 1ª PRIORIDADE: WEBCAM USB REAL (NÃO virtual E NÃO integrada)
-        for (const device of videoDevices) {
-            const label = device.label?.toUpperCase() || '';
-            if ((label.includes('USB') || label.includes('XWF') || label.includes('1080P')) && 
-                !isVirtualCamera(device.label) && 
-                !isIntegratedCamera(device.label)) {
-                selectedDevice = device;
-                tipoCamera = 'WEBCAM USB';
-                console.log(`🎥 PRIORIDADE 1 - ${tipoCamera}: ${device.label}`);
-                break;
-            }
-        }
-        
-        // 2ª PRIORIDADE: Qualquer câmera que NÃO seja virtual e NÃO seja integrada (externa)
-        if (!selectedDevice) {
+        // ===== ESTRATÉGIA 2: Se falhou, tenta cada câmera individualmente =====
+        if (!stream && videoDevices.length > 0) {
             for (const device of videoDevices) {
-                if (!isVirtualCamera(device.label) && !isIntegratedCamera(device.label)) {
-                    selectedDevice = device;
-                    tipoCamera = 'WEBCAM EXTERNA';
-                    console.log(`🎥 PRIORIDADE 2 - ${tipoCamera}: ${device.label}`);
+                try {
+                    console.log(`🎯 Estratégia 2: Tentando câmera ${device.label || 'sem nome'}`);
+                    stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { deviceId: { exact: device.deviceId } } 
+                    });
+                    console.log(`✅ Sucesso na câmera: ${device.label || 'Câmera'}`);
                     break;
+                } catch (err) {
+                    console.log(`   ❌ Falhou: ${err.name}`);
+                    continue;
                 }
             }
         }
         
-        // 3ª PRIORIDADE: Câmera integrada do notebook (fallback)
-        if (!selectedDevice) {
-            for (const device of videoDevices) {
-                if (!isVirtualCamera(device.label) && isIntegratedCamera(device.label)) {
-                    selectedDevice = device;
-                    tipoCamera = 'CÂMERA DO NOTEBOOK';
-                    console.log(`🎥 PRIORIDADE 3 - ${tipoCamera}: ${device.label}`);
-                    break;
-                }
-            }
+        if (!stream) {
+            throw new Error('Nenhuma câmera disponível');
         }
-        
-        // 4ª PRIORIDADE: Última câmera não virtual da lista
-        if (!selectedDevice) {
-            for (let i = videoDevices.length - 1; i >= 0; i--) {
-                const device = videoDevices[i];
-                if (!isVirtualCamera(device.label)) {
-                    selectedDevice = device;
-                    tipoCamera = 'ÚLTIMA CÂMERA DISPONÍVEL';
-                    console.log(`🎥 PRIORIDADE 4 - ${tipoCamera}: ${device.label || 'Câmera'}`);
-                    break;
-                }
-            }
-        }
-        
-        // 5ª PRIORIDADE: Fallback - primeira câmera disponível
-        if (!selectedDevice && videoDevices.length > 0) {
-            selectedDevice = videoDevices[0];
-            tipoCamera = 'PRIMEIRA CÂMERA (FALLBACK)';
-            console.log(`🎥 PRIORIDADE 5 - ${tipoCamera}: ${selectedDevice.label || 'Câmera'}`);
-        }
-        
-        if (!selectedDevice) {
-            mostrarNotificacao('Nenhuma câmera real encontrada!', 'error');
-            return;
-        }
-        
-        console.log(`🎯 Usando: ${tipoCamera} - ${selectedDevice.label || 'Webcam'}`);
-        
-        const constraints = {
-    video: { deviceId: { exact: selectedDevice.deviceId } }
-};
-        
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
         
         video.srcObject = stream;
         video.classList.add('active');
         cameraStreams[id] = stream;
         
-        const nomeCamera = selectedDevice.label || 'Webcam';
-        console.log(`✅ Câmera aberta com sucesso: ${nomeCamera}`);
-        mostrarNotificacao(`✅ ${tipoCamera} aberta!`, 'success');
+        console.log(`✅ Câmera aberta com sucesso!`);
+        mostrarNotificacao(`✅ Câmera aberta!`, 'success');
         
     } catch (err) {
         console.error(`❌ Erro ao abrir câmera:`, err);
         
-        // Se falhou e ainda temos tentativas, tenta novamente
-        if (tentativa < 3 && err.name === 'NotReadableError') {
-            console.log(`🔄 Tentativa ${tentativa} falhou. Tentando novamente em 1.5 segundos...`);
-            mostrarNotificacao(`Câmera ocupada. Tentando novamente... (${tentativa}/3)`, 'warning');
-            setTimeout(() => abrirCamera(id, tentativa + 1), 1500);
-            return;
+        // Última tentativa
+        if (tentativa === 1) {
+            try {
+                console.log('🔄 Última tentativa: modo simples...');
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                video.classList.add('active');
+                cameraStreams[id] = stream;
+                console.log(`✅ Câmera aberta!`);
+                mostrarNotificacao(`✅ Câmera aberta!`, 'success');
+                return;
+            } catch (finalErr) {}
         }
         
         let mensagem = 'Erro ao acessar câmera. ';
         if (err.name === 'NotAllowedError') {
-            mensagem += 'Permissão negada. Clique no cadeado na barra de endereço e permita o acesso.';
+            mensagem += 'Permissão negada. Autorize o acesso.';
         } else if (err.name === 'NotFoundError') {
-            mensagem += 'Nenhuma câmera encontrada. Verifique se a webcam está conectada.';
+            mensagem += 'Nenhuma câmera encontrada.';
         } else if (err.name === 'NotReadableError') {
-            mensagem += 'A câmera está ocupada. Feche outros programas (Teams, Zoom, OBS) e tente novamente.';
+            mensagem += 'Câmera ocupada. Feche outros programas (Teams, Zoom, OBS).';
+        } else if (err.name === 'OverconstrainedError') {
+            mensagem += 'Problema de configuração. Tentando modo simples...';
+            setTimeout(() => abrirCamera(id, 2), 1000);
+            return;
         } else {
             mensagem += err.message;
         }
