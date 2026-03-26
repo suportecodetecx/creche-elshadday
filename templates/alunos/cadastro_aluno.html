@@ -2945,32 +2945,145 @@ async function abrirCamera(id, tentativa = 1) {
         mostrarNotificacao(mensagem, 'error');
     }
 }
-        function capturarFoto(id) {
-            const video = document.getElementById(id + '_video');
-            const canvas = document.getElementById(id + '_canvas');
-            const img = document.getElementById(id + '_img');
+
+// ===== FUNÇÃO PARA REDIMENSIONAR IMAGEM =====
+async function redimensionarImagem(dataURL, maxWidth = 800, maxHeight = 800, qualidade = 0.7) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+            let width = img.width;
+            let height = img.height;
             
-            if (!video.classList.contains('active')) {
-                mostrarNotificacao('Abra a câmera primeiro!', 'warning');
+            // Calcula novas dimensões mantendo proporção
+            if (width > maxWidth) {
+                height = (height * maxWidth) / width;
+                width = maxWidth;
+            }
+            if (height > maxHeight) {
+                width = (width * maxHeight) / height;
+                height = maxHeight;
+            }
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Redimensiona e reduz qualidade
+            const newDataURL = canvas.toDataURL('image/jpeg', qualidade);
+            resolve(newDataURL);
+        };
+        img.src = dataURL;
+    });
+}
+
+// ===== FUNÇÃO PARA REDIMENSIONAR ARQUIVO =====
+async function redimensionarArquivo(file) {
+    return new Promise((resolve, reject) => {
+        // Se for PDF, não redimensiona (apenas verifica tamanho)
+        if (file.type === 'application/pdf') {
+            if (file.size > 2 * 1024 * 1024) { // 2MB para PDF
+                reject(new Error('PDF muito grande. Máximo 2MB.'));
                 return;
             }
-            
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            
-            img.src = canvas.toDataURL('image/jpeg');
-            img.classList.add('active');
-            
-            const prefix = id.split('_')[0];
-            const reviewDiv = document.getElementById('review-foto-' + prefix);
-            if (reviewDiv) {
-                reviewDiv.innerHTML = `<img src="${img.src}" class="photo-thumbnail">`;
-            }
-            
-            fecharCamera(id);
-            mostrarNotificacao('Foto capturada com sucesso!', 'success');
+            resolve(file);
+            return;
         }
+        
+        // Se for imagem, redimensiona
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const dataURL = await redimensionarImagem(e.target.result, 800, 800, 0.7);
+                    // Converte dataURL para Blob
+                    const blob = await fetch(dataURL).then(r => r.blob());
+                    const novoFile = new File([blob], file.name, { type: 'image/jpeg' });
+                    resolve(novoFile);
+                } catch (err) {
+                    reject(err);
+                }
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+            return;
+        }
+        
+        resolve(file);
+    });
+}
+
+// ===== FUNÇÃO PARA CAPTURAR FOTO DA CÂMERA =====
+async function capturarFoto(id) {
+    const video = document.getElementById(id + '_video');
+    const canvas = document.getElementById(id + '_canvas');
+    const img = document.getElementById(id + '_img');
+    
+    if (!video.classList.contains('active')) {
+        mostrarNotificacao('Abra a câmera primeiro!', 'warning');
+        return;
+    }
+    
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    
+    // Reduz a qualidade da imagem (70% da qualidade original)
+    const dataURL = canvas.toDataURL('image/jpeg', 0.7);
+    
+    // Redimensiona para no máximo 800x800 pixels
+    const imagemRedimensionada = await redimensionarImagem(dataURL, 800, 800, 0.7);
+    
+    img.src = imagemRedimensionada;
+    img.classList.add('active');
+    
+    const prefix = id.split('_')[0];
+    const reviewDiv = document.getElementById('review-foto-' + prefix);
+    if (reviewDiv) {
+        reviewDiv.innerHTML = `<img src="${imagemRedimensionada}" class="photo-thumbnail">`;
+    }
+    
+    fecharCamera(id);
+    mostrarNotificacao('Foto capturada com sucesso!', 'success');
+}
+
+// ===== FUNÇÃO PARA PREVIEW DE ARQUIVO =====
+async function previewArquivo(input, imgId) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        
+        try {
+            // Redimensiona o arquivo se necessário
+            const arquivoRedimensionado = await redimensionarArquivo(file);
+            
+            // Atualiza o input com o arquivo redimensionado
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(arquivoRedimensionado);
+            input.files = dataTransfer.files;
+            
+            // Mostra preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById(imgId);
+                img.src = e.target.result;
+                img.classList.add('active');
+                
+                const prefix = imgId.split('_')[0];
+                const reviewDiv = document.getElementById('review-foto-' + prefix);
+                if (reviewDiv) {
+                    reviewDiv.innerHTML = `<img src="${e.target.result}" class="photo-thumbnail">`;
+                }
+            };
+            reader.readAsDataURL(arquivoRedimensionado);
+            
+            mostrarNotificacao('Arquivo anexado com sucesso!', 'success');
+        } catch (err) {
+            mostrarNotificacao(err.message || 'Erro ao processar arquivo. Tente um arquivo menor.', 'error');
+            input.value = '';
+        }
+    }
+}
 
         function fecharCamera(id) {
             const video = document.getElementById(id + '_video');
