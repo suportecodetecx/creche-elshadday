@@ -190,6 +190,20 @@
             color: white;
         }
 
+        /* Contador de funcionários - MESMO ESTILO DO BOTÃO SALVAR */
+        .contador-funcionarios {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: var(--netflix-red);
+            color: white;
+            box-shadow: 0 2px 8px rgba(229, 9, 20, 0.2);
+            transition: all 0.2s ease;
+        }
+
         /* Filtros */
         .filtros-container {
             display: flex;
@@ -300,11 +314,13 @@
         .btn-primary {
             background: var(--netflix-red);
             color: white;
+            box-shadow: 0 2px 8px rgba(229, 9, 20, 0.2);
         }
 
         .btn-primary:hover {
             background: var(--netflix-red-dark);
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(229, 9, 20, 0.3);
         }
 
         .btn-secondary {
@@ -318,7 +334,7 @@
             border-color: var(--netflix-red);
         }
 
-        /* Botões de ação na tabela - CORRIGIDOS */
+        /* Botões de ação na tabela */
         .acoes-container {
             display: flex;
             gap: 8px;
@@ -626,28 +642,31 @@
             <!-- Lista de Funcionários -->
             <div class="form-card">
                 <div class="card-header">
-                    <div class="header-icon">📋</div>
                     <h2>Funcionários Cadastrados</h2>
+                    <span class="contador-funcionarios" id="contadorFuncionarios">0 funcionários</span>
                 </div>
                 <div class="tabela-container">
-    <table class="tabela-funcionarios" id="tabelaFuncionarios">
-        <thead>
-            <tr>
-                <th>Nome</th>
-                <th>RGM</th>
-                <th>Telefone</th>
-                <th>Unidade</th>
-                <th>Função</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody id="listaFuncionarios">
-            <tr>
-                <td colspan="6" style="text-align: center;">Carregando...</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
+                    <table class="tabela-funcionarios" id="tabelaFuncionarios">
+                        <thead>
+                            32
+                                <th>Nome</th>
+                                <th>RGM</th>
+                                <th>Telefone</th>
+                                <th>Unidade</th>
+                                <th>Função</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaFuncionarios">
+                            <tr>
+                                <td colspan="6" style="text-align: center;">Carregando...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <!-- Modal de Confirmação de Exclusão -->
     <div id="modalExclusao" class="modal-confirmacao">
@@ -722,12 +741,22 @@
                         aplicarFiltros();
                     } else {
                         document.getElementById('listaFuncionarios').innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum funcionário cadastrado</td></tr>';
+                        atualizarContador(0);
                     }
                 })
                 .catch(error => {
                     console.error('Erro:', error);
                     mostrarNotificacao('Erro ao carregar funcionários', 'error');
                 });
+        }
+
+        function atualizarContador(quantidade) {
+            const contador = document.getElementById('contadorFuncionarios');
+            if (quantidade === 1) {
+                contador.textContent = `${quantidade} funcionário`;
+            } else {
+                contador.textContent = `${quantidade} funcionários`;
+            }
         }
 
         function aplicarFiltros() {
@@ -743,6 +772,7 @@
             });
 
             exibirTabela(filtrados);
+            atualizarContador(filtrados.length);
         }
 
         function filtrarFuncionarios() {
