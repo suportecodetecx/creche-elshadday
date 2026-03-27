@@ -75,6 +75,24 @@ class MongoDB:
                 self.db.usuarios.create_index('usuario', unique=True)
                 print("✅ Índice 'usuario' criado na coleção 'usuarios'")
             
+            # ===== ÍNDICES PARA DOCUMENTOS =====
+            if 'documentos' in self.db.list_collection_names():
+                # Índice para buscas por tipo (prestacao/atestado)
+                self.db.documentos.create_index('tipo')
+                print("✅ Índice 'tipo' criado na coleção 'documentos'")
+                
+                # Índice composto para buscas por mês e ano
+                self.db.documentos.create_index([('mes', 1), ('ano', 1)])
+                print("✅ Índice composto 'mes+ano' criado na coleção 'documentos'")
+                
+                # Índice para buscas por nome (case insensitive)
+                self.db.documentos.create_index('nome_lower')
+                print("✅ Índice 'nome_lower' criado na coleção 'documentos'")
+                
+                # Índice para ordenação por data de upload
+                self.db.documentos.create_index('data_upload')
+                print("✅ Índice 'data_upload' criado na coleção 'documentos'")
+            
         except Exception as e:
             print(f"⚠️ Erro ao criar índices: {e}")
     

@@ -23,7 +23,8 @@ from routes.uploads_routes import uploads_bp
 from routes.termos_routes import termos_bp
 from routes.auth_routes import auth_bp
 from routes.justificativa_routes import justificativa_bp
-from routes.funcionarios_routes import funcionarios_bp  # <-- ADICIONADO!
+from routes.funcionarios_routes import funcionarios_bp
+from routes.documentos_routes import documentos_bp  # <-- JÁ EXISTE
 
 app = Flask(__name__)
 CORS(app)
@@ -53,7 +54,8 @@ app.register_blueprint(uploads_bp)
 app.register_blueprint(termos_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(justificativa_bp)
-app.register_blueprint(funcionarios_bp)  # <-- ADICIONADO!
+app.register_blueprint(funcionarios_bp)
+app.register_blueprint(documentos_bp)  # <-- JÁ EXISTE
 
 
 # ==================== ROTAS PRINCIPAIS ====================
@@ -76,23 +78,6 @@ def login_page():
     except Exception as e:
         logger.error(f"Erro ao renderizar login: {e}")
         return jsonify({'erro': str(e)}), 500
-
-
-# ====================================================================
-# ATENÇÃO: Esta rota foi comentada porque está duplicada
-# A rota correta está em routes/alunos_routes.py (blueprint)
-# Ela suporta o parâmetro 'editar' para carregar dados do aluno
-# Mantenha apenas o blueprint registrado: app.register_blueprint(alunos_bp)
-# ====================================================================
-# @app.route('/alunos/cadastro')
-# def cadastro_aluno():
-#     """Página de cadastro de alunos"""
-#     try:
-#         return render_template('alunos/cadastro_aluno.html')
-#     except Exception as e:
-#         logger.error(f"Erro ao renderizar cadastro: {e}")
-#         return jsonify({'erro': str(e)}), 500
-# ====================================================================
 
 
 @app.route('/alunos/buscar')
@@ -152,6 +137,19 @@ def atestado_upload():
         return render_template('documentos/atestado_upload.html')
     except Exception as e:
         logger.error(f"Erro ao renderizar atestado: {e}")
+        return jsonify({'erro': str(e)}), 500
+
+
+# ==================== NOVA ROTA PARA GESTÃO DE DOCUMENTOS ====================
+@app.route('/documentos/gestao')
+def gestao_documentos():
+    """Página de gestão de documentos (Prestação de Contas e Atestados)"""
+    try:
+        # Importa os meses da blueprint
+        from routes.documentos_routes import MESES_LISTA
+        return render_template('documentos/gestao_documentos.html', meses=MESES_LISTA)
+    except Exception as e:
+        logger.error(f"Erro ao renderizar gestao_documentos: {e}")
         return jsonify({'erro': str(e)}), 500
 
 

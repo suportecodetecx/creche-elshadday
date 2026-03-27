@@ -11,7 +11,6 @@
     
     <style>
         /* ===== TODO O CSS DO SEU INDEX ATUAL ===== */
-        /* Mantenha todo o CSS do seu index.html aqui */
         * {
             margin: 0;
             padding: 0;
@@ -95,9 +94,9 @@
             grid-template-columns: repeat(3, 1fr);
         }
 
-        /* Grid para cards administrativos (2 colunas) */
+        /* Grid para cards administrativos (3 colunas - agora com 3 cards) */
         .cards-admin {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
         }
 
         /* Cards de acesso (4 ícones) */
@@ -260,7 +259,7 @@
             font-size: 0.85rem;
         }
 
-        /* Cards administrativos (2 botões) */
+        /* Cards administrativos (3 cards) */
         .card-admin {
             border-radius: 16px;
             padding: 40px 30px;
@@ -280,6 +279,9 @@
         }
         .card-admin:nth-child(2) {
             background: linear-gradient(145deg, #FFD166, #FFB347);
+        }
+        .card-admin:nth-child(3) {
+            background: linear-gradient(145deg, #4ECDC4, #45B7AC);
         }
 
         .card-admin:hover {
@@ -1037,7 +1039,7 @@
             </div>
         </div>
 
-        <!-- Cards Administrativos (2 botões) -->
+        <!-- Cards Administrativos (3 botões - NOVO CARD ADICIONADO!) -->
         <div id="cardsAdmin" class="cards-sistema cards-admin">
             <a href="/funcionarios/cadastro" class="card-admin">
                 <h3>👤 Funcionários</h3>
@@ -1049,6 +1051,13 @@
                 <h3>⏱️ Justificativa</h3>
                 <p>Gere justificativas de saída para colaboradores.</p>
                 <span class="card-badge">Saída de funcionários</span>
+            </a>
+
+            <!-- NOVO CARD: Gestão de Documentos -->
+            <a href="/documentos/gestao" class="card-admin">
+                <h3>📄 Gestão de Documentos</h3>
+                <p>Upload e gerenciamento de prestações de contas e atestados.</p>
+                <span class="card-badge">Documentos administrativos</span>
             </a>
         </div>
 
@@ -1199,13 +1208,13 @@ function mostrarSistemaLogado() {
     console.log('isAdmin:', isAdmin);
     
     if (isMaster) {
-        // MASTER: vê todos os 5 cards
-        console.log('✅ MODO MASTER ATIVADO - 5 cards');
+        // MASTER: vê todos os 5 cards (3 pedagógicos + 3 administrativos)
+        console.log('✅ MODO MASTER ATIVADO - 6 cards');
         document.getElementById('cardsPedagogico').classList.add('active');
         document.getElementById('cardsAdmin').classList.add('active');
     } else if (isAdmin) {
-        // ADMIN comum: vê apenas os 2 cards administrativos
-        console.log('✅ MODO ADMIN - 2 cards');
+        // ADMIN comum: vê apenas os 3 cards administrativos
+        console.log('✅ MODO ADMIN - 3 cards');
         document.getElementById('cardsPedagogico').classList.remove('active');
         document.getElementById('cardsAdmin').classList.add('active');
     } else {
@@ -1350,31 +1359,23 @@ function mostrarSistemaLogado() {
         }
 
         function getFotoUrl(aluno, tipo) {
-    // Verifica se o aluno tem arquivos
-    if (!aluno || !aluno.arquivos || aluno.arquivos.length === 0) {
-        return null;
-    }
-    
-    // Procura pela foto do aluno (campo exato: 'foto_aluno')
-    const arquivoFoto = aluno.arquivos.find(a => a.campo === 'foto_aluno');
-    
-    if (arquivoFoto) {
-        // PRIORIDADE 1: data_url (Base64) - funciona no Vercel
-        if (arquivoFoto.data_url && arquivoFoto.data_url.startsWith('data:')) {
-            return arquivoFoto.data_url;
+            if (!aluno || !aluno.arquivos || aluno.arquivos.length === 0) {
+                return null;
+            }
+            const arquivoFoto = aluno.arquivos.find(a => a.campo === 'foto_aluno');
+            if (arquivoFoto) {
+                if (arquivoFoto.data_url && arquivoFoto.data_url.startsWith('data:')) {
+                    return arquivoFoto.data_url;
+                }
+                if (arquivoFoto.caminho) {
+                    return arquivoFoto.caminho;
+                }
+                if (arquivoFoto.url) {
+                    return arquivoFoto.url;
+                }
+            }
+            return null;
         }
-        // PRIORIDADE 2: caminho (para desenvolvimento local)
-        if (arquivoFoto.caminho) {
-            return arquivoFoto.caminho;
-        }
-        // PRIORIDADE 3: url
-        if (arquivoFoto.url) {
-            return arquivoFoto.url;
-        }
-    }
-    
-    return null;
-}
 
         function handleImageError(img) {
             img.style.display = 'none';
@@ -1383,41 +1384,24 @@ function mostrarSistemaLogado() {
         }
 
         function carregarAlunos() {
-    const container = document.getElementById('alunos-termos');
-    container.innerHTML = '<div class="loading-alunos"><div class="loading-spinner"></div><p>Carregando alunos...</p></div>';
-    
-    fetch('/api/alunos/buscar')
-        .then(response => response.json())
-        .then(data => {
-            if (data.sucesso) {
-                alunosData = data.alunos || [];
-                console.log(`📋 ${alunosData.length} alunos carregados`);
-                
-                // Log para debug - ver estrutura dos arquivos
-                alunosData.forEach(aluno => {
-                    console.log(`\n📌 Aluno: ${aluno.dados_pessoais?.nome}`);
-                    if (aluno.arquivos && aluno.arquivos.length > 0) {
-                        aluno.arquivos.forEach(arquivo => {
-                            console.log(`   - campo: ${arquivo.campo}`);
-                            console.log(`   - tem data_url: ${!!arquivo.data_url}`);
-                            if (arquivo.data_url) {
-                                console.log(`   - data_url preview: ${arquivo.data_url.substring(0, 50)}...`);
-                            }
-                        });
-                    } else {
-                        console.log(`   ❌ Nenhum arquivo`);
+            const container = document.getElementById('alunos-termos');
+            container.innerHTML = '<div class="loading-alunos"><div class="loading-spinner"></div><p>Carregando alunos...</p></div>';
+            
+            fetch('/api/alunos/buscar')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sucesso) {
+                        alunosData = data.alunos || [];
+                        console.log(`📋 ${alunosData.length} alunos carregados`);
+                        atualizarSelectAlunos();
                     }
+                    container.innerHTML = '';
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    container.innerHTML = '<div class="no-alunos">Erro ao carregar alunos</div>';
                 });
-                
-                atualizarSelectAlunos();
-            }
-            container.innerHTML = '';
-        })
-        .catch(error => {
-            console.error('Erro:', error);
-            container.innerHTML = '<div class="no-alunos">Erro ao carregar alunos</div>';
-        });
-}
+        }
 
         function atualizarSelectAlunos() {
             const select = document.getElementById('alunoSelect');

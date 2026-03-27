@@ -1,0 +1,1442 @@
+Aqui está o código completo com os anos dinâmicos corrigidos:
+
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Documentos - Creche El Shadday</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --netflix-red: #E50914;
+            --netflix-red-dark: #B81D24;
+            --netflix-black: #0f0f0f;
+            --netflix-dark: #1a1a1a;
+            --netflix-gray: #2a2a2a;
+            --netflix-light: #808080;
+            --accent-blue: #0080FF;
+            --accent-green: #4ECDC4;
+            --accent-purple: #A06CD5;
+            --accent-yellow: #FFD166;
+            --accent-orange: #FF9800;
+            --white: #FFFFFF;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--netflix-black);
+            min-height: 100vh;
+            color: var(--white);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--netflix-dark);
+            border-radius: 32px;
+            overflow: hidden;
+            box-shadow: 0 30px 60px -20px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .header-moderno {
+            padding: 24px 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            background: var(--netflix-dark);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+        }
+
+        .logo-animated {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--netflix-red), var(--netflix-red-dark));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.4rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+        }
+
+        .logo-text h2 {
+            color: white;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text p {
+            color: var(--netflix-light);
+            font-size: 0.85rem;
+            margin: 2px 0 0;
+        }
+
+        .btn-nav {
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            background: rgba(255,255,255,0.05);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-nav:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--netflix-red);
+        }
+
+        main {
+            padding: 40px;
+        }
+
+        .form-card {
+            background: var(--netflix-dark);
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .header-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--netflix-red);
+        }
+
+        .card-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: white;
+            flex: 1;
+            margin: 0;
+        }
+
+        .btn-add {
+            background: var(--netflix-red);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-add:hover {
+            background: var(--netflix-red-dark);
+            transform: translateY(-2px);
+        }
+
+        .filtros-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .filtro-input {
+            flex: 1;
+            min-width: 150px;
+            padding: 12px 16px;
+            background: var(--netflix-gray);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        .filtro-input option {
+            background: var(--netflix-gray);
+            color: white;
+        }
+
+        .filtro-input:focus {
+            outline: none;
+            border-color: var(--netflix-red);
+        }
+
+        .grupo-mes {
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .grupo-header {
+            background: linear-gradient(135deg, var(--netflix-gray), var(--netflix-dark));
+            padding: 15px 25px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .grupo-header:hover {
+            background: rgba(229, 9, 20, 0.1);
+        }
+
+        .grupo-titulo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            flex-wrap: wrap;
+        }
+
+        .grupo-titulo span:first-child {
+            font-size: 1.5rem;
+        }
+
+        .grupo-contador {
+            background: var(--netflix-red);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .grupo-icone {
+            transition: transform 0.3s ease;
+        }
+
+        .grupo-header.collapsed .grupo-icone {
+            transform: rotate(-90deg);
+        }
+
+        .grupo-conteudo {
+            display: block;
+            padding: 20px;
+        }
+
+        .grupo-header.collapsed + .grupo-conteudo {
+            display: none;
+        }
+
+        .tabela-documentos-grupo {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .tabela-documentos-grupo th,
+        .tabela-documentos-grupo td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            vertical-align: middle;
+        }
+
+        .tabela-documentos-grupo th {
+            color: var(--netflix-red);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .badge-tipo {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .badge-prestacao {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .badge-atestado {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .badge-categoria {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 500;
+            background: var(--accent-orange);
+            color: white;
+            margin-top: 5px;
+        }
+
+        .badge-unidade {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 500;
+            background: var(--accent-purple);
+            color: white;
+        }
+
+        .btn-acao {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            margin-right: 5px;
+        }
+
+        .btn-visualizar {
+            background: var(--accent-purple);
+            color: white;
+        }
+
+        .btn-download {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .btn-editar {
+            background: var(--accent-yellow);
+            color: #1a1a1a;
+        }
+
+        .btn-excluir {
+            background: var(--netflix-red);
+            color: white;
+        }
+
+        .btn-acao:hover {
+            transform: translateY(-1px);
+            opacity: 0.9;
+        }
+
+        .contador-total {
+            background: rgba(229, 9, 20, 0.2);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--netflix-red);
+        }
+
+        .nota-fiscal-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            background: #2c3e50;
+            color: #ecf0f1;
+            font-family: monospace;
+        }
+
+        /* Modal Profissional */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(8px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--netflix-dark);
+            border-radius: 28px;
+            padding: 40px;
+            width: 100%;
+            max-width: 720px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+        }
+
+        .modal-content h3 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 28px;
+            color: var(--white);
+            border-left: 4px solid var(--netflix-red);
+            padding-left: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--netflix-light);
+        }
+
+        .form-group label .required {
+            color: var(--netflix-red);
+            margin-left: 4px;
+        }
+
+        .form-group input, 
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 18px;
+            background: var(--netflix-gray);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            font-size: 0.95rem;
+            color: var(--white);
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .form-group select {
+            background-color: var(--netflix-gray);
+            color: var(--white);
+            cursor: pointer;
+        }
+
+        .form-group select option {
+            background-color: var(--netflix-gray);
+            color: var(--white);
+            padding: 12px;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--netflix-red);
+            background: rgba(229, 9, 20, 0.05);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 30px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-weight: normal;
+            text-transform: none;
+            font-size: 0.95rem;
+            color: var(--white);
+        }
+
+        .radio-group input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--netflix-red);
+        }
+
+        .categorias-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+            padding: 16px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .categorias-group label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-weight: normal;
+            text-transform: none;
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            border-radius: 10px;
+            transition: background 0.2s;
+            margin: 0;
+            color: var(--white);
+        }
+
+        .categorias-group label:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .categorias-group input[type="radio"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--netflix-red);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            padding: 12px;
+            background: var(--netflix-gray);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            color: var(--white);
+            cursor: pointer;
+        }
+
+        .file-input-wrapper input[type="file"]::file-selector-button {
+            background: var(--netflix-red);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 30px;
+            margin-right: 15px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .file-input-wrapper input[type="file"]::file-selector-button:hover {
+            background: var(--netflix-red-dark);
+        }
+
+        .file-input-wrapper small {
+            margin-top: 8px;
+            color: var(--netflix-light);
+            font-size: 0.75rem;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .btn-modal {
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--netflix-red);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--netflix-red-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* Modal de Confirmação */
+        .modal-confirmacao {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px);
+            z-index: 10001;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-confirmacao.active {
+            display: flex;
+        }
+
+        .modal-confirmacao-content {
+            background: var(--netflix-dark);
+            border-radius: 24px;
+            padding: 32px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: fadeInUp 0.2s ease;
+        }
+
+        .modal-confirmacao-content h3 {
+            font-size: 1.4rem;
+            margin-bottom: 16px;
+            color: var(--netflix-red);
+            border: none;
+            padding: 0;
+        }
+
+        .modal-confirmacao-content p {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+        }
+
+        .modal-confirmacao-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn-confirmar {
+            background: var(--netflix-red);
+            color: white;
+            padding: 10px 28px;
+            border-radius: 30px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-cancelar-modal {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 10px 28px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-confirmar:hover, .btn-cancelar-modal:hover {
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .notificacao-flutuante {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            min-width: 320px;
+            background: var(--netflix-dark);
+            border-radius: 12px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+            z-index: 99999;
+            animation: slideIn 0.3s ease forwards;
+            border-left: 4px solid var(--accent-green);
+        }
+
+        .notificacao-flutuante.error {
+            border-left-color: var(--netflix-red);
+        }
+
+        .notificacao-flutuante.warning {
+            border-left-color: var(--accent-yellow);
+        }
+
+        .notificacao-conteudo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 16px 20px;
+        }
+
+        .notificacao-conteudo span {
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .documento-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .documento-nome {
+            font-weight: 600;
+        }
+
+        .modal-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .modal-content::-webkit-scrollbar-track {
+            background: var(--netflix-gray);
+            border-radius: 4px;
+        }
+
+        .modal-content::-webkit-scrollbar-thumb {
+            background: var(--netflix-red);
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            main { padding: 20px; }
+            .form-card { padding: 20px; }
+            .filtros-container { flex-direction: column; }
+            .header-content { flex-direction: column; text-align: center; }
+            .grupo-header { flex-direction: column; text-align: center; gap: 10px; }
+            .tabela-documentos-grupo { display: block; overflow-x: auto; }
+            .btn-acao { margin-bottom: 5px; display: inline-block; }
+            .categorias-group { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; gap: 0; }
+            .modal-content { padding: 25px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header-moderno">
+            <div class="header-content">
+                <div class="logo-wrapper" onclick="window.location.href='/'">
+                    <div class="logo-animated"><span>CS</span></div>
+                    <div class="logo-text">
+                        <h2>Creche El Shadday</h2>
+                        <p>Gestão de Documentos</p>
+                    </div>
+                </div>
+                <a href="/" class="btn-nav">← Início</a>
+            </div>
+        </header>
+
+        <main>
+            <div class="form-card">
+                <div class="card-header">
+                    <div class="header-icon">📄</div>
+                    <h2>Documentos Administrativos</h2>
+                    <button class="btn-add" onclick="abrirModalUpload()">+ Novo Documento</button>
+                </div>
+
+                <div class="filtros-container">
+                    <input type="text" id="filtroNome" class="filtro-input" placeholder="Filtrar por nome..." onkeyup="carregarDocumentos()">
+                    <select id="filtroTipo" class="filtro-input" onchange="carregarDocumentos()">
+                        <option value="">Todos os tipos</option>
+                        <option value="prestacao">Prestação de Contas</option>
+                        <option value="atestado">Atestados</option>
+                    </select>
+                    <select id="filtroUnidade" class="filtro-input" onchange="carregarDocumentos()">
+                        <option value="">Todas as unidades</option>
+                        <option value="CEIC El Shadday">CEIC El Shadday</option>
+                        <option value="CEIM Prof. Egberto Malta Moreira">CEIM Prof. Egberto Malta Moreira</option>
+                    </select>
+                    <select id="filtroCategoria" class="filtro-input" onchange="carregarDocumentos()">
+                        <option value="">Todas as categorias</option>
+                        <option value="Merenda Escolar">Merenda Escolar</option>
+                        <option value="Material de Limpeza">Material de Limpeza</option>
+                        <option value="Material de Expediente e Consumo">Material de Expediente</option>
+                        <option value="Guia">Guia</option>
+                        <option value="INSS">INSS</option>
+                        <option value="DAFE">DAFE</option>
+                        <option value="FGTS">FGTS</option>
+                        <option value="Folha de Pagamento e Despesas de RH">Folha de Pagamento</option>
+                        <option value="Serviços de Terceiros">Serviços de Terceiros</option>
+                    </select>
+                    <select id="filtroMes" class="filtro-input" onchange="carregarDocumentos()">
+                        <option value="">Todos os meses</option>
+                        <option value="1">Janeiro</option>
+                        <option value="2">Fevereiro</option>
+                        <option value="3">Março</option>
+                        <option value="4">Abril</option>
+                        <option value="5">Maio</option>
+                        <option value="6">Junho</option>
+                        <option value="7">Julho</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Setembro</option>
+                        <option value="10">Outubro</option>
+                        <option value="11">Novembro</option>
+                        <option value="12">Dezembro</option>
+                    </select>
+                    <select id="filtroAno" class="filtro-input" onchange="carregarDocumentos()">
+                        <option value="">Todos os anos</option>
+                        <!-- Os anos serão preenchidos dinamicamente pelo JavaScript -->
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <span class="contador-total" id="contadorTotal">0 documentos</span>
+                    <span style="color: var(--netflix-light); font-size: 0.75rem;">Clique no mês para expandir/recolher</span>
+                </div>
+
+                <div id="documentosAgrupados"></div>
+
+                <div id="semDocumentos" style="display: none; text-align: center; padding: 60px; color: var(--netflix-light);">
+                    <p>Nenhum documento encontrado</p>
+                    <p style="font-size: 0.85rem; margin-top: 8px;">Clique em "+ Novo Documento" para começar</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal de Upload/Edição -->
+    <div id="modalUpload" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Novo Documento</h3>
+            <form id="formUpload" enctype="multipart/form-data">
+                <input type="hidden" id="editId" value="">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Unidade <span class="required">*</span></label>
+                        <select id="unidadeSelect" required>
+                            <option value="">Selecione a unidade</option>
+                            <option value="CEIC El Shadday">CEIC El Shadday</option>
+                            <option value="CEIM Prof. Egberto Malta Moreira">CEIM Prof. Egberto Malta Moreira</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tipo de Documento <span class="required">*</span></label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="tipo" value="prestacao" onchange="toggleCategorias()"> Prestação de Contas</label>
+                            <label><input type="radio" name="tipo" value="atestado" onchange="toggleCategorias()"> Atestado</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="categoriasContainer" style="display: none;">
+                    <div class="form-group">
+                        <label>Categoria <span class="required">*</span></label>
+                        <div class="categorias-group">
+                            <label><input type="radio" name="categoria" value="Merenda Escolar"> Merenda Escolar</label>
+                            <label><input type="radio" name="categoria" value="Material de Limpeza"> Material de Limpeza</label>
+                            <label><input type="radio" name="categoria" value="Material de Expediente e Consumo"> Material de Expediente e Consumo</label>
+                            <label><input type="radio" name="categoria" value="Guia"> Guia</label>
+                            <label><input type="radio" name="categoria" value="INSS"> INSS</label>
+                            <label><input type="radio" name="categoria" value="DAFE"> DAFE</label>
+                            <label><input type="radio" name="categoria" value="FGTS"> FGTS</label>
+                            <label><input type="radio" name="categoria" value="Folha de Pagamento e Despesas de RH"> Folha de Pagamento e Despesas de RH</label>
+                            <label><input type="radio" name="categoria" value="Serviços de Terceiros"> Serviços de Terceiros</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nome da Pessoa/Empresa <span class="required">*</span></label>
+                        <input type="text" id="nomePessoa" placeholder="Ex: Joaquina Silva / Empresa XYZ" required>
+                    </div>
+
+                    <div class="form-group" id="notaFiscalGroup" style="display: none;">
+                        <label>Número da Nota Fiscal</label>
+                        <input type="text" id="notaFiscal" placeholder="Ex: NF-123456">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Mês <span class="required">*</span></label>
+                        <select id="mesSelect" required>
+                            <option value="">Selecione</option>
+                            <option value="1">Janeiro</option>
+                            <option value="2">Fevereiro</option>
+                            <option value="3">Março</option>
+                            <option value="4">Abril</option>
+                            <option value="5">Maio</option>
+                            <option value="6">Junho</option>
+                            <option value="7">Julho</option>
+                            <option value="8">Agosto</option>
+                            <option value="9">Setembro</option>
+                            <option value="10">Outubro</option>
+                            <option value="11">Novembro</option>
+                            <option value="12">Dezembro</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Ano <span class="required">*</span></label>
+                        <select id="anoSelect" required>
+                            <option value="">Selecione</option>
+                            <!-- Os anos serão preenchidos dinamicamente pelo JavaScript -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Arquivo <span class="required" id="arquivoRequired">*</span></label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="arquivoUpload" accept=".pdf,.jpg,.jpeg,.png">
+                        <small>Formatos aceitos: PDF, JPG, JPEG, PNG (máx. 10MB)</small>
+                    </div>
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="button" class="btn-modal btn-secondary" onclick="fecharModalUpload()">Cancelar</button>
+                    <button type="submit" class="btn-modal btn-primary" id="btnSubmit">Salvar Documento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Exclusão -->
+    <div id="modalExclusao" class="modal-confirmacao">
+        <div class="modal-confirmacao-content">
+            <h3>⚠️ Confirmar Exclusão</h3>
+            <p id="modalExclusaoMensagem">Tem certeza que deseja excluir este documento?</p>
+            <p style="font-size: 0.8rem; color: #E50914; margin-top: -10px;">Esta ação não pode ser desfeita.</p>
+            <div class="modal-confirmacao-buttons">
+                <button class="btn-cancelar-modal" onclick="fecharModalExclusao()">Cancelar</button>
+                <button class="btn-confirmar" id="btnConfirmarExclusao">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let documentos = [];
+        let editando = false;
+        let editandoId = null;
+        let documentoParaExcluir = null;
+
+        const mesesMap = {
+            '1': 'Janeiro', '2': 'Fevereiro', '3': 'Março', '4': 'Abril',
+            '5': 'Maio', '6': 'Junho', '7': 'Julho', '8': 'Agosto',
+            '9': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro'
+        };
+
+        // ==================== FUNÇÃO PARA CARREGAR ANOS DINAMICAMENTE ====================
+        function carregarAnosDinamicamente() {
+            const anoSelect = document.getElementById('anoSelect');
+            const filtroAno = document.getElementById('filtroAno');
+            const anoAtual = new Date().getFullYear();
+            const anoInicio = 2026;
+            const anoFim = anoAtual + 5; // Vai até 5 anos à frente
+            
+            console.log(`📅 Gerando anos de ${anoInicio} até ${anoFim}`);
+            
+            // Limpar selects
+            if (anoSelect) {
+                anoSelect.innerHTML = '<option value="">Selecione</option>';
+            }
+            if (filtroAno) {
+                filtroAno.innerHTML = '<option value="">Todos os anos</option>';
+            }
+            
+            // Gerar anos do início até o fim
+            for (let ano = anoInicio; ano <= anoFim; ano++) {
+                if (anoSelect) {
+                    anoSelect.innerHTML += `<option value="${ano}">${ano}</option>`;
+                }
+                if (filtroAno) {
+                    filtroAno.innerHTML += `<option value="${ano}">${ano}</option>`;
+                }
+            }
+            
+            // Se estiver em modo de edição, manter o ano selecionado
+            if (editandoId) {
+                const doc = documentos.find(d => d._id === editandoId);
+                if (doc && doc.ano) {
+                    if (anoSelect) anoSelect.value = doc.ano;
+                    if (filtroAno) filtroAno.value = doc.ano;
+                }
+            }
+        }
+
+        function toggleCategorias() {
+            const tipo = document.querySelector('input[name="tipo"]:checked');
+            const categoriasDiv = document.getElementById('categoriasContainer');
+            const notaFiscalGroup = document.getElementById('notaFiscalGroup');
+            
+            if (tipo && tipo.value === 'prestacao') {
+                categoriasDiv.style.display = 'block';
+                notaFiscalGroup.style.display = 'block';
+            } else {
+                categoriasDiv.style.display = 'none';
+                notaFiscalGroup.style.display = 'none';
+                document.getElementById('notaFiscal').value = '';
+            }
+        }
+
+        function mostrarNotificacao(mensagem, tipo = 'success') {
+            const notificacao = document.createElement('div');
+            notificacao.className = `notificacao-flutuante ${tipo}`;
+            notificacao.innerHTML = `<div class="notificacao-conteudo"><span>${mensagem}</span></div>`;
+            document.body.appendChild(notificacao);
+            setTimeout(() => notificacao.remove(), 3000);
+        }
+
+        function atualizarContadorTotal() {
+            const contador = document.getElementById('contadorTotal');
+            const total = documentos.length;
+            contador.textContent = `${total} ${total === 1 ? 'documento' : 'documentos'}`;
+            
+            const semDocsDiv = document.getElementById('semDocumentos');
+            if (total === 0) {
+                semDocsDiv.style.display = 'block';
+            } else {
+                semDocsDiv.style.display = 'none';
+            }
+        }
+
+        function carregarDocumentos() {
+            const filtroNome = document.getElementById('filtroNome').value.toLowerCase();
+            const filtroTipo = document.getElementById('filtroTipo').value;
+            const filtroUnidade = document.getElementById('filtroUnidade').value;
+            const filtroCategoria = document.getElementById('filtroCategoria').value;
+            const filtroMesNumero = document.getElementById('filtroMes').value;
+            const filtroAno = document.getElementById('filtroAno').value;
+
+            const params = new URLSearchParams();
+            if (filtroNome) params.append('nome', filtroNome);
+            if (filtroTipo) params.append('tipo', filtroTipo);
+            if (filtroUnidade) params.append('unidade', filtroUnidade);
+            if (filtroCategoria) params.append('categoria', filtroCategoria);
+            if (filtroMesNumero) params.append('mes', filtroMesNumero);
+            if (filtroAno) params.append('ano', filtroAno);
+
+            fetch(`/documentos/api/listar?${params.toString()}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sucesso) {
+                        documentos = data.documentos;
+                        atualizarContadorTotal();
+                        agruparEExibirDocumentos();
+                    } else {
+                        mostrarNotificacao('Erro ao carregar documentos', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    mostrarNotificacao('Erro ao carregar documentos', 'error');
+                });
+        }
+
+        function agruparEExibirDocumentos() {
+            // Agrupar por mês/ano E por tipo (separar prestação de atestado)
+            const grupos = {};
+            
+            documentos.forEach(doc => {
+                const chave = `${doc.mes}/${doc.ano}`;
+                if (!grupos[chave]) {
+                    grupos[chave] = {
+                        mes: doc.mes,
+                        ano: doc.ano,
+                        prestacoes: [],
+                        atestados: []
+                    };
+                }
+                if (doc.tipo === 'prestacao') {
+                    grupos[chave].prestacoes.push(doc);
+                } else {
+                    grupos[chave].atestados.push(doc);
+                }
+            });
+
+            const gruposOrdenados = Object.values(grupos).sort((a, b) => {
+                if (a.ano !== b.ano) return b.ano - a.ano;
+                const mesesOrdem = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                return mesesOrdem.indexOf(b.mes) - mesesOrdem.indexOf(a.mes);
+            });
+
+            const container = document.getElementById('documentosAgrupados');
+            if (gruposOrdenados.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = gruposOrdenados.map(grupo => {
+                const prestacoesOrdenadas = grupo.prestacoes.sort((a, b) => a.nome_pessoa.localeCompare(b.nome_pessoa));
+                const atestadosOrdenados = grupo.atestados.sort((a, b) => a.nome_pessoa.localeCompare(b.nome_pessoa));
+                
+                let html = `
+                    <div class="grupo-mes">
+                        <div class="grupo-header" onclick="toggleGrupo(this)">
+                            <div class="grupo-titulo">
+                                <span>📁</span>
+                                <span>${grupo.mes} ${grupo.ano}</span>
+                                <span class="grupo-contador">${prestacoesOrdenadas.length + atestadosOrdenados.length} documentos</span>
+                            </div>
+                            <div class="grupo-icone">▼</div>
+                        </div>
+                        <div class="grupo-conteudo">
+                `;
+                
+                // Seção de Prestações de Contas
+                if (prestacoesOrdenadas.length > 0) {
+                    html += `
+                        <div style="margin-bottom: 30px;">
+                            <div style="background: var(--accent-blue); padding: 8px 16px; border-radius: 20px; margin-bottom: 15px; display: inline-block;">
+                                📊 Prestações de Contas (${prestacoesOrdenadas.length})
+                            </div>
+                            <table class="tabela-documentos-grupo">
+                                <thead>
+                                    32
+                                        <th>Nome</th>
+                                        <th>Unidade</th>
+                                        <th>Nota Fiscal</th>
+                                        <th>Tipo</th>
+                                        <th>Data Upload</th>
+                                        <th>Ações</th>
+                                    </thead>
+                                <tbody>
+                                    ${prestacoesOrdenadas.map(doc => `
+                                        <tr>
+                                            <td>
+                                                <div class="documento-info">
+                                                    <span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span>
+                                                    ${doc.categoria ? `<span class="badge-categoria">📌 ${escapeHtml(doc.categoria)}</span>` : ''}
+                                                </div>
+                                            </td>
+                                            <td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td>
+                                            <td>${doc.nota_fiscal ? `<span class="nota-fiscal-badge">📄 NF: ${escapeHtml(doc.nota_fiscal)}</span>` : '<span style="color: var(--netflix-light);">-</span>'}</td>
+                                            <td><span class="badge-tipo badge-prestacao">Prestação</span></td>
+                                            <td style="font-size: 0.8rem; color: var(--netflix-light);">${doc.data_formatada || doc.data_upload}</td>
+                                            <td>
+                                                <button class="btn-acao btn-visualizar" onclick="visualizarDocumento('${doc._id}')" title="Visualizar">👁️</button>
+                                                <button class="btn-acao btn-download" onclick="baixarDocumento('${doc._id}')" title="Download">⬇️</button>
+                                                <button class="btn-acao btn-editar" onclick="editarDocumento('${doc._id}')" title="Editar">✏️</button>
+                                                <button class="btn-acao btn-excluir" onclick="abrirModalExclusao('${doc._id}', '${escapeHtml(doc.nome_pessoa)}')" title="Excluir">🗑️</button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+                
+                // Seção de Atestados
+                if (atestadosOrdenados.length > 0) {
+                    html += `
+                        <div>
+                            <div style="background: var(--accent-green); padding: 8px 16px; border-radius: 20px; margin-bottom: 15px; display: inline-block;">
+                                🏥 Atestados (${atestadosOrdenados.length})
+                            </div>
+                            <table class="tabela-documentos-grupo">
+                                <thead>
+                                    32
+                                        <th>Nome</th>
+                                        <th>Unidade</th>
+                                        <th>Nota Fiscal</th>
+                                        <th>Tipo</th>
+                                        <th>Data Upload</th>
+                                        <th>Ações</th>
+                                    </thead>
+                                <tbody>
+                                    ${atestadosOrdenados.map(doc => `
+                                        32
+                                            <td>
+                                                <div class="documento-info">
+                                                    <span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span>
+                                                </div>
+                                            </td>
+                                            <td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td>
+                                            <td>-</td>
+                                            <td><span class="badge-tipo badge-atestado">Atestado</span></td>
+                                            <td style="font-size: 0.8rem; color: var(--netflix-light);">${doc.data_formatada || doc.data_upload}</td>
+                                            <td>
+                                                <button class="btn-acao btn-visualizar" onclick="visualizarDocumento('${doc._id}')" title="Visualizar">👁️</button>
+                                                <button class="btn-acao btn-download" onclick="baixarDocumento('${doc._id}')" title="Download">⬇️</button>
+                                                <button class="btn-acao btn-editar" onclick="editarDocumento('${doc._id}')" title="Editar">✏️</button>
+                                                <button class="btn-acao btn-excluir" onclick="abrirModalExclusao('${doc._id}', '${escapeHtml(doc.nome_pessoa)}')" title="Excluir">🗑️</button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+                
+                html += `</div></div>`;
+                return html;
+            }).join('');
+        }
+
+        function toggleGrupo(element) {
+            element.classList.toggle('collapsed');
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function baixarDocumento(id) {
+            window.open(`/documentos/api/download/${id}`, '_blank');
+        }
+
+        function visualizarDocumento(id) {
+            window.open(`/documentos/api/visualizar/${id}`, '_blank');
+        }
+
+        function abrirModalExclusao(id, nome) {
+            documentoParaExcluir = id;
+            const modal = document.getElementById('modalExclusao');
+            const mensagem = document.getElementById('modalExclusaoMensagem');
+            mensagem.textContent = `Tem certeza que deseja excluir o documento "${nome}"?`;
+            modal.classList.add('active');
+        }
+
+        function fecharModalExclusao() {
+            const modal = document.getElementById('modalExclusao');
+            modal.classList.remove('active');
+            documentoParaExcluir = null;
+        }
+
+        function confirmarExclusao() {
+            if (documentoParaExcluir) {
+                excluirDocumento(documentoParaExcluir);
+                fecharModalExclusao();
+            }
+        }
+
+        function excluirDocumento(id) {
+            fetch(`/documentos/api/excluir/${id}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sucesso) {
+                        mostrarNotificacao('Documento excluído com sucesso!', 'success');
+                        carregarDocumentos();
+                    } else {
+                        mostrarNotificacao(data.erro || 'Erro ao excluir', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    mostrarNotificacao('Erro ao excluir documento', 'error');
+                });
+        }
+
+        function editarDocumento(id) {
+            const doc = documentos.find(d => d._id === id);
+            if (doc) {
+                editando = true;
+                editandoId = id;
+                
+                document.getElementById('modalTitle').textContent = 'Editar Documento';
+                document.getElementById('btnSubmit').textContent = 'Atualizar';
+                document.getElementById('arquivoRequired').textContent = '(opcional)';
+                document.getElementById('arquivoUpload').required = false;
+                
+                document.getElementById('editId').value = id;
+                document.getElementById('unidadeSelect').value = doc.unidade || '';
+                document.querySelector(`input[name="tipo"][value="${doc.tipo}"]`).checked = true;
+                toggleCategorias();
+                if (doc.categoria) {
+                    document.querySelector(`input[name="categoria"][value="${doc.categoria}"]`).checked = true;
+                }
+                document.getElementById('nomePessoa').value = doc.nome_pessoa || '';
+                document.getElementById('notaFiscal').value = doc.nota_fiscal || '';
+                
+                const mesNumero = Object.keys(mesesMap).find(key => mesesMap[key] === doc.mes);
+                document.getElementById('mesSelect').value = mesNumero || '';
+                document.getElementById('anoSelect').value = doc.ano || '';
+                
+                abrirModalUpload();
+            }
+        }
+
+        function abrirModalUpload() {
+            document.getElementById('modalUpload').classList.add('active');
+        }
+
+        function fecharModalUpload() {
+            document.getElementById('modalUpload').classList.remove('active');
+            resetForm();
+        }
+
+        function resetForm() {
+            editando = false;
+            editandoId = null;
+            document.getElementById('modalTitle').textContent = 'Novo Documento';
+            document.getElementById('btnSubmit').textContent = 'Salvar Documento';
+            document.getElementById('arquivoRequired').textContent = '*';
+            document.getElementById('arquivoUpload').required = true;
+            document.getElementById('formUpload').reset();
+            document.getElementById('editId').value = '';
+            document.getElementById('categoriasContainer').style.display = 'none';
+            document.getElementById('notaFiscalGroup').style.display = 'none';
+        }
+
+        document.getElementById('formUpload').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const tipo = document.querySelector('input[name="tipo"]:checked');
+            const unidade = document.getElementById('unidadeSelect').value;
+            const nomePessoa = document.getElementById('nomePessoa').value.trim();
+            const notaFiscal = document.getElementById('notaFiscal').value.trim();
+            const mes = document.getElementById('mesSelect').value;
+            const ano = document.getElementById('anoSelect').value;
+            const arquivo = document.getElementById('arquivoUpload').files[0];
+            const editId = document.getElementById('editId').value;
+            
+            let categoria = null;
+            if (tipo && tipo.value === 'prestacao') {
+                const categoriaSelecionada = document.querySelector('input[name="categoria"]:checked');
+                if (!categoriaSelecionada) {
+                    mostrarNotificacao('Selecione uma categoria para Prestação de Contas', 'warning');
+                    return;
+                }
+                categoria = categoriaSelecionada.value;
+            }
+
+            if (!tipo) {
+                mostrarNotificacao('Selecione o tipo de documento', 'warning');
+                return;
+            }
+            if (!unidade) {
+                mostrarNotificacao('Selecione a unidade', 'warning');
+                return;
+            }
+            if (!nomePessoa) {
+                mostrarNotificacao('Nome é obrigatório', 'warning');
+                return;
+            }
+            if (!mes) {
+                mostrarNotificacao('Mês é obrigatório', 'warning');
+                return;
+            }
+            if (!ano) {
+                mostrarNotificacao('Ano é obrigatório', 'warning');
+                return;
+            }
+            if (!editando && !arquivo) {
+                mostrarNotificacao('Selecione um arquivo', 'warning');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('tipo', tipo.value);
+            formData.append('unidade', unidade);
+            formData.append('nome_pessoa', nomePessoa);
+            if (notaFiscal) formData.append('nota_fiscal', notaFiscal);
+            formData.append('mes', mes);
+            formData.append('ano', ano);
+            if (categoria) formData.append('categoria', categoria);
+            if (arquivo) formData.append('arquivo', arquivo);
+            if (editando) formData.append('documento_id', editId);
+
+            const url = editando ? '/documentos/api/atualizar' : '/documentos/api/upload';
+
+            try {
+                const response = await fetch(url, { method: 'POST', body: formData });
+                const data = await response.json();
+
+                if (data.sucesso) {
+                    mostrarNotificacao(editando ? 'Documento atualizado com sucesso!' : 'Documento enviado com sucesso!', 'success');
+                    fecharModalUpload();
+                    carregarDocumentos();
+                } else {
+                    mostrarNotificacao(data.erro || 'Erro ao salvar', 'error');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                mostrarNotificacao('Erro de conexão', 'error');
+            }
+        });
+
+        document.getElementById('modalUpload').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modalUpload')) {
+                fecharModalUpload();
+            }
+        });
+
+        document.getElementById('btnConfirmarExclusao').addEventListener('click', confirmarExclusao);
+
+        // Carregar anos dinamicamente antes de carregar documentos
+        carregarAnosDinamicamente();
+        carregarDocumentos();
+    </script>
+</body>
+</html>
+```
