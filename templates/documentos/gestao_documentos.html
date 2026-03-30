@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -23,6 +22,7 @@
             --accent-purple: #A06CD5;
             --accent-yellow: #FFD166;
             --accent-orange: #FF9800;
+            --accent-cyan: #00BCD4;
             --white: #FFFFFF;
         }
 
@@ -297,6 +297,11 @@
 
         .badge-atestado {
             background: var(--accent-green);
+            color: white;
+        }
+
+        .badge-declaracao {
+            background: var(--accent-cyan);
             color: white;
         }
 
@@ -810,6 +815,7 @@
                         <option value="">Todos os tipos</option>
                         <option value="prestacao">Prestação de Contas</option>
                         <option value="atestado">Atestados</option>
+                        <option value="declaracao">Declarações</option>
                     </select>
                     <select id="filtroUnidade" class="filtro-input" onchange="carregarDocumentos()">
                         <option value="">Todas as unidades</option>
@@ -845,7 +851,6 @@
                     </select>
                     <select id="filtroAno" class="filtro-input" onchange="carregarDocumentos()">
                         <option value="">Todos os anos</option>
-                        <!-- Os anos serão preenchidos dinamicamente pelo JavaScript -->
                     </select>
                 </div>
 
@@ -886,6 +891,7 @@
                         <div class="radio-group">
                             <label><input type="radio" name="tipo" value="prestacao" onchange="toggleCategorias()"> Prestação de Contas</label>
                             <label><input type="radio" name="tipo" value="atestado" onchange="toggleCategorias()"> Atestado</label>
+                            <label><input type="radio" name="tipo" value="declaracao" onchange="toggleCategorias()"> Declaração</label>
                         </div>
                     </div>
                 </div>
@@ -943,7 +949,6 @@
                         <label>Ano <span class="required">*</span></label>
                         <select id="anoSelect" required>
                             <option value="">Selecione</option>
-                            <!-- Os anos serão preenchidos dinamicamente pelo JavaScript -->
                         </select>
                     </div>
                 </div>
@@ -989,17 +994,14 @@
             '9': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro'
         };
 
-        // ==================== FUNÇÃO PARA CARREGAR ANOS DINAMICAMENTE ====================
+        // Função para carregar anos dinamicamente
         function carregarAnosDinamicamente() {
             const anoSelect = document.getElementById('anoSelect');
             const filtroAno = document.getElementById('filtroAno');
             const anoAtual = new Date().getFullYear();
             const anoInicio = 2026;
-            const anoFim = anoAtual + 5; // Vai até 5 anos à frente
+            const anoFim = anoAtual + 5;
             
-            console.log(`📅 Gerando anos de ${anoInicio} até ${anoFim}`);
-            
-            // Limpar selects
             if (anoSelect) {
                 anoSelect.innerHTML = '<option value="">Selecione</option>';
             }
@@ -1007,7 +1009,6 @@
                 filtroAno.innerHTML = '<option value="">Todos os anos</option>';
             }
             
-            // Gerar anos do início até o fim
             for (let ano = anoInicio; ano <= anoFim; ano++) {
                 if (anoSelect) {
                     anoSelect.innerHTML += `<option value="${ano}">${ano}</option>`;
@@ -1017,12 +1018,10 @@
                 }
             }
             
-            // Se estiver em modo de edição, manter o ano selecionado
             if (editandoId) {
                 const doc = documentos.find(d => d._id === editandoId);
-                if (doc && doc.ano) {
-                    if (anoSelect) anoSelect.value = doc.ano;
-                    if (filtroAno) filtroAno.value = doc.ano;
+                if (doc && doc.ano && anoSelect) {
+                    anoSelect.value = doc.ano;
                 }
             }
         }
@@ -1039,6 +1038,9 @@
                 categoriasDiv.style.display = 'none';
                 notaFiscalGroup.style.display = 'none';
                 document.getElementById('notaFiscal').value = '';
+                // Limpar categoria selecionada
+                const categorias = document.querySelectorAll('input[name="categoria"]');
+                categorias.forEach(c => c.checked = false);
             }
         }
 
@@ -1097,7 +1099,6 @@
         }
 
         function agruparEExibirDocumentos() {
-            // Agrupar por mês/ano E por tipo (separar prestação de atestado)
             const grupos = {};
             
             documentos.forEach(doc => {
@@ -1107,13 +1108,16 @@
                         mes: doc.mes,
                         ano: doc.ano,
                         prestacoes: [],
-                        atestados: []
+                        atestados: [],
+                        declaracoes: []
                     };
                 }
                 if (doc.tipo === 'prestacao') {
                     grupos[chave].prestacoes.push(doc);
-                } else {
+                } else if (doc.tipo === 'atestado') {
                     grupos[chave].atestados.push(doc);
+                } else if (doc.tipo === 'declaracao') {
+                    grupos[chave].declaracoes.push(doc);
                 }
             });
 
@@ -1132,6 +1136,7 @@
             container.innerHTML = gruposOrdenados.map(grupo => {
                 const prestacoesOrdenadas = grupo.prestacoes.sort((a, b) => a.nome_pessoa.localeCompare(b.nome_pessoa));
                 const atestadosOrdenados = grupo.atestados.sort((a, b) => a.nome_pessoa.localeCompare(b.nome_pessoa));
+                const declaracoesOrdenadas = grupo.declaracoes.sort((a, b) => a.nome_pessoa.localeCompare(b.nome_pessoa));
                 
                 let html = `
                     <div class="grupo-mes">
@@ -1139,7 +1144,7 @@
                             <div class="grupo-titulo">
                                 <span>📁</span>
                                 <span>${grupo.mes} ${grupo.ano}</span>
-                                <span class="grupo-contador">${prestacoesOrdenadas.length + atestadosOrdenados.length} documentos</span>
+                                <span class="grupo-contador">${prestacoesOrdenadas.length + atestadosOrdenados.length + declaracoesOrdenadas.length} documentos</span>
                             </div>
                             <div class="grupo-icone">▼</div>
                         </div>
@@ -1155,23 +1160,12 @@
                             </div>
                             <table class="tabela-documentos-grupo">
                                 <thead>
-                                    
-                                        <th>Nome</th>
-                                        <th>Unidade</th>
-                                        <th>Nota Fiscal</th>
-                                        <th>Tipo</th>
-                                        <th>Data Upload</th>
-                                        <th>Ações</th>
-                                    </thead>
+                                    <tr><th>Nome</th><th>Unidade</th><th>Nota Fiscal</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></tr>
+                                </thead>
                                 <tbody>
                                     ${prestacoesOrdenadas.map(doc => `
                                         <tr>
-                                            <td>
-                                                <div class="documento-info">
-                                                    <span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span>
-                                                    ${doc.categoria ? `<span class="badge-categoria">📌 ${escapeHtml(doc.categoria)}</span>` : ''}
-                                                </div>
-                                            </td>
+                                            <td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span>${doc.categoria ? `<span class="badge-categoria">📌 ${escapeHtml(doc.categoria)}</span>` : ''}</div></td>
                                             <td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td>
                                             <td>${doc.nota_fiscal ? `<span class="nota-fiscal-badge">📄 NF: ${escapeHtml(doc.nota_fiscal)}</span>` : '<span style="color: var(--netflix-light);">-</span>'}</td>
                                             <td><span class="badge-tipo badge-prestacao">Prestação</span></td>
@@ -1193,31 +1187,54 @@
                 // Seção de Atestados
                 if (atestadosOrdenados.length > 0) {
                     html += `
-                        <div>
+                        <div style="margin-bottom: 30px;">
                             <div style="background: var(--accent-green); padding: 8px 16px; border-radius: 20px; margin-bottom: 15px; display: inline-block;">
                                 🏥 Atestados (${atestadosOrdenados.length})
                             </div>
                             <table class="tabela-documentos-grupo">
                                 <thead>
-                                    
-                                        <th>Nome</th>
-                                        <th>Unidade</th>
-                                        <th>Nota Fiscal</th>
-                                        <th>Tipo</th>
-                                        <th>Data Upload</th>
-                                        <th>Ações</th>
-                                    </thead>
+                                    <tr><th>Nome</th><th>Unidade</th><th>Nota Fiscal</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></tr>
+                                </thead>
                                 <tbody>
                                     ${atestadosOrdenados.map(doc => `
-                                        
-                                            <td>
-                                                <div class="documento-info">
-                                                    <span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span>
-                                                </div>
-                                            </td>
+                                        <tr>
+                                            <td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td>
                                             <td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td>
                                             <td>-</td>
                                             <td><span class="badge-tipo badge-atestado">Atestado</span></td>
+                                            <td style="font-size: 0.8rem; color: var(--netflix-light);">${doc.data_formatada || doc.data_upload}</td>
+                                            <td>
+                                                <button class="btn-acao btn-visualizar" onclick="visualizarDocumento('${doc._id}')" title="Visualizar">👁️</button>
+                                                <button class="btn-acao btn-download" onclick="baixarDocumento('${doc._id}')" title="Download">⬇️</button>
+                                                <button class="btn-acao btn-editar" onclick="editarDocumento('${doc._id}')" title="Editar">✏️</button>
+                                                <button class="btn-acao btn-excluir" onclick="abrirModalExclusao('${doc._id}', '${escapeHtml(doc.nome_pessoa)}')" title="Excluir">🗑️</button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+                
+                // Seção de Declarações
+                if (declaracoesOrdenadas.length > 0) {
+                    html += `
+                        <div>
+                            <div style="background: var(--accent-cyan); padding: 8px 16px; border-radius: 20px; margin-bottom: 15px; display: inline-block;">
+                                📝 Declarações (${declaracoesOrdenadas.length})
+                            </div>
+                            <table class="tabela-documentos-grupo">
+                                <thead>
+                                    <tr><th>Nome</th><th>Unidade</th><th>Nota Fiscal</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></tr>
+                                </thead>
+                                <tbody>
+                                    ${declaracoesOrdenadas.map(doc => `
+                                        <tr>
+                                            <td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td>
+                                            <td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td>
+                                            <td>-</td>
+                                            <td><span class="badge-tipo badge-declaracao">Declaração</span></td>
                                             <td style="font-size: 0.8rem; color: var(--netflix-light);">${doc.data_formatada || doc.data_upload}</td>
                                             <td>
                                                 <button class="btn-acao btn-visualizar" onclick="visualizarDocumento('${doc._id}')" title="Visualizar">👁️</button>
@@ -1310,8 +1327,9 @@
                 document.getElementById('unidadeSelect').value = doc.unidade || '';
                 document.querySelector(`input[name="tipo"][value="${doc.tipo}"]`).checked = true;
                 toggleCategorias();
-                if (doc.categoria) {
-                    document.querySelector(`input[name="categoria"][value="${doc.categoria}"]`).checked = true;
+                if (doc.categoria && doc.tipo === 'prestacao') {
+                    const categoriaRadio = document.querySelector(`input[name="categoria"][value="${doc.categoria}"]`);
+                    if (categoriaRadio) categoriaRadio.checked = true;
                 }
                 document.getElementById('nomePessoa').value = doc.nome_pessoa || '';
                 document.getElementById('notaFiscal').value = doc.nota_fiscal || '';
@@ -1437,4 +1455,3 @@
     </script>
 </body>
 </html>
-```
