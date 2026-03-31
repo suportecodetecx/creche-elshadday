@@ -91,7 +91,7 @@
             gap: 15px;
         }
         
-      .header-imagens img {
+        .header-imagens img {
             max-height: 110px;
             width: auto;
             object-fit: contain;
@@ -173,6 +173,17 @@
             flex: 1;
         }
 
+        .documento-anexado {
+            color: #2e7d32;
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        .documento-pendente {
+            color: #999;
+            font-style: italic;
+        }
+
         /* SEÇÃO DE SAÚDE */
         .saude-section {
             border: 1px solid #000;
@@ -196,6 +207,25 @@
 
         .saude-label {
             font-weight: bold;
+        }
+
+        .saude-valor {
+            font-weight: normal;
+        }
+
+        /* Cores para saúde */
+        .saude-destaque-alerta {
+            background: #ffebee;
+            padding: 2px 5px;
+            border-radius: 3px;
+            border-left: 3px solid #c62828;
+        }
+
+        .saude-destaque-info {
+            background: #e3f2fd;
+            padding: 2px 5px;
+            border-radius: 3px;
+            border-left: 3px solid #1976d2;
         }
 
         /* ENDEREÇO */
@@ -331,28 +361,29 @@
         </div>
 
         <!-- CABEÇALHO COM IMAGENS LADO A LADO -->
-        <div class="cabecalho">
-            <div class="header-topo">
-                <div class="header-imagens">
-                    <img src="/static/img/logo-creche.png" alt="Creche El Shadday" class="logo-creche" onerror="this.style.display='none'">
-                    <img src="/static/img/Mogi.jpg" alt="Mogi das Cruzes" class="logo-mogi" onerror="this.style.display='none'">
-                </div>
-                <div class="header-textos">
-                    <h1>CRECHE EL SHADDAY</h1>
-                    <h2>Educação Infantil</h2>
-                    <p>{{ unidade.nome }} - CNPJ: {{ unidade.cnpj }} - {{ unidade.cidade }}/{{ unidade.uf }}</p>
-                </div>
-            </div>
+<div class="cabecalho">
+    <div class="header-topo">
+        <div class="header-imagens">
+            <img src="/static/img/logo-creche.png" alt="Creche El Shadday" class="logo-creche" onerror="this.style.display='none'">
+            <img src="/static/img/Mogi.jpg" alt="Mogi das Cruzes" class="logo-mogi" onerror="this.style.display='none'">
         </div>
-        <div class="linha-simples"></div>
+        <div class="header-textos">
+            <h1>CRECHE EL SHADDAY</h1>
+            <h2>FICHA CADASTRAL DO ALUNO - EDUCAÇÃO INFANTIL</h2>
+            <h3 id="subtitulo-unidade">{{ unidade.tipo }}</h3>
+            <p>CNPJ: {{ unidade.cnpj }} | INEP: {{ unidade.INEP }}</p>
+        </div>
+    </div>
+</div>
+<div class="linha-simples"></div>
 
         <!-- TÍTULO -->
         <div class="titulo">FICHA CADASTRAL DO ALUNO - EDUCAÇÃO INFANTIL</div>
 
-        <!-- TURMA E RA -->
+        <!-- TURMA E RA - RGM mantido -->
         <div class="turma-ra">
             <span>Turma: {{ aluno.turma.turma or '_________________' }}</span>
-            <span>RGM°: {{ aluno.num_inscricao or aluno.dados_pessoais.ra or '___________' }}</span>
+            <span>RGM°: {{ aluno.num_inscricao or '___________' }}</span>
         </div>
 
         <!-- DADOS DO ALUNO -->
@@ -372,13 +403,25 @@
         </div>
         <div class="dados-linha">
             <span class="dados-label">Certidão Nasc.:</span>
-            <span class="dados-valor">{% if aluno.arquivos and aluno.arquivos|selectattr('campo', 'equalto', 'aluno_certidao')|list %}ANEXADA{% else %}___________________________________{% endif %}</span>
+            <span class="dados-valor">
+                {% if aluno.arquivos_ids and aluno.arquivos_ids.aluno_certidao %}
+                    <span class="documento-anexado">✓ DOCUMENTO ANEXADO</span>
+                {% else %}
+                    <span class="documento-pendente">___________________________________</span>
+                {% endif %}
+            </span>
             <span style="margin-left: 15px; font-weight: bold;">U.F.:</span>
             <span>{{ aluno.endereco.uf or '___' }}</span>
         </div>
         <div class="dados-linha">
             <span class="dados-label">RG n° / CIN:</span>
-            <span class="dados-valor">{% if aluno.arquivos and aluno.arquivos|selectattr('campo', 'equalto', 'aluno_rg')|list %}ANEXADO{% else %}___________________________________{% endif %}</span>
+            <span class="dados-valor">
+                {% if aluno.arquivos_ids and aluno.arquivos_ids.aluno_rg %}
+                    <span class="documento-anexado">✓ DOCUMENTO ANEXADO</span>
+                {% else %}
+                    <span class="documento-pendente">___________________________________</span>
+                {% endif %}
+            </span>
             <span style="margin-left: 15px; font-weight: bold;">Nacionalidade:</span>
             <span>{{ aluno.dados_pessoais.nacionalidade or 'Brasileiro' }}</span>
         </div>
@@ -433,95 +476,89 @@
             {% endif %}
         {% endfor %}
 
-        <!-- ENDEREÇO -->
-        <div class="endereco-box">
-            <div class="dados-linha" style="border-bottom: none;">
-                <span class="dados-label">Endereço:</span>
-                <span class="dados-valor">{{ aluno.endereco.logradouro or '_________________________________' }}</span>
-                <span style="margin-left: 15px; font-weight: bold;">Número:</span>
-                <span>{{ aluno.endereco.numero or '___' }}</span>
-            </div>
-            <div class="dados-linha" style="border-bottom: none;">
-                <span class="dados-label">Bairro:</span>
-                <span class="dados-valor">{{ aluno.endereco.bairro or '______________________' }}</span>
-                <span style="margin-left: 15px; font-weight: bold;">Cidade:</span>
-                <span>{{ aluno.endereco.cidade or '________________' }}</span>
-                <span style="margin-left: 15px; font-weight: bold;">Complemento:</span>
-                <span>{{ aluno.endereco.complemento or '__________' }}</span>
-            </div>
-            <div class="dados-linha" style="border-bottom: none;">
-                <span class="dados-label">CEP:</span>
-                <span class="dados-valor">{{ aluno.endereco.cep or '___________' }}</span>
-            </div>
-        </div>
+       <!-- ENDEREÇO -->
+<div class="endereco-box">
+    <div class="dados-linha" style="border-bottom: none;">
+        <span class="dados-label">Endereço:</span>
+        <span class="dados-valor">{{ aluno.endereco.logradouro or '_________________________________' }}</span>
+        <span style="margin-left: 15px; font-weight: bold;">Número:</span>
+        <span>{{ aluno.endereco.numero or '___' }}</span>
+    </div>
+    <div class="dados-linha" style="border-bottom: none;">
+        <span class="dados-label">Bairro:</span>
+        <span class="dados-valor">{{ aluno.endereco.bairro or '______________________' }}</span>
+        <span style="margin-left: 15px; font-weight: bold;">Cidade:</span>
+        <span>{{ aluno.endereco.cidade or '________________' }}</span>
+        {% if aluno.endereco.complemento %}
+        <span style="margin-left: 15px; font-weight: bold;">Complemento:</span>
+        <span>{{ aluno.endereco.complemento }}</span>
+        {% endif %}
+    </div>
+    <div class="dados-linha" style="border-bottom: none;">
+        <span class="dados-label">CEP:</span>
+        <span class="dados-valor">{{ aluno.endereco.cep or '___________' }}</span>
+    </div>
+</div>
 
-        <!-- SAÚDE - VERSÃO COM CORES DE DESTAQUE E APENAS CAMPOS PREENCHIDOS -->
-        {% if aluno.saude.tipo_sanguineo or aluno.saude.plano_saude or aluno.saude.alergias or aluno.saude.medicamentos or aluno.saude.restricoes or (aluno.saude.deficiencia and aluno.saude.deficiencia_desc) %}
-        <div class="saude-section" {% if aluno.saude.alergias or aluno.saude.medicamentos or aluno.saude.restricoes or (aluno.saude.deficiencia and aluno.saude.deficiencia_desc) %}style="background: #fff3cd; border-left: 4px solid #ff9800;"{% endif %}>
+        <!-- SAÚDE - SOMENTE CAMPOS PREENCHIDOS COM CORES -->
+        <div class="saude-section">
             <div class="saude-titulo">SAÚDE DA CRIANÇA</div>
             
-            <!-- Tipo Sanguíneo - só aparece se tiver -->
+            <!-- Tipo Sanguíneo - COM DESTAQUE INFO -->
             {% if aluno.saude.tipo_sanguineo %}
-            <div class="saude-item">
+            <div class="saude-item saude-destaque-info">
                 <span class="saude-label">Tipo Sanguíneo:</span>
-                <span class="saude-valor">{{ aluno.saude.tipo_sanguineo }}</span>
+                <span class="saude-valor" style="font-weight: bold;">{{ aluno.saude.tipo_sanguineo }}</span>
             </div>
             {% endif %}
             
-            <!-- Plano de Saúde - só aparece se tiver -->
+            <!-- Plano de Saúde - COM DESTAQUE INFO -->
             {% if aluno.saude.plano_saude %}
-            <div class="saude-item">
+            <div class="saude-item saude-destaque-info">
                 <span class="saude-label">Plano de Saúde:</span>
                 <span class="saude-valor">{{ aluno.saude.plano_saude }}</span>
             </div>
             {% endif %}
             
-            <!-- Alergias - COM DESTAQUE SE TIVER -->
+            <!-- Alergias - COM DESTAQUE ALERTA -->
             {% if aluno.saude.alergias %}
-            <div class="saude-item" style="background: #ffebee; padding: 2px 5px; border-radius: 3px;">
+            <div class="saude-item saude-destaque-alerta">
                 <span class="saude-label">Alergias:</span>
-                <span class="saude-valor" style="font-weight: bold; color: #c62828;">{{ aluno.saude.alergias }}</span>
+                <span class="saude-valor" style="font-weight: bold;">{{ aluno.saude.alergias }}</span>
             </div>
             {% endif %}
             
-            <!-- Medicamentos - COM DESTAQUE SE TIVER -->
+            <!-- Medicamentos - COM DESTAQUE ALERTA -->
             {% if aluno.saude.medicamentos %}
-            <div class="saude-item" style="background: #ffebee; padding: 2px 5px; border-radius: 3px;">
+            <div class="saude-item saude-destaque-alerta">
                 <span class="saude-label">Medicamentos de uso contínuo:</span>
-                <span class="saude-valor" style="font-weight: bold; color: #c62828;">{{ aluno.saude.medicamentos }}</span>
+                <span class="saude-valor" style="font-weight: bold;">{{ aluno.saude.medicamentos }}</span>
             </div>
             {% endif %}
             
-            <!-- Restrições Alimentares - COM DESTAQUE SE TIVER -->
+            <!-- Restrições Alimentares - COM DESTAQUE ALERTA -->
             {% if aluno.saude.restricoes %}
-            <div class="saude-item" style="background: #ffebee; padding: 2px 5px; border-radius: 3px;">
+            <div class="saude-item saude-destaque-alerta">
                 <span class="saude-label">Restrições Alimentares:</span>
-                <span class="saude-valor" style="font-weight: bold; color: #c62828;">{{ aluno.saude.restricoes }}</span>
+                <span class="saude-valor" style="font-weight: bold;">{{ aluno.saude.restricoes }}</span>
             </div>
             {% endif %}
             
-            <!-- Deficiência - COM DESTAQUE SE TIVER -->
+            <!-- Deficiência - COM DESTAQUE ALERTA -->
             {% if aluno.saude.deficiencia and aluno.saude.deficiencia_desc %}
-            <div class="saude-item" style="background: #ffebee; padding: 2px 5px; border-radius: 3px;">
+            <div class="saude-item saude-destaque-alerta">
                 <span class="saude-label">Deficiência:</span>
-                <span class="saude-valor" style="font-weight: bold; color: #c62828;">{{ aluno.saude.deficiencia_desc }}</span>
-            </div>
-            
-            <!-- Laudo Médico - só aparece se tiver deficiência -->
-            <div class="saude-item">
-                <span class="saude-label">Laudo Médico:</span>
-                <span class="saude-valor">
-                    {% if aluno.arquivos and aluno.arquivos|selectattr('campo', 'equalto', 'aluno_laudos')|list %}
-                        <span style="color: #2e7d32; font-weight: bold;">✓ LAUDADO</span>
-                    {% else %}
-                        <span style="color: #c62828; font-weight: bold;">⚠️ NÃO LAUDADO</span>
-                    {% endif %}
-                </span>
+                <span class="saude-valor" style="font-weight: bold;">{{ aluno.saude.deficiencia_desc }}</span>
             </div>
             {% endif %}
             
+            <!-- Mensagem se nenhum dado de saúde foi preenchido -->
+            {% if not aluno.saude.tipo_sanguineo and not aluno.saude.plano_saude and not aluno.saude.alergias and not aluno.saude.medicamentos and not aluno.saude.restricoes and not (aluno.saude.deficiencia and aluno.saude.deficiencia_desc) %}
+            <div class="saude-item" style="color: #999; font-style: italic;">
+                Nenhuma informação de saúde cadastrada
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
 
         <!-- DECLARAÇÃO -->
         <div class="declaracao">

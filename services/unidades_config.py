@@ -11,7 +11,7 @@ UNIDADES = {
         "cep": "08830-340",  # Ajustar conforme CEP real
         "cnpj": "03.067.526/0001-87",
         "telefone": "(11) 4739-3549",  # Ajustar
-        
+        "INEP": "35195340", 
         
     },
     
@@ -24,7 +24,7 @@ UNIDADES = {
         "cep": "08717-875",  # Ajustar conforme CEP real
         "cnpj": "03.067.526/0002-68",
         "telefone": "(11) 4726-6241",  # Ajustar
-       
+       "INEP": "35195340",
         
     }
 }

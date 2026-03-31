@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Termo de Transporte Escolar - Creche El Shadday</title>
     <style>
-        /* CONFIGURAÇÃO ULTRARRÁPIDA PARA A4 */
+        /* CONFIGURAÇÃO PARA A4 */
         @page {
             size: A4;
             margin: 2cm 1.5cm 1.5cm 1.5cm;
@@ -18,10 +18,10 @@
         }
 
         body {
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: 'Times New Roman', Times, serif;
             background: white;
             color: #000;
-            line-height: 1.3;
+            line-height: 1.2;
             width: 100%;
             max-width: 210mm;
             margin: 0 auto;
@@ -35,20 +35,21 @@
         /* BOTÃO DE IMPRESSÃO */
         .print-button-container {
             text-align: center;
-            margin-bottom: 15px;
+            margin: 20px 0 15px 0;
         }
 
         .print-button {
             background: #4CAF50;
             color: white;
             border: none;
-            padding: 10px 25px;
-            font-size: 14px;
+            padding: 12px 30px;
+            font-size: 16px;
             font-weight: bold;
             border-radius: 50px;
             cursor: pointer;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             transition: all 0.3s ease;
+            font-family: Arial, Helvetica, sans-serif;
         }
 
         .print-button:hover {
@@ -67,18 +68,20 @@
             }
         }
 
-        /* CABEÇALHO COM IMAGENS LADO A LADO */
+        /* CABEÇALHO PADRONIZADO */
         .cabecalho {
             text-align: center;
-            margin-bottom: 5px;
             margin-top: 15px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
         }
         
         .header-topo {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
             flex-wrap: wrap;
         }
         
@@ -86,7 +89,7 @@
             display: flex;
             justify-content: flex-start;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
         }
         
         .header-imagens img {
@@ -109,7 +112,7 @@
         }
         
         .header-textos h1 {
-            font-size: 18px;
+            font-size: 22px;
             font-weight: bold;
             text-transform: uppercase;
             margin: 0;
@@ -117,161 +120,188 @@
         }
         
         .header-textos h2 {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
+            margin: 3px 0;
+            text-transform: uppercase;
+        }
+        
+        .header-textos h3 {
+            font-size: 14px;
+            font-weight: normal;
             margin: 2px 0;
+            font-style: italic;
         }
         
         .header-textos p {
-            font-size: 11px;
+            font-size: 12px;
             margin: 2px 0;
         }
 
-        hr {
-            border: none;
-            border-top: 1px solid #000;
-            margin: 6px 0;
-        }
-
-        /* NÚMERO DO TERMO */
-        .numero-termo {
-            text-align: center;
-            font-weight: bold;
-            font-size: 11px;
-            margin: 6px 0 10px 0;
-            padding: 4px;
-            border: 1px solid #000;
-            background: #f5f5f5;
+        .data-versao {
+            text-align: right;
+            font-size: 12px;
+            font-style: italic;
+            margin-bottom: 10px;
         }
 
         /* SEÇÕES */
         .secao {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
         .secao-titulo {
             font-weight: bold;
-            font-size: 12px;
-            margin-bottom: 3px;
+            font-size: 13px;
+            margin-bottom: 5px;
             border-bottom: 1px solid #000;
             padding-bottom: 2px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         /* LINHAS DE DADOS */
         .dados-linha {
             display: flex;
-            margin-bottom: 3px;
-            font-size: 11px;
-            border-bottom: 1px dotted #ccc;
+            margin-bottom: 4px;
+            font-size: 12px;
+            border-bottom: 1px dotted #aaa;
             padding-bottom: 2px;
         }
 
         .dados-label {
             font-weight: bold;
-            width: 120px;
-            font-size: 11px;
+            width: 130px;
+            font-size: 12px;
         }
 
         .dados-valor {
             flex: 1;
-            font-size: 11px;
+            font-size: 12px;
         }
 
         /* INFO BOX */
         .info-box {
             background: #f9f9f9;
-            padding: 6px;
-            border-left: 3px solid #000;
-            margin-bottom: 5px;
+            padding: 10px;
+            border-left: 4px solid #000;
+            margin-bottom: 8px;
+            border-radius: 6px;
         }
 
         /* CLÁUSULAS */
         .clausulas {
-            margin: 3px 0 3px 18px;
-            font-size: 10px;
-            line-height: 1.2;
+            margin: 5px 0 5px 25px;
+            font-size: 12px;
+            line-height: 1.3;
         }
 
         .clausulas li {
-            margin-bottom: 2px;
+            margin-bottom: 3px;
         }
 
         /* OBSERVAÇÃO */
         .observacao {
             background: #fef9e7;
-            padding: 6px;
-            border-left: 3px solid #f39c12;
-            margin: 5px 0;
-            font-size: 10px;
+            padding: 10px;
+            border-left: 4px solid #f39c12;
+            margin: 8px 0;
+            font-size: 12px;
+            border-radius: 6px;
+        }
+
+        /* AUTORIZAÇÃO */
+        .autorizacao-box {
+            background: #f0f7ff;
+            padding: 12px;
+            border: 1px solid #000;
+            margin: 8px 0;
+            font-size: 11px;
+            line-height: 1.3;
+            text-align: justify;
+            border-radius: 6px;
+        }
+
+        .autorizacao-box p {
+            margin-bottom: 5px;
+        }
+
+        .autorizacao-box strong {
+            font-size: 12px;
         }
 
         /* ASSINATURAS */
         .assinaturas {
             display: flex;
             justify-content: space-between;
-            margin: 10px 0 5px;
+            margin: 15px 0 10px;
+            gap: 30px;
         }
 
         .assinatura-item {
-            width: 48%;
+            flex: 1;
             text-align: center;
         }
 
         .linha-assinatura {
             border-bottom: 1px solid #000;
-            height: 22px;
-            margin-bottom: 3px;
+            height: 35px;
+            margin-bottom: 5px;
         }
 
         .assinatura-nome {
             font-weight: bold;
-            font-size: 10px;
+            font-size: 12px;
         }
 
         .assinatura-info {
-            font-size: 8px;
+            font-size: 10px;
             color: #333;
         }
 
         /* REVOGAÇÃO */
         .revogacao-box {
             border: 1px solid #000;
-            padding: 8px;
-            margin: 10px 0 5px;
+            padding: 12px;
+            margin: 12px 0 10px;
             background: #f9f9f9;
+            border-radius: 6px;
         }
 
         .revogacao-titulo {
             font-weight: bold;
-            font-size: 12px;
-            margin-bottom: 5px;
+            font-size: 13px;
+            margin-bottom: 8px;
             text-align: center;
         }
 
         .revogacao-linha {
             display: flex;
             align-items: center;
-            margin-bottom: 5px;
-            font-size: 10px;
+            margin-bottom: 8px;
+            font-size: 11px;
         }
 
         .revogacao-linha span {
             width: 90px;
             font-weight: bold;
+            font-size: 11px;
         }
 
         .linha-preenchimento {
             flex: 1;
             border-bottom: 1px dotted #000;
-            height: 16px;
+            height: 18px;
             margin-left: 5px;
         }
 
         .check-revogacao {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin: 5px 0;
+            gap: 10px;
+            margin: 8px 0;
+            font-size: 11px;
         }
 
         .check-box {
@@ -298,35 +328,48 @@
 
         .data-local {
             text-align: right;
-            font-size: 10px;
-            margin: 5px 0;
+            font-size: 12px;
+            margin: 12px 0;
+            font-style: italic;
         }
 
         /* RODAPÉ */
         .rodape {
             text-align: center;
-            font-size: 8px;
+            font-size: 10px;
             border-top: 1px solid #999;
-            padding-top: 4px;
-            margin-top: 8px;
-            line-height: 1.2;
+            padding-top: 8px;
+            margin-top: 12px;
+            line-height: 1.3;
         }
 
         .rodape p {
-            margin: 1px 0;
+            margin: 2px 0;
+        }
+
+        .email-destaque {
+            font-weight: bold;
+            color: #000;
+        }
+
+        .lgpd-footer {
+            font-size: 9px;
+            text-align: center;
+            color: #666;
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
     <div class="documento">
-        <!-- BOTÃO DE IMPRESSÃO (visível apenas na tela) -->
+        <!-- BOTÃO DE IMPRESSÃO -->
         <div class="print-button-container">
             <button class="print-button" onclick="window.print()">
                 🖨️ Imprimir Termo de Transporte
             </button>
         </div>
 
-        <!-- CABEÇALHO COM IMAGENS LADO A LADO -->
+        <!-- CABEÇALHO PADRONIZADO -->
         <div class="cabecalho">
             <div class="header-topo">
                 <div class="header-imagens">
@@ -336,20 +379,21 @@
                 <div class="header-textos">
                     <h1>CRECHE EL SHADDAY</h1>
                     <h2>TERMO DE TRANSPORTE ESCOLAR</h2>
-                    <p>Cadastro do Transportador, Autorização e Revogação</p>
+                    <h3 id="subtitulo-unidade">{{ unidade.tipo }}</h3>
+                    <p>CNPJ: {{ unidade.cnpj }} | INEP: {{ unidade.INEP }}</p>
                 </div>
             </div>
         </div>
-        <hr>
 
-        <!-- NÚMERO DO TERMO -->
-        <div class="numero-termo">
+        <div class="data-versao">
             TERMO Nº {{ numero_termo or '_________' }} - {{ data_atual or '___/___/_____' }}
         </div>
 
         <!-- DADOS DO ALUNO -->
         <div class="secao">
-            <div class="secao-titulo">📋 DADOS DO ALUNO</div>
+            <div class="secao-titulo">
+                <span>📋</span> DADOS DO ALUNO
+            </div>
             <div class="dados-linha">
                 <span class="dados-label">Nome:</span>
                 <span class="dados-valor"><strong>{{ aluno.dados_pessoais.nome or '________________________' }}</strong></span>
@@ -378,7 +422,9 @@
         <!-- DADOS DO RESPONSÁVEL PELO ALUNO -->
         {% set resp_principal = aluno.responsaveis|selectattr("tipo", "equalto", "principal")|first %}
         <div class="secao">
-            <div class="secao-titulo">👪 RESPONSÁVEL PELO ALUNO</div>
+            <div class="secao-titulo">
+                <span>👪</span> RESPONSÁVEL PELO ALUNO
+            </div>
             <div class="dados-linha">
                 <span class="dados-label">Nome:</span>
                 <span class="dados-valor"><strong>{{ resp_principal.nome or '________________________' }}</strong></span>
@@ -391,10 +437,12 @@
             </div>
         </div>
 
-        <!-- DADOS DO TRANSPORTADOR (QUEM AUTORIZA) -->
+        <!-- DADOS DO TRANSPORTADOR -->
         {% if aluno.transporte %}
         <div class="secao">
-            <div class="secao-titulo">🚍 DADOS DO TRANSPORTADOR</div>
+            <div class="secao-titulo">
+                <span>🚍</span> DADOS DO TRANSPORTADOR
+            </div>
             <div class="info-box">
                 <div class="dados-linha">
                     <span class="dados-label">Nome/Empresa:</span>
@@ -406,7 +454,7 @@
                 </div>
                 <div class="dados-linha">
                     <span class="dados-label">CPF:</span>
-                    <span class="dados-valor">{{ aluno.transporte.cpf or '320.497.288-75' }}</span>
+                    <span class="dados-valor">{{ aluno.transporte.cpf or '______________' }}</span>
                     <span style="margin-left: 15px; font-weight: bold;">CNPJ:</span>
                     <span>{{ aluno.transporte.cnpj or '______________' }}</span>
                 </div>
@@ -421,27 +469,33 @@
         {% else %}
         <div class="observacao">
             <p><strong>⚠️ ATENÇÃO:</strong> Este aluno não possui transportador cadastrado.</p>
+            <p style="font-size: 11px;">Para autorizar o transporte escolar, cadastre um transportador no sistema.</p>
         </div>
         {% endif %}
 
-        <!-- CLÁUSULAS COMPACTAS -->
+        <!-- CLÁUSULAS DO TRANSPORTE -->
         <div class="secao">
-            <div class="secao-titulo">📜 CLÁUSULAS DO TRANSPORTE</div>
-            <ol class="clausulas" style="list-style-type: decimal; padding-left: 20px;">
+            <div class="secao-titulo">
+                <span>📜</span> CLÁUSULAS DO TRANSPORTE
+            </div>
+            <ul class="clausulas">
                 <li>O transportador é responsável pela integridade do aluno no trajeto residência/creche.</li>
                 <li>Deve cumprir horários estabelecidos, comunicando alterações com antecedência.</li>
                 <li>Veículo deve estar em perfeitas condições com equipamentos de segurança obrigatórios.</li>
                 <li>Em emergências médicas, está autorizado a tomar decisões imediatas.</li>
                 <li>Deve zelar pelo bom comportamento dos alunos durante o trajeto.</li>
                 <li>O veículo deverá estar identificado para fácil reconhecimento.</li>
-            </ol>
+            </ul>
         </div>
 
         <!-- AUTORIZAÇÃO DO TRANSPORTADOR -->
         <div class="secao">
-            <div class="secao-titulo">🔒 AUTORIZAÇÃO DO TRANSPORTADOR</div>
-            <div style="font-size: 10px; text-align: justify; padding: 3px;">
-                <p>Eu, <strong>{{ aluno.transporte.nome or '____________________' }}</strong>, portador do CPF <strong>{{ aluno.transporte.cpf or '320.497.288-75' }}</strong> e CNPJ <strong>{{ aluno.transporte.cnpj or '______________' }}</strong>, declaro para os devidos fins que estou ciente e autorizo a Creche El Shadday a manter meus dados cadastrais (nome, CPF, CNPJ, RG, telefone e demais informações) em seu sistema, para fins de cadastro de transportador autorizado a buscar e trazer o(a) aluno(a) <strong>{{ aluno.dados_pessoais.nome or '____________________' }}</strong> da unidade escolar. Estou ciente que meus dados serão tratados conforme a Lei nº 13.709/2018 (LGPD).</p>
+            <div class="secao-titulo">
+                <span>🔒</span> AUTORIZAÇÃO DO TRANSPORTADOR
+            </div>
+            <div class="autorizacao-box">
+                <p>Eu, <strong>{{ aluno.transporte.nome if aluno.transporte else '____________________' }}</strong>, portador do CPF <strong>{{ aluno.transporte.cpf if aluno.transporte else '______________' }}</strong> e CNPJ <strong>{{ aluno.transporte.cnpj if aluno.transporte else '______________' }}</strong>, declaro para os devidos fins que estou ciente e autorizo a Creche El Shadday a manter meus dados cadastrais (nome, CPF, CNPJ, RG, telefone e demais informações) em seu sistema, para fins de cadastro de transportador autorizado a buscar e trazer o(a) aluno(a) <strong>{{ aluno.dados_pessoais.nome or '____________________' }}</strong> da unidade escolar.</p>
+                <p>Estou ciente que meus dados serão tratados conforme a Lei nº 13.709/2018 (LGPD), podendo revogar esta autorização a qualquer momento.</p>
             </div>
         </div>
 
@@ -449,29 +503,29 @@
         <div class="assinaturas">
             <div class="assinatura-item">
                 <div class="linha-assinatura"></div>
-                <div class="assinatura-nome">{{ resp_principal.nome or '____________________' }}</div>
+                <div class="assinatura-nome">{{ resp_principal.nome if resp_principal and resp_principal.nome else '________________________' }}</div>
                 <div class="assinatura-info">Responsável pelo Aluno</div>
             </div>
             <div class="assinatura-item">
                 <div class="linha-assinatura"></div>
-                <div class="assinatura-nome">{{ aluno.transporte.nome or '____________________' }}</div>
+                <div class="assinatura-nome">{{ aluno.transporte.nome if aluno.transporte else '________________________' }}</div>
                 <div class="assinatura-info">Transportador Autorizado</div>
-                <div class="assinatura-info">CPF: {{ aluno.transporte.cpf or '320.497.288-75' }}</div>
+                <div class="assinatura-info">CPF: {{ aluno.transporte.cpf if aluno.transporte else '______________' }}</div>
             </div>
         </div>
 
         <!-- DATA -->
         <div class="data-local">
-            Mogi das Cruzes, ______ de ____________________ de 20____.
+            {{ unidade.cidade }}/{{ unidade.uf }}, ______ de ____________________ de 20____.
         </div>
 
-        <!-- ===== SEÇÃO DE REVOGAÇÃO ===== -->
+        <!-- SEÇÃO DE REVOGAÇÃO -->
         <div class="revogacao-box">
             <div class="revogacao-titulo">🔄 TERMO DE REVOGAÇÃO</div>
             
             <div class="check-revogacao">
                 <span class="check-box"></span>
-                <span style="font-size: 10px;">Desejo revogar a autorização de transporte a partir de: _____/_____/_____</span>
+                <span>Desejo revogar a autorização de transporte a partir de: _____/_____/_____</span>
             </div>
             
             <div class="revogacao-linha">
@@ -479,18 +533,18 @@
                 <div class="linha-preenchimento"></div>
             </div>
             
-            <div style="margin-top: 8px;">
+            <div style="margin-top: 10px;">
                 <div class="assinaturas" style="margin: 5px 0 0;">
                     <div class="assinatura-item" style="width: 48%;">
-                        <div class="linha-assinatura" style="height: 18px;"></div>
+                        <div class="linha-assinatura" style="height: 30px;"></div>
                         <div class="assinatura-info">Assinatura do Responsável</div>
                     </div>
                     <div class="assinatura-item" style="width: 48%;">
-                        <div class="linha-assinatura" style="height: 18px;"></div>
+                        <div class="linha-assinatura" style="height: 30px;"></div>
                         <div class="assinatura-info">Assinatura da Creche</div>
                     </div>
                 </div>
-                <div class="data-local" style="margin: 3px 0;">
+                <div class="data-local" style="margin: 5px 0; text-align: center;">
                     Data da revogação: _____/_____/_____
                 </div>
             </div>
@@ -498,8 +552,10 @@
 
         <!-- RODAPÉ -->
         <div class="rodape">
-            <p>Documento conforme Lei nº 13.709/2018 (LGPD) - Creche El Shadday - CNPJ: 03.067.526/0001-87</p>
-            <p>Rua Francisco Vilani Bicudo, 470 - Vila Nova Aparecida - Mogi das Cruzes/SP - CEP: 08830-000</p>
+            <p>{{ unidade.nome }} - {{ unidade.tipo }} - CNPJ: {{ unidade.cnpj }}</p>
+            <p>{{ unidade.endereco }} - {{ unidade.bairro }} - {{ unidade.cidade }}/{{ unidade.uf }} - CEP: {{ unidade.cep }}</p>
+            <p>Telefone: {{ unidade.telefone }} | E-mail: <span class="email-destaque">{{ unidade.email }}</span></p>
+            <div class="lgpd-footer">Documento conforme Lei nº 13.709/2018 (LGPD)</div>
         </div>
     </div>
 </body>

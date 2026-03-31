@@ -18,10 +18,10 @@
         }
 
         body {
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: 'Times New Roman', Times, serif;
             background: white;
             color: #000;
-            line-height: 1.3;
+            line-height: 1.2;
             width: 100%;
             max-width: 210mm;
             margin: 0 auto;
@@ -68,7 +68,7 @@
             }
         }
 
-        /* CABEÇALHO COM IMAGENS LADO A LADO - COM MARGEM SUPERIOR */
+        /* CABEÇALHO PADRONIZADO COM REGULAMENTO */
         .cabecalho {
             text-align: center;
             margin-top: 15px;
@@ -122,12 +122,12 @@
         .header-textos h2 {
             font-size: 18px;
             font-weight: bold;
-            margin: 2px 0;
-            color: #2C3E50;
+            margin: 3px 0;
+            text-transform: uppercase;
         }
         
         .header-textos h3 {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: normal;
             margin: 2px 0;
             font-style: italic;
@@ -138,19 +138,11 @@
             margin: 2px 0;
         }
 
-        .linha-simples {
-            border-bottom: 1px solid #000;
-            margin: 5px 0;
-        }
-
-        /* NÚMERO DO TERMO */
-        .numero-termo {
+        .data-versao {
             text-align: right;
-            font-size: 12px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            padding: 5px;
-            border-bottom: 1px dashed #999;
+            font-size: 11px;
+            font-style: italic;
+            margin-bottom: 10px;
         }
 
         /* SEÇÕES */
@@ -225,26 +217,26 @@
         .tabela-dados {
             width: 100%;
             border-collapse: collapse;
-            font-size: 10px;
+            font-size: 11px;
             margin: 8px 0;
         }
 
         .tabela-dados th {
             background: #f0f0f0;
             border: 1px solid #000;
-            padding: 4px;
+            padding: 6px;
             text-align: left;
             font-weight: bold;
         }
 
         .tabela-dados td {
             border: 1px solid #000;
-            padding: 3px 6px;
+            padding: 4px 8px;
         }
 
         .tabela-dados td:last-child {
             text-align: center;
-            width: 30px;
+            width: 50px;
         }
 
         /* TEXTOS */
@@ -269,11 +261,11 @@
 
         /* DESTAQUE */
         .destaque {
-            border: 2px solid #3498DB;
+            border: 1px solid #3498DB;
             padding: 15px;
             margin: 20px 0;
-            font-size: 12px;
-            line-height: 1.5;
+            font-size: 11px;
+            line-height: 1.4;
             background: #F0F8FF;
             border-radius: 8px;
         }
@@ -283,7 +275,7 @@
         }
 
         .destaque strong {
-            font-size: 13px;
+            font-size: 12px;
             text-transform: uppercase;
             color: #2C3E50;
         }
@@ -306,7 +298,7 @@
         .assinaturas-grid {
             display: flex;
             justify-content: space-between;
-            gap: 30px;
+            gap: 40px;
         }
 
         .assinatura-coluna {
@@ -391,7 +383,6 @@
             color: #000;
         }
 
-        /* LGPD */
         .lgpd-footer {
             font-size: 8px;
             text-align: center;
@@ -409,7 +400,7 @@
             </button>
         </div>
 
-        <!-- CABEÇALHO COM IMAGENS LADO A LADO -->
+        <!-- CABEÇALHO PADRONIZADO COM REGULAMENTO -->
         <div class="cabecalho">
             <div class="header-topo">
                 <div class="header-imagens">
@@ -417,18 +408,16 @@
                     <img src="/static/img/Mogi.jpg" alt="Mogi das Cruzes" class="logo-mogi" onerror="this.style.display='none'">
                 </div>
                 <div class="header-textos">
-                    <h1>ASSOCIAÇÃO BENEFICENTE VILA NOVA APARECIDA</h1>
-                    <h2>CRECHE EL SHADDAY</h2>
-                    <h3>AUTORIZAÇÃO DE USO DE IMAGEM E DADOS PESSOAIS</h3>
-                    <p>{{ unidade.tipo }} - CNPJ: {{ unidade.cnpj }} - {{ unidade.cidade }}/{{ unidade.uf }}</p>
+                    <h1>CRECHE EL SHADDAY</h1>
+                    <h2>AUTORIZAÇÃO DE USO DE IMAGEM E DADOS PESSOAIS</h2>
+                    <h3 id="subtitulo-unidade">{{ unidade.tipo }}</h3>
+                    <p>CNPJ: {{ unidade.cnpj }} | INEP: {{ unidade.INEP }}</p>
                 </div>
             </div>
         </div>
-        <div class="linha-simples"></div>
 
-        <!-- NÚMERO DO TERMO -->
-        <div class="numero-termo">
-            AUTORIZAÇÃO Nº {{ numero_termo }} - {{ data_atual }}
+        <div class="data-versao">
+            Versão atualizada - Março/2026
         </div>
 
         <!-- DADOS DO RESPONSÁVEL -->
@@ -514,13 +503,13 @@
             
             <table class="tabela-dados">
                 <thead>
-                    60
+                    <tr>
                         <th>Tipo de Dado</th>
-                        <th style="width:30px">✔</th>
-                    60
+                        <th style="width:50px">Autorizado</th>
+                    </tr>
                 </thead>
                 <tbody>
-                    60<td>Nome completo</td><td>✅</td></tr>
+                    <tr><td>Nome completo</td><td>✅</td></tr>
                     <tr><td>Data de nascimento</td><td>✅</td></tr>
                     <tr><td>Raça/cor</td><td>✅</td></tr>
                     <tr><td>Endereço completo</td><td>✅</td></tr>
@@ -531,7 +520,7 @@
                     <tr><td>Informações de saúde</td><td>✅</td></tr>
                     <tr><td>Atestados de vacinação</td><td>✅</td></tr>
                 </tbody>
-            60
+            </table>
         </div>
 
         <!-- FINALIDADE DO TRATAMENTO -->
@@ -607,7 +596,7 @@
                     {% else %}
                         ___/___/_____
                     {% endif %}
-                </strong>, autorizo a ASSOCIAÇÃO BENEFICENTE VILA NOVA APARECIDA - CRECHE EL SHADDAY, inscrita no CNPJ sob nº {{ unidade.cnpj }}, a coletar, tratar, utilizar e compartilhar os dados pessoais, imagem e voz do(a) menor, em conformidade com a Lei Geral de Proteção de Dados (Lei n° 13.709/2018), conforme disposições acima.</p>
+                </strong>, autorizo a CRECHE EL SHADDAY, inscrita no CNPJ sob nº {{ unidade.cnpj }}, a coletar, tratar, utilizar e compartilhar os dados pessoais, imagem e voz do(a) menor, em conformidade com a Lei Geral de Proteção de Dados (Lei n° 13.709/2018), conforme disposições acima.</p>
         </div>
 
         <!-- ASSINATURAS -->

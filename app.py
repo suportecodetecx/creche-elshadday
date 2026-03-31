@@ -24,7 +24,7 @@ from routes.termos_routes import termos_bp
 from routes.auth_routes import auth_bp
 from routes.justificativa_routes import justificativa_bp
 from routes.funcionarios_routes import funcionarios_bp
-from routes.documentos_routes import documentos_bp  # <-- JÁ EXISTE
+from routes.documentos_routes import documentos_bp
 
 app = Flask(__name__)
 CORS(app)
@@ -55,7 +55,7 @@ app.register_blueprint(termos_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(justificativa_bp)
 app.register_blueprint(funcionarios_bp)
-app.register_blueprint(documentos_bp)  # <-- JÁ EXISTE
+app.register_blueprint(documentos_bp)
 
 
 # ==================== ROTAS PRINCIPAIS ====================
@@ -88,6 +88,49 @@ def buscar_alunos():
     except Exception as e:
         logger.error(f"Erro ao renderizar buscar: {e}")
         return jsonify({'erro': str(e)}), 500
+
+
+# ==================== ROTA PARA CADASTRO DE ALUNO ====================
+
+@app.route('/alunos/cadastro')
+def cadastro_aluno():
+    """Página de cadastro de aluno"""
+    try:
+        num_inscricao = request.args.get('editar')
+        aluno_data = None
+        
+        if num_inscricao:
+            print(f"📝 Modo edição - buscando aluno: {num_inscricao}")
+            from database.mongo import db
+            
+            # Busca o aluno diretamente no MongoDB
+            aluno = db.alunos.find_one({'num_inscricao': num_inscricao})
+            
+            if aluno:
+                # Converte ObjectId para string
+                if '_id' in aluno:
+                    aluno['_id'] = str(aluno['_id'])
+                
+                # Converte data_cadastro para string se for datetime
+                if aluno.get('data_cadastro') and hasattr(aluno['data_cadastro'], 'strftime'):
+                    aluno['data_cadastro'] = aluno['data_cadastro'].strftime('%Y-%m-%d %H:%M:%S')
+                
+                print(f"✅ Aluno encontrado: {aluno['dados_pessoais']['nome']}")
+                print(f"📁 Arquivos IDs: {list(aluno.get('arquivos_ids', {}).keys())}")
+                print(f"👥 Responsáveis: {len(aluno.get('responsaveis', []))}")
+                print(f"👤 Terceiros: {len(aluno.get('terceiros', []))}")
+                
+                aluno_data = aluno
+            else:
+                print(f"❌ Aluno não encontrado: {num_inscricao}")
+        
+        return render_template('alunos/cadastro_aluno.html', aluno=aluno_data)
+        
+    except Exception as e:
+        print(f"❌ Erro ao carregar página de cadastro: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return render_template('alunos/cadastro_aluno.html', aluno=None)
 
 
 @app.route('/alunos/ficha/<num_inscricao>')

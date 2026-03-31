@@ -1217,6 +1217,13 @@
     <script>
         console.log('🔍 DEBUG - Dados do aluno recebidos:', {{ aluno | tojson | safe if aluno else 'null' }});
 
+// ===== DECLARAÇÃO DE VARIÁVEIS GLOBAIS =====
+let passoAtual = 1;
+const totalPassos = 4;
+let cameraStreams = {};
+let terceirosAtivos = false;
+let transporteAtivo = false;
+
 // ===== RECEBE DADOS DO BACKEND =====
 const alunoParaEditar = {{ aluno | tojson | safe if aluno else 'null' }};
 
@@ -1319,6 +1326,21 @@ function coletarDadosFormulario() {
         }
     }
     
+    // Adiciona o número de inscrição (importante para edição)
+    const campoNumero = document.getElementById('num_inscricao');
+    let numInscricao = campoNumero ? campoNumero.value : '';
+    
+    // CORREÇÃO: Garantir que o número não está vazio
+    if (!numInscricao || numInscricao.trim() === '') {
+        // Tentar gerar um número temporário
+        const data = new Date();
+        const ano = data.getFullYear();
+        numInscricao = `001-${ano}`;
+        console.warn('⚠️ Número de inscrição vazio, usando temporário:', numInscricao);
+    }
+    
+    console.log('📌 Número de inscrição capturado em coletarDadosFormulario:', numInscricao);
+    
     const responsaveis = [];
     for (let i = 1; i <= 5; i++) {
         const nome = dados[`responsavel${i}_nome`];
@@ -1351,6 +1373,9 @@ function coletarDadosFormulario() {
     }
     
     const alunoData = {
+        // ===== CAMPO PRINCIPAL =====
+        num_inscricao: numInscricao,
+        
         nome: dados['nome'] || '',
         data_nasc: dados['data_nasc'] || '',
         sexo: dados['sexo'] || '',
@@ -1389,10 +1414,22 @@ function coletarDadosFormulario() {
         transporte_email: dados['transporte_email'] || ''
     };
     
+    // Para edição, adiciona o número original (fallback)
     if (typeof alunoParaEditar !== 'undefined' && alunoParaEditar && alunoParaEditar !== 'null') {
         alunoData.num_inscricao_original = alunoParaEditar.num_inscricao;
         alunoData.modo_edicao = 'true';
     }
+    
+    // CORREÇÃO: Adicionar campos alternativos para garantir que o número seja reconhecido
+    alunoData.numero_inscricao = numInscricao;
+    alunoData.inscricao = numInscricao;
+    
+    console.log('📦 Dados coletados (resumo):', {
+        num_inscricao: alunoData.num_inscricao,
+        numero_inscricao: alunoData.numero_inscricao,
+        inscricao: alunoData.inscricao,
+        nome: alunoData.nome
+    });
     
     return alunoData;
 }
@@ -1401,7 +1438,6 @@ function coletarDadosFormulario() {
 async function processarUploadsArquivos() {
     console.log('\n📸 INICIANDO UPLOAD DOS ARQUIVOS...');
     
-    // Elementos da barra de progresso
     const overlay = document.getElementById('progressOverlay');
     const progressBar = document.getElementById('progressBar');
     const progressPercent = document.getElementById('progressPercent');
@@ -1410,7 +1446,6 @@ async function processarUploadsArquivos() {
     const currentFileSpan = document.getElementById('currentFile');
     const progressFilesList = document.getElementById('progressFilesList');
     
-    // Mostrar barra de progresso com animação
     overlay.classList.add('active');
     progressFilesList.innerHTML = '';
     progressBar.style.width = '0%';
@@ -1421,14 +1456,11 @@ async function processarUploadsArquivos() {
     let uploadsSucesso = 0;
     let uploadsFalha = 0;
     
-    // Verifica se é modo edição
     const isEditing = typeof alunoParaEditar !== 'undefined' && alunoParaEditar && alunoParaEditar !== 'null';
     const arquivosExistentes = isEditing ? (alunoParaEditar.arquivos_ids || {}) : {};
     
-    // ===== LISTA DE TODOS OS ARQUIVOS =====
     const todosArquivos = [];
     
-    // Fotos
     const fotos = [
         { id: 'aluno_foto_img', campo: 'foto_aluno', nome: '📸 Foto do Aluno', obrigatorio: !isEditing, tipo: 'foto' },
         { id: 'resp_foto_img', campo: 'foto_responsavel1', nome: '📸 Foto do Responsável', obrigatorio: !isEditing, tipo: 'foto' },
@@ -1443,7 +1475,6 @@ async function processarUploadsArquivos() {
         fotos.push({ id: `terceiro${i}_foto_img`, campo: `foto_terceiro${i}`, nome: `📸 Foto Terceiro ${i}`, obrigatorio: false, tipo: 'foto' });
     }
     
-    // Documentos
     const documentos = [
         { id: 'aluno_certidao', campo: 'aluno_certidao', nome: '📄 Certidão de Nascimento', obrigatorio: !isEditing, tipo: 'doc' },
         { id: 'aluno_rg', campo: 'aluno_rg', nome: '📄 Documento com foto (RG/CNH) - Aluno', obrigatorio: !isEditing, tipo: 'doc' },
@@ -1457,7 +1488,6 @@ async function processarUploadsArquivos() {
         { id: 'transporte_cnh', campo: 'transporte_cnh', nome: '📄 CNH - Transporte', obrigatorio: (transporteAtivo && !isEditing), tipo: 'doc' }
     ];
     
-    // Monta lista de arquivos para upload
     for (const foto of fotos) {
         const imgElement = document.getElementById(foto.id);
         const fotoExistente = arquivosExistentes[foto.campo];
@@ -1487,18 +1517,15 @@ async function processarUploadsArquivos() {
         }
     }
     
-    // Se não há arquivos novos, apenas retorna
     if (todosArquivos.length === 0) {
         overlay.classList.remove('active');
         return arquivosIds;
     }
     
-    // Atualiza contadores
     const totalArquivos = todosArquivos.length;
     progressTotalSpan.textContent = totalArquivos;
     progressCountSpan.textContent = '0';
     
-    // Adiciona itens na lista
     todosArquivos.forEach((item) => {
         const div = document.createElement('div');
         div.className = 'progress-file-item';
@@ -1511,12 +1538,10 @@ async function processarUploadsArquivos() {
         progressFilesList.appendChild(div);
     });
     
-    // Processa cada arquivo
     for (let i = 0; i < totalArquivos; i++) {
         const item = todosArquivos[i];
         const statusSpan = document.getElementById(`status-${item.campo}`);
         
-        // Atualiza status para "enviando"
         statusSpan.className = 'status uploading';
         statusSpan.innerHTML = '⏫';
         currentFileSpan.textContent = `${item.nome} (${i+1} de ${totalArquivos})`;
@@ -1544,14 +1569,12 @@ async function processarUploadsArquivos() {
             throw error;
         }
         
-        // Atualiza barra de progresso
         const progresso = ((i + 1) / totalArquivos) * 100;
         progressBar.style.width = `${progresso}%`;
         progressPercent.textContent = `${Math.round(progresso)}%`;
         progressCountSpan.textContent = i + 1;
     }
     
-    // Finaliza com sucesso
     if (uploadsFalha === 0) {
         progressBar.style.width = '100%';
         progressPercent.textContent = '100%';
@@ -1602,18 +1625,55 @@ function carregarFotosExistentes(aluno) {
     console.log('📸 Carregando fotos e documentos existentes via GridFS...');
     
     const arquivosIds = aluno.arquivos_ids || {};
+    console.log('   📎 IDs disponíveis:', Object.keys(arquivosIds));
     
+    // Mapa de fotos - mapeia o campo no banco para o ID do elemento HTML
     const mapaFotos = {
         'foto_aluno': 'aluno_foto_img',
         'foto_responsavel1': 'resp_foto_img',
         'foto_responsavel2': 'resp2_foto_img',
         'foto_responsavel3': 'resp3_foto_img',
+        'foto_responsavel4': 'resp4_foto_img',
+        'foto_responsavel5': 'resp5_foto_img',
         'foto_terceiro1': 'terceiro1_foto_img',
         'foto_terceiro2': 'terceiro2_foto_img',
         'foto_terceiro3': 'terceiro3_foto_img',
         'foto_transporte': 'transporte_foto_img'
     };
     
+    // Carregar fotos
+    for (const [campo, imgId] of Object.entries(mapaFotos)) {
+        const fileId = arquivosIds[campo];
+        if (fileId) {
+            const imgElement = document.getElementById(imgId);
+            if (imgElement) {
+                const imageUrl = `/api/alunos/arquivo/${fileId}`;
+                imgElement.src = imageUrl;
+                imgElement.classList.add('active');
+                console.log(`   ✅ Foto carregada: ${campo} -> ${imgId}`);
+                
+                // CORREÇÃO: Mapeamento correto para o review
+                let prefix = '';
+                if (campo === 'foto_aluno') prefix = 'aluno';
+                else if (campo === 'foto_responsavel1') prefix = 'resp';
+                else if (campo === 'foto_responsavel2') prefix = 'resp2';
+                else if (campo === 'foto_responsavel3') prefix = 'resp3';
+                else if (campo === 'foto_responsavel4') prefix = 'resp4';
+                else if (campo === 'foto_responsavel5') prefix = 'resp5';
+                else if (campo.startsWith('foto_terceiro')) prefix = campo.replace('foto_', '');
+                else if (campo === 'foto_transporte') prefix = 'transporte';
+                
+                const reviewDiv = document.getElementById(`review-foto-${prefix}`);
+                if (reviewDiv) {
+                    reviewDiv.innerHTML = `<img src="${imageUrl}" class="photo-thumbnail" onerror="this.style.display='none'">`;
+                }
+            } else {
+                console.log(`   ⚠️ Elemento não encontrado: ${imgId} para campo ${campo}`);
+            }
+        }
+    }
+    
+    // Mapa de documentos
     const mapaCards = {
         'aluno_certidao': 'certidao-card',
         'aluno_rg': 'rg-card',
@@ -1626,26 +1686,6 @@ function carregarFotosExistentes(aluno) {
         'transporte_rg': 'transporte-rg-card',
         'transporte_cnh': 'transporte-cnh-card'
     };
-    
-    // Carregar fotos via GridFS
-    for (const [campo, imgId] of Object.entries(mapaFotos)) {
-        const fileId = arquivosIds[campo];
-        if (fileId) {
-            const imgElement = document.getElementById(imgId);
-            if (imgElement) {
-                const imageUrl = `/api/alunos/arquivo/${fileId}`;
-                imgElement.src = imageUrl;
-                imgElement.classList.add('active');
-                console.log(`   ✅ Foto carregada: ${campo} -> ${imageUrl}`);
-                
-                const prefix = campo.replace('foto_', '').split('_')[0];
-                const reviewDiv = document.getElementById(`review-foto-${prefix}`);
-                if (reviewDiv) {
-                    reviewDiv.innerHTML = `<img src="${imageUrl}" class="photo-thumbnail" onerror="this.style.display='none'">`;
-                }
-            }
-        }
-    }
     
     // Marcar documentos como anexados
     for (const [campo, cardId] of Object.entries(mapaCards)) {
@@ -1682,6 +1722,7 @@ function preencherFormulario(aluno) {
         }
     }
 
+    // DADOS PESSOAIS
     if (aluno.dados_pessoais) {
         setValue('nome', aluno.dados_pessoais.nome);
         setValue('data_nasc', aluno.dados_pessoais.data_nasc);
@@ -1690,8 +1731,17 @@ function preencherFormulario(aluno) {
         setValue('naturalidade', aluno.dados_pessoais.naturalidade);
         setValue('nacionalidade', aluno.dados_pessoais.nacionalidade);
         setValue('ra', aluno.dados_pessoais.ra);
+    } else {
+        setValue('nome', aluno.nome);
+        setValue('data_nasc', aluno.data_nasc);
+        setValue('sexo', aluno.sexo);
+        setValue('raca', aluno.raca);
+        setValue('naturalidade', aluno.naturalidade);
+        setValue('nacionalidade', aluno.nacionalidade);
+        setValue('ra', aluno.ra);
     }
 
+    // ENDEREÇO
     if (aluno.endereco) {
         setValue('cep', aluno.endereco.cep);
         setValue('endereco', aluno.endereco.logradouro);
@@ -1700,15 +1750,30 @@ function preencherFormulario(aluno) {
         setValue('bairro', aluno.endereco.bairro);
         setValue('cidade', aluno.endereco.cidade);
         setValue('uf', aluno.endereco.uf);
+    } else {
+        setValue('cep', aluno.cep);
+        setValue('endereco', aluno.endereco);
+        setValue('numero', aluno.numero);
+        setValue('complemento', aluno.complemento);
+        setValue('bairro', aluno.bairro);
+        setValue('cidade', aluno.cidade);
+        setValue('uf', aluno.uf);
     }
 
+    // TURMA
     if (aluno.turma) {
         setValue('unidade', aluno.turma.unidade);
         setValue('turma', aluno.turma.turma);
         setValue('periodo', aluno.turma.periodo);
         setValue('ano_letivo', aluno.turma.ano_letivo);
+    } else {
+        setValue('unidade', aluno.unidade);
+        setValue('turma', aluno.turma);
+        setValue('periodo', aluno.periodo);
+        setValue('ano_letivo', aluno.ano_letivo);
     }
 
+    // SAÚDE
     if (aluno.saude) {
         setValue('tipo_sanguineo', aluno.saude.tipo_sanguineo);
         setValue('plano_saude', aluno.saude.plano_saude);
@@ -1726,46 +1791,138 @@ function preencherFormulario(aluno) {
         } else {
             setValue('deficiencia', 'nao');
         }
-    }
-
-    if (aluno.responsaveis && aluno.responsaveis.length > 0) {
-        const respPrincipal = aluno.responsaveis.find(r => r.tipo === 'principal') || aluno.responsaveis[0];
-        if (respPrincipal) {
-            setValueByName('responsavel1_nome', respPrincipal.nome);
-            setValueByName('responsavel1_parentesco', respPrincipal.parentesco);
-            setValueByName('responsavel1_telefone', respPrincipal.telefone);
-            setValueByName('responsavel1_telefone_contato', respPrincipal.telefone_contato);
-            setValueByName('responsavel1_cpf', respPrincipal.cpf);
-            setValueByName('responsavel1_rg', respPrincipal.rg);
-            setValueByName('responsavel1_email', respPrincipal.email);
+    } else {
+        setValue('tipo_sanguineo', aluno.tipo_sanguineo);
+        setValue('plano_saude', aluno.plano_saude);
+        setValue('alergias', aluno.alergias);
+        setValue('medicamentos', aluno.medicamentos);
+        setValue('restricoes', aluno.restricoes);
+        setValue('pediatra', aluno.pediatra);
+        setValue('contato_pediatra', aluno.contato_pediatra);
+        
+        if (aluno.deficiencia === 'sim') {
+            setValue('deficiencia', 'sim');
+            const divDescricao = document.getElementById('deficiencia-descricao');
+            if (divDescricao) divDescricao.style.display = 'block';
+            setValue('deficiencia_desc', aluno.deficiencia_desc);
+        } else {
+            setValue('deficiencia', 'nao');
         }
     }
 
-    if (aluno.responsaveis && aluno.responsaveis.length > 1) {
-        const responsaveisAdicionais = aluno.responsaveis.filter(r => r.tipo === 'adicional');
+    // ===== RESPONSÁVEIS =====
+    console.log('📌 Processando responsáveis...');
+    
+    let responsaveis = [];
+    
+    if (aluno.responsaveis && Array.isArray(aluno.responsaveis) && aluno.responsaveis.length > 0) {
+        responsaveis = aluno.responsaveis;
+        console.log('   ✅ Responsáveis encontrados em aluno.responsaveis:', responsaveis.length);
+        console.log('   📋 Estrutura do primeiro responsável:', JSON.stringify(responsaveis[0], null, 2));
+    } else if (aluno.dados_pessoais && aluno.dados_pessoais.responsaveis) {
+        responsaveis = aluno.dados_pessoais.responsaveis;
+        console.log('   ✅ Responsáveis encontrados em dados_pessoais.responsaveis:', responsaveis.length);
+        console.log('   📋 Estrutura do primeiro responsável:', JSON.stringify(responsaveis[0], null, 2));
+    }
+    
+    if (responsaveis.length > 0) {
+        const respPrincipal = responsaveis.find(r => r.tipo === 'principal') || responsaveis[0];
         
-        responsaveisAdicionais.forEach((resp, index) => {
-            adicionarResponsavel();
+        if (respPrincipal) {
+            console.log('   👤 Responsável Principal encontrado');
+            console.log('   📋 Campos disponíveis:', Object.keys(respPrincipal));
             
-            setTimeout(() => {
-                const num = index + 2;
-                setValueByName(`responsavel${num}_nome`, resp.nome);
-                setValueByName(`responsavel${num}_parentesco`, resp.parentesco);
-                setValueByName(`responsavel${num}_telefone`, resp.telefone);
-                setValueByName(`responsavel${num}_telefone_contato`, resp.telefone_contato);
-                setValueByName(`responsavel${num}_cpf`, resp.cpf);
-                setValueByName(`responsavel${num}_rg`, resp.rg);
-                setValueByName(`responsavel${num}_email`, resp.email);
-            }, 100 * (index + 1));
-        });
+            let nomeResponsavel = respPrincipal.nome || respPrincipal.nome_completo || 
+                                  (respPrincipal.dados && respPrincipal.dados.nome) || '';
+            let parentesco = respPrincipal.parentesco || respPrincipal.relacao || 
+                             (respPrincipal.dados && respPrincipal.dados.parentesco) || '';
+            let telefone = respPrincipal.telefone || respPrincipal.telefone_principal || 
+                           respPrincipal.contato || (respPrincipal.dados && respPrincipal.dados.telefone) || '';
+            let telefoneContato = respPrincipal.telefone_contato || respPrincipal.telefone_alternativo || 
+                                  respPrincipal.celular_secundario || '';
+            let cpf = respPrincipal.cpf || respPrincipal.cpf_responsavel || 
+                      (respPrincipal.dados && respPrincipal.dados.cpf) || '';
+            let rg = respPrincipal.rg || respPrincipal.identidade || 
+                     respPrincipal.rg_responsavel || (respPrincipal.dados && respPrincipal.dados.rg) || '';
+            let email = respPrincipal.email || respPrincipal.email_responsavel || 
+                        (respPrincipal.dados && respPrincipal.dados.email) || '';
+            
+            console.log(`   📋 Nome: "${nomeResponsavel}"`);
+            console.log(`   📋 Parentesco: "${parentesco}"`);
+            console.log(`   📋 Telefone: "${telefone}"`);
+            
+            setValueByName('responsavel1_nome', nomeResponsavel);
+            setValueByName('responsavel1_parentesco', parentesco);
+            setValueByName('responsavel1_telefone', telefone);
+            setValueByName('responsavel1_telefone_contato', telefoneContato);
+            setValueByName('responsavel1_cpf', cpf);
+            setValueByName('responsavel1_rg', rg);
+            setValueByName('responsavel1_email', email);
+        }
+        
+        const responsaveisAdicionais = responsaveis.filter(r => r.tipo === 'adicional');
+        
+        if (responsaveisAdicionais.length > 0) {
+            console.log(`   👥 Responsáveis adicionais: ${responsaveisAdicionais.length}`);
+            
+            responsaveisAdicionais.forEach((resp, index) => {
+                adicionarResponsavel();
+                
+                setTimeout(() => {
+                    const num = index + 2;
+                    let nomeResp = resp.nome || resp.nome_completo || '';
+                    let parentescoResp = resp.parentesco || resp.relacao || '';
+                    let telefoneResp = resp.telefone || resp.telefone_principal || '';
+                    let telefoneContatoResp = resp.telefone_contato || '';
+                    let cpfResp = resp.cpf || '';
+                    let rgResp = resp.rg || '';
+                    let emailResp = resp.email || '';
+                    
+                    setValueByName(`responsavel${num}_nome`, nomeResp);
+                    setValueByName(`responsavel${num}_parentesco`, parentescoResp);
+                    setValueByName(`responsavel${num}_telefone`, telefoneResp);
+                    setValueByName(`responsavel${num}_telefone_contato`, telefoneContatoResp);
+                    setValueByName(`responsavel${num}_cpf`, cpfResp);
+                    setValueByName(`responsavel${num}_rg`, rgResp);
+                    setValueByName(`responsavel${num}_email`, emailResp);
+                    console.log(`   ✅ Responsável adicional ${num} preenchido: ${nomeResp}`);
+                }, 100 * (index + 1));
+            });
+        }
+    } else {
+        console.log('   ⚠️ Nenhum responsável encontrado');
+        
+        const respNome = aluno.responsavel1_nome || aluno.responsavel_nome;
+        if (respNome) {
+            console.log('   📌 Usando campos diretos para responsável principal');
+            setValueByName('responsavel1_nome', respNome);
+            setValueByName('responsavel1_parentesco', aluno.responsavel1_parentesco);
+            setValueByName('responsavel1_telefone', aluno.responsavel1_telefone);
+            setValueByName('responsavel1_telefone_contato', aluno.responsavel1_telefone_contato);
+            setValueByName('responsavel1_cpf', aluno.responsavel1_cpf);
+            setValueByName('responsavel1_rg', aluno.responsavel1_rg);
+            setValueByName('responsavel1_email', aluno.responsavel1_email);
+        }
     }
 
-    if (aluno.terceiros && aluno.terceiros.length > 0) {
+    // TERCEIROS
+    console.log('📌 Processando terceiros...');
+    let terceiros = [];
+    
+    if (aluno.terceiros && Array.isArray(aluno.terceiros) && aluno.terceiros.length > 0) {
+        terceiros = aluno.terceiros;
+        console.log('   ✅ Terceiros encontrados:', terceiros.length);
+    } else if (aluno.dados_pessoais && aluno.dados_pessoais.terceiros) {
+        terceiros = aluno.dados_pessoais.terceiros;
+        console.log('   ✅ Terceiros encontrados em dados_pessoais.terceiros:', terceiros.length);
+    }
+    
+    if (terceiros.length > 0) {
         if (!terceirosAtivos) {
             toggleTerceiros();
         }
         
-        aluno.terceiros.forEach((terceiro, index) => {
+        terceiros.forEach((terceiro, index) => {
             if (index > 0) {
                 adicionarTerceiro();
             }
@@ -1777,38 +1934,191 @@ function preencherFormulario(aluno) {
                 setValueByName(`terceiro${num}_cpf`, terceiro.cpf);
                 setValueByName(`terceiro${num}_rg`, terceiro.rg);
                 setValueByName(`terceiro${num}_email`, terceiro.email);
+                console.log(`   ✅ Terceiro ${num} preenchido`);
             }, 100 * (index + 1));
         });
     }
 
+    // TRANSPORTE
+    console.log('📌 Processando transporte...');
+    let transporte = null;
+    
     if (aluno.transporte && aluno.transporte.nome) {
+        transporte = aluno.transporte;
+        console.log('   ✅ Transporte encontrado em aluno.transporte');
+    } else if (aluno.dados_pessoais && aluno.dados_pessoais.transporte) {
+        transporte = aluno.dados_pessoais.transporte;
+        console.log('   ✅ Transporte encontrado em dados_pessoais.transporte');
+    }
+    
+    if (transporte && transporte.nome) {
         const checkbox = document.querySelector('input[name="utiliza_transporte"]');
         if (checkbox) {
             checkbox.checked = true;
             toggleTransporte({ checked: true });
             
-            setValueByName('transporte_nome', aluno.transporte.nome);
-            setValueByName('transporte_cnpj', aluno.transporte.cnpj);
-            setValueByName('transporte_cpf', aluno.transporte.cpf);
-            setValueByName('transporte_rg', aluno.transporte.rg);
-            setValueByName('transporte_telefone', aluno.transporte.telefone);
-            setValueByName('transporte_email', aluno.transporte.email);
+            setValueByName('transporte_nome', transporte.nome);
+            setValueByName('transporte_cnpj', transporte.cnpj);
+            setValueByName('transporte_cpf', transporte.cpf);
+            setValueByName('transporte_rg', transporte.rg);
+            setValueByName('transporte_telefone', transporte.telefone);
+            setValueByName('transporte_email', transporte.email);
+            console.log('   ✅ Transporte preenchido');
+        }
+    } else if (aluno.utiliza_transporte === '1' || aluno.utiliza_transporte === 1) {
+        const checkbox = document.querySelector('input[name="utiliza_transporte"]');
+        if (checkbox) {
+            checkbox.checked = true;
+            toggleTransporte({ checked: true });
+            
+            setValueByName('transporte_nome', aluno.transporte_nome);
+            setValueByName('transporte_cnpj', aluno.transporte_cnpj);
+            setValueByName('transporte_cpf', aluno.transporte_cpf);
+            setValueByName('transporte_rg', aluno.transporte_rg);
+            setValueByName('transporte_telefone', aluno.transporte_telefone);
+            setValueByName('transporte_email', aluno.transporte_email);
+            console.log('   ✅ Transporte preenchido (fallback)');
         }
     }
 
+    // NÚMERO DE INSCRIÇÃO
     const campoNumero = document.getElementById('num_inscricao');
     if (campoNumero) {
         if (aluno.num_inscricao) {
             campoNumero.value = aluno.num_inscricao;
             campoNumero.readOnly = true;
             campoNumero.classList.add('readonly');
+            console.log(`   ✅ Número de inscrição: ${aluno.num_inscricao}`);
         }
     }
+// ===== ATIVAR CARDS NA EDIÇÃO =====
+console.log('🔧 Ativando cards para edição...');
 
-    // CARREGAR FOTOS E DOCUMENTOS VIA GRIDFS
+// Ativa container de terceiros se houver terceiros
+if (aluno.terceiros && aluno.terceiros.length > 0 && !terceirosAtivos) {
+    toggleTerceiros();
+    console.log('   ✅ Container de terceiros ativado');
+}
+
+// Ativa container de transporte se houver transporte
+if (aluno.transporte && aluno.transporte.nome) {
+    const checkbox = document.querySelector('input[name="utiliza_transporte"]');
+    if (checkbox && !checkbox.checked) {
+        checkbox.checked = true;
+        toggleTransporte({ checked: true });
+        console.log('   ✅ Container de transporte ativado');
+    }
+}
+
+// CARREGAR FOTOS E DOCUMENTOS
+carregarFotosExistentes(aluno);
+    
     carregarFotosExistentes(aluno);
+    
     console.log('✅ Formulário preenchido com sucesso!');
     mostrarNotificacao('✅ Dados carregados para edição', 'success');
+}
+
+// ===== FUNÇÃO DE SALVAR CADASTRO CORRIGIDA =====
+async function salvarCadastro() {
+    console.clear();
+    console.log('\n🚀 INICIANDO PROCESSO DE CADASTRO (GRIDFS)');
+    console.log('=' .repeat(60));
+    const isEditing = typeof alunoParaEditar !== 'undefined' && alunoParaEditar && alunoParaEditar !== 'null';
+    if (isEditing) console.log('📝 Modo: EDIÇÃO'); else console.log('➕ Modo: NOVO CADASTRO');
+    
+    for (let i = 1; i <= 2; i++) { 
+        if (!validarPasso(i)) { 
+            passoAtual = i; 
+            atualizarPasso(i); 
+            atualizarBotoes(); 
+            mostrarNotificacao('Complete todos os campos obrigatórios!', 'warning'); 
+            rolarAteCampoVazio(i); 
+            return; 
+        } 
+    }
+    
+    if (!isEditing && !validarPasso(3)) { 
+        passoAtual = 3; 
+        atualizarPasso(3); 
+        atualizarBotoes(); 
+        mostrarNotificacao('Complete todos os documentos obrigatórios!', 'warning'); 
+        rolarAteCampoVazio(3); 
+        return; 
+    }
+    
+    mostrarNotificacao('📤 Enviando arquivos...', 'success');
+    
+    try {
+        console.log('\n📦 ETAPA 1: Upload dos arquivos para GridFS');
+        const arquivosIds = await processarUploadsArquivos();
+        
+        console.log('\n📋 ETAPA 2: Coletando dados do formulário');
+        
+        // Para edição, precisamos enviar no formato que o servidor espera
+        if (isEditing) {
+            console.log('   📝 Coletando dados para EDIÇÃO (form-data)');
+            
+            // Pega o formulário original
+            const form = document.getElementById('formCadastroAluno');
+            const formData = new FormData(form);
+            
+            // Adiciona o número de inscrição original (OBRIGATÓRIO)
+            const numInscricao = document.getElementById('num_inscricao').value;
+            formData.append('num_inscricao_original', numInscricao);
+            formData.append('modo_edicao', 'true');
+            
+            // Adiciona os IDs dos arquivos como JSON string
+            formData.append('arquivos_ids', JSON.stringify(arquivosIds));
+            
+            console.log('   📤 Campos do FormData:', Array.from(formData.keys()));
+            console.log('   🆔 num_inscricao_original:', formData.get('num_inscricao_original'));
+            
+            const response = await fetch('/api/alunos/atualizar', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const resultado = await response.json();
+            console.log('\n📥 RESPOSTA:', JSON.stringify(resultado, null, 2));
+            
+            if (resultado.sucesso) {
+                mostrarNotificacao('✅ Cadastro atualizado com sucesso!', 'success');
+                setTimeout(() => { window.location.href = '/'; }, 2000);
+            } else {
+                throw new Error(resultado.erro || 'Erro desconhecido');
+            }
+            
+        } else {
+            // NOVO CADASTRO: usar JSON (rota /cadastrar-json)
+            console.log('   📝 Coletando dados para NOVO CADASTRO (JSON)');
+            const dadosAluno = coletarDadosFormulario();
+            dadosAluno.arquivos_ids = arquivosIds;
+            
+            console.log(`   ✅ Dados coletados: ${Object.keys(dadosAluno).length} campos`);
+            console.log(`   📎 Arquivos IDs: ${Object.keys(arquivosIds).length}`);
+            
+            const response = await fetch('/api/alunos/cadastrar-json', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dadosAluno)
+            });
+            
+            const resultado = await response.json();
+            console.log('\n📥 RESPOSTA:', JSON.stringify(resultado, null, 2));
+            
+            if (resultado.sucesso) {
+                mostrarNotificacao('✅ Cadastro realizado com sucesso!', 'success');
+                setTimeout(() => { window.location.href = '/'; }, 2000);
+            } else {
+                throw new Error(resultado.erro || 'Erro desconhecido');
+            }
+        }
+        
+    } catch (error) { 
+        console.error('\n❌ ERRO NO PROCESSO:', error.message); 
+        mostrarNotificacao('❌ ' + error.message, 'error'); 
+    }
 }
     </script>
 </head>
@@ -2497,12 +2807,6 @@ function preencherFormulario(aluno) {
                 </div>
 
                 <script>
-                let passoAtual = 1;
-                const totalPassos = 4;
-                let cameraStreams = {};
-                let terceirosAtivos = false;
-                let transporteAtivo = false;
-
                 function marcarArquivoAnexado(cardId) {
                     const card = document.getElementById(cardId);
                     if (card) card.classList.add('has-file');
@@ -3141,33 +3445,6 @@ function preencherFormulario(aluno) {
                     if (campoNumero && campoNumero.value && campoNumero.value !== '') { console.log('⚠️ Número já existe, não será gerado novo:', campoNumero.value); return; }
                     console.log('🆕 Gerando novo número de inscrição...');
                     fetch('/api/alunos/proximo-numero').then(response => response.json()).then(data => { if (data.sucesso && campoNumero) { campoNumero.value = data.numero; console.log(`   ✅ Número gerado: ${data.numero}`); } }).catch(error => { console.error('Erro ao buscar número:', error); const data = new Date(); const ano = data.getFullYear(); if (campoNumero) { campoNumero.value = `001-${ano}`; console.log(`   ⚠️ Número temporário: ${campoNumero.value}`); } });
-                }
-
-                async function salvarCadastro() {
-                    console.clear();
-                    console.log('\n🚀 INICIANDO PROCESSO DE CADASTRO (GRIDFS)');
-                    console.log('=' .repeat(60));
-                    const isEditing = typeof alunoParaEditar !== 'undefined' && alunoParaEditar && alunoParaEditar !== 'null';
-                    if (isEditing) console.log('📝 Modo: EDIÇÃO'); else console.log('➕ Modo: NOVO CADASTRO');
-                    for (let i = 1; i <= 2; i++) { if (!validarPasso(i)) { passoAtual = i; atualizarPasso(i); atualizarBotoes(); mostrarNotificacao('Complete todos os campos obrigatórios!', 'warning'); rolarAteCampoVazio(i); return; } }
-                    if (!isEditing && !validarPasso(3)) { passoAtual = 3; atualizarPasso(3); atualizarBotoes(); mostrarNotificacao('Complete todos os documentos obrigatórios!', 'warning'); rolarAteCampoVazio(3); return; }
-                    mostrarNotificacao('📤 Enviando arquivos...', 'success');
-                    try {
-                        console.log('\n📦 ETAPA 1: Upload dos arquivos para GridFS');
-                        const arquivosIds = await processarUploadsArquivos();
-                        console.log('\n📋 ETAPA 2: Coletando dados do formulário');
-                        const dadosAluno = coletarDadosFormulario();
-                        dadosAluno.arquivos_ids = arquivosIds;
-                        console.log(`   ✅ Dados coletados: ${Object.keys(dadosAluno).length} campos`);
-                        console.log(`   📎 Arquivos IDs: ${Object.keys(arquivosIds).length}`);
-                        console.log('\n📡 ETAPA 3: Enviando dados para o servidor');
-                        if (isEditing) { console.log('⚠️ Modo edição - usando método tradicional'); await salvarCadastroTradicional(); return; }
-                        const response = await fetch('/api/alunos/cadastrar-json', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dadosAluno) });
-                        const resultado = await response.json();
-                        console.log('\n📥 RESPOSTA DO SERVIDOR:', JSON.stringify(resultado, null, 2));
-                        if (resultado.sucesso) { console.log('\n🎉 CADASTRO REALIZADO COM SUCESSO!'); mostrarNotificacao('✅ Cadastro realizado com sucesso!', 'success'); setTimeout(() => { window.location.href = '/'; }, 2000); } 
-                        else { throw new Error(resultado.erro || 'Erro desconhecido no servidor'); }
-                    } catch (error) { console.error('\n❌ ERRO NO PROCESSO:', error.message); mostrarNotificacao('❌ ' + error.message, 'error'); }
                 }
 
                 configurarResetDeErros();
