@@ -449,6 +449,22 @@
             }
         };
 
+        // Função para obter data local do Brasil (YYYY-MM-DD)
+        function getDataLocalBrasil() {
+            const hoje = new Date();
+            const ano = hoje.getFullYear();
+            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+            const dia = String(hoje.getDate()).padStart(2, '0');
+            return `${ano}-${mes}-${dia}`;
+        }
+
+        // Função para formatar data para DD/MM/YYYY
+        function formatarDataLocal(dataInput) {
+            if (!dataInput) return '___/___/_____';
+            const [ano, mes, dia] = dataInput.split('-');
+            return `${dia}/${mes}/${ano}`;
+        }
+
         const htmlImpressao = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -468,7 +484,6 @@
         .print-button:hover { background: #45a049; transform: translateY(-2px); }
         @media print { .print-button-container { display: none; } }
         
-        /* CABEÇALHO PROFISSIONAL - TEXTOS À ESQUERDA, LOGOS À DIREITA */
         .cabecalho {
             display: flex;
             justify-content: space-between;
@@ -624,10 +639,10 @@
     <script>
         function preencherJustificativa(dados) {
             document.getElementById('unidadeNome').textContent = dados.unidadeInfo.nome;
-            document.getElementById('unidadeInfo').textContent = \`CNPJ: \${dados.unidadeInfo.cnpj} - \${dados.unidadeInfo.cidade}/\${dados.unidadeInfo.uf}\`;
+            document.getElementById('unidadeInfo').textContent = "CNPJ: " + dados.unidadeInfo.cnpj + " - " + dados.unidadeInfo.cidade + "/" + dados.unidadeInfo.uf;
             document.getElementById('rodapeNome').textContent = dados.unidadeInfo.nome;
             document.getElementById('rodapeEndereco').textContent = dados.unidadeInfo.endereco;
-            document.getElementById('rodapeTelefone').textContent = \`📞 \${dados.unidadeInfo.telefone}\`;
+            document.getElementById('rodapeTelefone').textContent = "📞 " + dados.unidadeInfo.telefone;
             document.getElementById('printData').textContent = dados.data;
             document.getElementById('printColaborador').textContent = dados.colaborador;
             document.getElementById('printCargo').textContent = dados.cargo;
@@ -639,10 +654,10 @@
             document.getElementById('printObservacoes').textContent = dados.observacoes;
             
             document.getElementById('unidadeNome2').textContent = dados.unidadeInfo.nome;
-            document.getElementById('unidadeInfo2').textContent = \`CNPJ: \${dados.unidadeInfo.cnpj} - \${dados.unidadeInfo.cidade}/\${dados.unidadeInfo.uf}\`;
+            document.getElementById('unidadeInfo2').textContent = "CNPJ: " + dados.unidadeInfo.cnpj + " - " + dados.unidadeInfo.cidade + "/" + dados.unidadeInfo.uf;
             document.getElementById('rodapeNome2').textContent = dados.unidadeInfo.nome;
             document.getElementById('rodapeEndereco2').textContent = dados.unidadeInfo.endereco;
-            document.getElementById('rodapeTelefone2').textContent = \`📞 \${dados.unidadeInfo.telefone}\`;
+            document.getElementById('rodapeTelefone2').textContent = "📞 " + dados.unidadeInfo.telefone;
             document.getElementById('printData2').textContent = dados.data;
             document.getElementById('printColaborador2').textContent = dados.colaborador;
             document.getElementById('printCargo2').textContent = dados.cargo;
@@ -652,7 +667,7 @@
             document.getElementById('printApontamentoFim2').textContent = dados.apontamentoFim;
             document.getElementById('printMotivo2').textContent = dados.motivo;
             document.getElementById('printObservacoes2').textContent = dados.observacoes;
-            document.getElementById('printDataEmissao').textContent = \`Emitido em: \${dados.dataEmissao}\`;
+            document.getElementById('printDataEmissao').textContent = "Emitido em: " + dados.dataEmissao;
         }
     <\/script>
 </body>
@@ -661,7 +676,8 @@
         document.addEventListener('DOMContentLoaded', function() {
             carregarFuncionarios();
             carregarMotivos();
-            document.getElementById('dataSaida').value = new Date().toISOString().split('T')[0];
+            // CORREÇÃO: Usar data local do Brasil
+            document.getElementById('dataSaida').value = getDataLocalBrasil();
         });
 
         function carregarMotivos() {
@@ -698,7 +714,7 @@
         }
 
         function gerarJustificativa() {
-            const data = document.getElementById('dataSaida').value;
+            const dataInput = document.getElementById('dataSaida').value;
             const rgm = document.getElementById('colaborador').value;
             const unidade = document.getElementById('unidade').value;
             const motivo = document.getElementById('motivo').value;
@@ -708,8 +724,11 @@
                 return;
             }
 
+            // CORREÇÃO: Usar formatação local sem conversão de timezone
+            const dataFormatada = formatarDataLocal(dataInput);
+
             const dados = {
-                data: data ? new Date(data).toLocaleDateString('pt-BR') : '___/___/_____',
+                data: dataFormatada,
                 colaborador: document.getElementById('colaborador').options[document.getElementById('colaborador').selectedIndex]?.text || '',
                 cargo: document.getElementById('cargo').value,
                 rgm: rgm,
@@ -733,7 +752,9 @@
         }
 
         function limparFormulario() {
-            document.getElementById('dataSaida').value = new Date().toISOString().split('T')[0];
+            // CORREÇÃO: Usar data local do Brasil
+            document.getElementById('dataSaida').value = getDataLocalBrasil();
+            
             ['colaborador', 'cargo', 'rgm', 'unidade', 'apontamentoInicio', 'apontamentoFim', 'motivo', 'observacoes'].forEach(id => {
                 document.getElementById(id).value = '';
             });
