@@ -880,13 +880,30 @@
         let editandoId = null;
         let documentoParaExcluir = null;
 
+        // ===== MAPEAMENTO COMPLETO DE MESES (COM E SEM ZERO À ESQUERDA) =====
         const mesesMap = {
-            '1': 'Janeiro', '2': 'Fevereiro', '3': 'Março', '4': 'Abril',
-            '5': 'Maio', '6': 'Junho', '7': 'Julho', '8': 'Agosto',
-            '9': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro'
+            '1': 'Janeiro', '01': 'Janeiro',
+            '2': 'Fevereiro', '02': 'Fevereiro',
+            '3': 'Março', '03': 'Março',
+            '4': 'Abril', '04': 'Abril',
+            '5': 'Maio', '05': 'Maio',
+            '6': 'Junho', '06': 'Junho',
+            '7': 'Julho', '07': 'Julho',
+            '8': 'Agosto', '08': 'Agosto',
+            '9': 'Setembro', '09': 'Setembro',
+            '10': 'Outubro', '10': 'Outubro',
+            '11': 'Novembro', '11': 'Novembro',
+            '12': 'Dezembro', '12': 'Dezembro'
         };
 
-        // ===== FUNÇÃO PARA CONVERTER DATA UTC PARA BRASÍLIA (APENAS DATA, SEM HORA) =====
+        // ===== FUNÇÃO PARA CONVERTER MÊS PARA NOME =====
+        function getNomeMes(mes) {
+            if (!mes) return '?';
+            const mesStr = String(mes).trim();
+            return mesesMap[mesStr] || mesStr;
+        }
+
+        // ===== FUNÇÃO PARA CONVERTER DATA UTC PARA BRASÍLIA =====
         function converterParaBrasilia(dataUTC) {
             if (!dataUTC) return null;
             
@@ -899,12 +916,11 @@
             
             if (isNaN(data.getTime())) return null;
             
-            // Adiciona 3 horas para converter de UTC para Brasília (UTC-3)
             const dataBrasilia = new Date(data.getTime() + (3 * 60 * 60 * 1000));
             return dataBrasilia;
         }
 
-        // ===== FUNÇÃO PARA FORMATAR APENAS DATA (DD/MM/YYYY) - SEM HORAS =====
+        // ===== FUNÇÃO PARA FORMATAR APENAS DATA =====
         function formatarDataBrasilia(dataUTC) {
             const dataBrasilia = converterParaBrasilia(dataUTC);
             if (!dataBrasilia) return '-';
@@ -916,7 +932,7 @@
             return `${dia}/${mes}/${ano}`;
         }
 
-        // ===== FUNÇÃO PARA FORMATAR APENAS DATA (DD/MM/YYYY) - PARA DATAS DE REFERÊNCIA =====
+        // ===== FUNÇÃO PARA FORMATAR DATA DE REFERÊNCIA =====
         function formatarDataBrasil(data) {
             if (!data) return '-';
             
@@ -953,7 +969,7 @@
             return dataBrasilia;
         }
 
-        // ===== FUNÇÃO PARA OBTER DATA PADRÃO DO FORMULÁRIO (YYYY-MM-DD) =====
+        // ===== FUNÇÃO PARA OBTER DATA PADRÃO DO FORMULÁRIO =====
         function getDataPadraoFormulario() {
             const dataBrasilia = getDataHoraAtualBrasilia();
             const ano = dataBrasilia.getFullYear();
@@ -962,7 +978,7 @@
             return `${ano}-${mes}-${dia}`;
         }
 
-        // Função para carregar anos dinamicamente
+        // Carregar anos dinamicamente
         function carregarAnosDinamicamente() {
             const filtroAno = document.getElementById('filtroAno');
             const dataReferencia = document.getElementById('dataReferencia');
@@ -981,7 +997,6 @@
                 }
             }
             
-            // Data de referência padrão (hoje em Brasília)
             if (dataReferencia) {
                 dataReferencia.value = getDataPadraoFormulario();
             }
@@ -1043,8 +1058,11 @@
             const grupos = {};
             
             documentos.forEach(doc => {
-                const mesNome = mesesMap[doc.mes] || doc.mes;
+                // CONVERTE O MÊS PARA NOME (CORREÇÃO PRINCIPAL)
+                // Aceita tanto "5" quanto "05"
+                const mesNome = getNomeMes(doc.mes);
                 const chave = `${mesNome}/${doc.ano}`;
+                
                 if (!grupos[chave]) {
                     grupos[chave] = {
                         mes: mesNome,
@@ -1055,7 +1073,7 @@
                     };
                 }
                 
-                // Formatar data de upload - APENAS DATA, SEM HORAS
+                // Formatar data de upload - APENAS DATA
                 const dataUploadFormatada = doc.data_upload ? formatarDataBrasilia(doc.data_upload) : '-';
                 doc.data_formatada = dataUploadFormatada;
                 
@@ -1137,7 +1155,7 @@
                                 📝 Declarações (${declaracoesOrdenadas.length})
                             </div>
                             <table class="tabela-documentos-grupo">
-                                <thead><tr><th>Nome</th><th>Unidade</th><th>Data Ref.</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></thead>
+                                <thead><tr><th>Nome</th><th>Unidade</th><th>Data Ref.</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></tr></thead>
                                 <tbody>
                                     ${declaracoesOrdenadas.map(doc => `
                                         <tr>
@@ -1168,7 +1186,7 @@
                                 📋 Justificativas (${justificativasOrdenadas.length})
                             </div>
                             <table class="tabela-documentos-grupo">
-                                <thead><tr><th>Nome</th><th>Unidade</th><th>Data Ref.</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></thead>
+                                <thead><tr><th>Nome</th><th>Unidade</th><th>Data Ref.</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></tr></thead>
                                 <tbody>
                                     ${justificativasOrdenadas.map(doc => `
                                         <tr>
@@ -1293,7 +1311,6 @@
             document.getElementById('formUpload').reset();
             document.getElementById('editId').value = '';
             
-            // Restaurar data padrão (hoje em Brasília)
             document.getElementById('dataReferencia').value = getDataPadraoFormulario();
         }
 
@@ -1337,7 +1354,6 @@
             if (arquivo) formData.append('arquivo', arquivo);
             if (editando) formData.append('documento_id', editId);
 
-            // Extrai mês e ano da data de referência
             const [anoRef, mesRef] = dataReferencia.split('-');
             formData.append('mes', mesRef);
             formData.append('ano', anoRef);
