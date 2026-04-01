@@ -886,11 +886,10 @@
             '9': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro'
         };
 
-        // ===== FUNÇÃO PARA CONVERTER DATA UTC PARA BRASÍLIA =====
+        // ===== FUNÇÃO PARA CONVERTER DATA UTC PARA BRASÍLIA (APENAS DATA, SEM HORA) =====
         function converterParaBrasilia(dataUTC) {
             if (!dataUTC) return null;
             
-            // Se for string, converte para Date
             let data;
             if (typeof dataUTC === 'string') {
                 data = new Date(dataUTC);
@@ -901,26 +900,23 @@
             if (isNaN(data.getTime())) return null;
             
             // Adiciona 3 horas para converter de UTC para Brasília (UTC-3)
-            // Se o servidor salvou em UTC, precisamos adicionar 3 horas
             const dataBrasilia = new Date(data.getTime() + (3 * 60 * 60 * 1000));
             return dataBrasilia;
         }
 
-        // ===== FUNÇÃO PARA FORMATAR DATA E HORA COMPLETA EM BRASÍLIA =====
-        function formatarDataHoraBrasilia(dataUTC) {
+        // ===== FUNÇÃO PARA FORMATAR APENAS DATA (DD/MM/YYYY) - SEM HORAS =====
+        function formatarDataBrasilia(dataUTC) {
             const dataBrasilia = converterParaBrasilia(dataUTC);
             if (!dataBrasilia) return '-';
             
             const dia = String(dataBrasilia.getDate()).padStart(2, '0');
             const mes = String(dataBrasilia.getMonth() + 1).padStart(2, '0');
             const ano = dataBrasilia.getFullYear();
-            const horas = String(dataBrasilia.getHours()).padStart(2, '0');
-            const minutos = String(dataBrasilia.getMinutes()).padStart(2, '0');
             
-            return `${dia}/${mes}/${ano} ${horas}:${minutos}`;
+            return `${dia}/${mes}/${ano}`;
         }
 
-        // ===== FUNÇÃO PARA FORMATAR APENAS DATA =====
+        // ===== FUNÇÃO PARA FORMATAR APENAS DATA (DD/MM/YYYY) - PARA DATAS DE REFERÊNCIA =====
         function formatarDataBrasil(data) {
             if (!data) return '-';
             
@@ -951,7 +947,6 @@
         // ===== FUNÇÃO PARA OBTER DATA/HORA ATUAL EM BRASÍLIA =====
         function getDataHoraAtualBrasilia() {
             const agora = new Date();
-            // Converte para UTC e adiciona o offset de Brasília (UTC-3)
             const offsetBrasilia = -3;
             const utc = agora.getTime() + (agora.getTimezoneOffset() * 60000);
             const dataBrasilia = new Date(utc + (offsetBrasilia * 3600000));
@@ -1060,9 +1055,8 @@
                     };
                 }
                 
-                // Formatar data de upload com horário de Brasília
-                // Usando a função que converte UTC para Brasília
-                const dataUploadFormatada = doc.data_upload ? formatarDataHoraBrasilia(doc.data_upload) : '-';
+                // Formatar data de upload - APENAS DATA, SEM HORAS
+                const dataUploadFormatada = doc.data_upload ? formatarDataBrasilia(doc.data_upload) : '-';
                 doc.data_formatada = dataUploadFormatada;
                 
                 if (doc.tipo === 'atestado') {
@@ -1143,7 +1137,7 @@
                                 📝 Declarações (${declaracoesOrdenadas.length})
                             </div>
                             <table class="tabela-documentos-grupo">
-                                <thead><tr><th>Nome</th><th>Unidade</th><th>Data Ref.</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></tr></thead>
+                                <thead><tr><th>Nome</th><th>Unidade</th><th>Data Ref.</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></thead>
                                 <tbody>
                                     ${declaracoesOrdenadas.map(doc => `
                                         <tr>
@@ -1174,7 +1168,7 @@
                                 📋 Justificativas (${justificativasOrdenadas.length})
                             </div>
                             <table class="tabela-documentos-grupo">
-                                <thead><tr><th>Nome</th><th>Unidade</th><th>Data Ref.</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></tr></thead>
+                                <thead><tr><th>Nome</th><th>Unidade</th><th>Data Ref.</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></thead>
                                 <tbody>
                                     ${justificativasOrdenadas.map(doc => `
                                         <tr>
@@ -1339,10 +1333,6 @@
             formData.append('unidade', unidade);
             formData.append('nome_pessoa', nomePessoa);
             formData.append('data_referencia', dataReferencia);
-            
-            // Adiciona o horário de Brasília no momento do upload
-            const dataHoraBrasilia = getDataHoraAtualBrasilia();
-            formData.append('data_upload_client', dataHoraBrasilia.toISOString());
             
             if (arquivo) formData.append('arquivo', arquivo);
             if (editando) formData.append('documento_id', editId);
