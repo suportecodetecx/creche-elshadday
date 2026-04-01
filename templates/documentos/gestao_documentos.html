@@ -886,11 +886,93 @@
             '9': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro'
         };
 
+        // ===== FUNÇÃO PARA CONVERTER DATA UTC PARA BRASÍLIA =====
+        function converterParaBrasilia(dataUTC) {
+            if (!dataUTC) return null;
+            
+            // Se for string, converte para Date
+            let data;
+            if (typeof dataUTC === 'string') {
+                data = new Date(dataUTC);
+            } else {
+                data = new Date(dataUTC);
+            }
+            
+            if (isNaN(data.getTime())) return null;
+            
+            // Adiciona 3 horas para converter de UTC para Brasília (UTC-3)
+            // Se o servidor salvou em UTC, precisamos adicionar 3 horas
+            const dataBrasilia = new Date(data.getTime() + (3 * 60 * 60 * 1000));
+            return dataBrasilia;
+        }
+
+        // ===== FUNÇÃO PARA FORMATAR DATA E HORA COMPLETA EM BRASÍLIA =====
+        function formatarDataHoraBrasilia(dataUTC) {
+            const dataBrasilia = converterParaBrasilia(dataUTC);
+            if (!dataBrasilia) return '-';
+            
+            const dia = String(dataBrasilia.getDate()).padStart(2, '0');
+            const mes = String(dataBrasilia.getMonth() + 1).padStart(2, '0');
+            const ano = dataBrasilia.getFullYear();
+            const horas = String(dataBrasilia.getHours()).padStart(2, '0');
+            const minutos = String(dataBrasilia.getMinutes()).padStart(2, '0');
+            
+            return `${dia}/${mes}/${ano} ${horas}:${minutos}`;
+        }
+
+        // ===== FUNÇÃO PARA FORMATAR APENAS DATA =====
+        function formatarDataBrasil(data) {
+            if (!data) return '-';
+            
+            let dataObj;
+            if (typeof data === 'string') {
+                if (data.includes('-')) {
+                    const partes = data.split('-');
+                    dataObj = new Date(partes[0], partes[1] - 1, partes[2]);
+                } else if (data.includes('/')) {
+                    const partes = data.split('/');
+                    dataObj = new Date(partes[2], partes[1] - 1, partes[0]);
+                } else {
+                    dataObj = new Date(data);
+                }
+            } else {
+                dataObj = new Date(data);
+            }
+            
+            if (isNaN(dataObj.getTime())) return '-';
+            
+            const dia = String(dataObj.getDate()).padStart(2, '0');
+            const mes = String(dataObj.getMonth() + 1).padStart(2, '0');
+            const ano = dataObj.getFullYear();
+            
+            return `${dia}/${mes}/${ano}`;
+        }
+
+        // ===== FUNÇÃO PARA OBTER DATA/HORA ATUAL EM BRASÍLIA =====
+        function getDataHoraAtualBrasilia() {
+            const agora = new Date();
+            // Converte para UTC e adiciona o offset de Brasília (UTC-3)
+            const offsetBrasilia = -3;
+            const utc = agora.getTime() + (agora.getTimezoneOffset() * 60000);
+            const dataBrasilia = new Date(utc + (offsetBrasilia * 3600000));
+            return dataBrasilia;
+        }
+
+        // ===== FUNÇÃO PARA OBTER DATA PADRÃO DO FORMULÁRIO (YYYY-MM-DD) =====
+        function getDataPadraoFormulario() {
+            const dataBrasilia = getDataHoraAtualBrasilia();
+            const ano = dataBrasilia.getFullYear();
+            const mes = String(dataBrasilia.getMonth() + 1).padStart(2, '0');
+            const dia = String(dataBrasilia.getDate()).padStart(2, '0');
+            return `${ano}-${mes}-${dia}`;
+        }
+
         // Função para carregar anos dinamicamente
         function carregarAnosDinamicamente() {
             const filtroAno = document.getElementById('filtroAno');
             const dataReferencia = document.getElementById('dataReferencia');
-            const anoAtual = new Date().getFullYear();
+            const dataBrasilia = getDataHoraAtualBrasilia();
+            const anoAtual = dataBrasilia.getFullYear();
             const anoInicio = 2026;
             const anoFim = anoAtual + 5;
             
@@ -904,13 +986,9 @@
                 }
             }
             
-            // Data de referência padrão (hoje)
+            // Data de referência padrão (hoje em Brasília)
             if (dataReferencia) {
-                const hoje = new Date();
-                const ano = hoje.getFullYear();
-                const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-                const dia = String(hoje.getDate()).padStart(2, '0');
-                dataReferencia.value = `${ano}-${mes}-${dia}`;
+                dataReferencia.value = getDataPadraoFormulario();
             }
         }
 
@@ -981,6 +1059,12 @@
                         justificativas: []
                     };
                 }
+                
+                // Formatar data de upload com horário de Brasília
+                // Usando a função que converte UTC para Brasília
+                const dataUploadFormatada = doc.data_upload ? formatarDataHoraBrasilia(doc.data_upload) : '-';
+                doc.data_formatada = dataUploadFormatada;
+                
                 if (doc.tipo === 'atestado') {
                     grupos[chave].atestados.push(doc);
                 } else if (doc.tipo === 'declaracao') {
@@ -1034,9 +1118,9 @@
                                         <tr>
                                             <td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td>
                                             <td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td>
-                                            <td>${doc.data_referencia ? formatarData(doc.data_referencia) : '-'}</td>
+                                            <td>${doc.data_referencia ? formatarDataBrasil(doc.data_referencia) : '-'}</td>
                                             <td><span class="badge-tipo badge-atestado">Atestado</span></td>
-                                            <td>${doc.data_formatada || doc.data_upload}</td>
+                                            <td>${doc.data_formatada || '-'}</td>
                                             <td>
                                                 <button class="btn-acao btn-visualizar" onclick="visualizarDocumento('${doc._id}')">👁️</button>
                                                 <button class="btn-acao btn-download" onclick="baixarDocumento('${doc._id}')">⬇️</button>
@@ -1059,15 +1143,15 @@
                                 📝 Declarações (${declaracoesOrdenadas.length})
                             </div>
                             <table class="tabela-documentos-grupo">
-                                <thead><tr><th>Nome</th><th>Unidade</th><th>Data Ref.</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></thead>
+                                <thead><tr><th>Nome</th><th>Unidade</th><th>Data Ref.</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></tr></thead>
                                 <tbody>
                                     ${declaracoesOrdenadas.map(doc => `
                                         <tr>
                                             <td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td>
                                             <td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td>
-                                            <td>${doc.data_referencia ? formatarData(doc.data_referencia) : '-'}</td>
+                                            <td>${doc.data_referencia ? formatarDataBrasil(doc.data_referencia) : '-'}</td>
                                             <td><span class="badge-tipo badge-declaracao">Declaração</span></td>
-                                            <td>${doc.data_formatada || doc.data_upload}</td>
+                                            <td>${doc.data_formatada || '-'}</td>
                                             <td>
                                                 <button class="btn-acao btn-visualizar" onclick="visualizarDocumento('${doc._id}')">👁️</button>
                                                 <button class="btn-acao btn-download" onclick="baixarDocumento('${doc._id}')">⬇️</button>
@@ -1090,15 +1174,15 @@
                                 📋 Justificativas (${justificativasOrdenadas.length})
                             </div>
                             <table class="tabela-documentos-grupo">
-                                <thead><tr><th>Nome</th><th>Unidade</th><th>Data Ref.</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></thead>
+                                <thead><tr><th>Nome</th><th>Unidade</th><th>Data Ref.</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></tr></thead>
                                 <tbody>
                                     ${justificativasOrdenadas.map(doc => `
                                         <tr>
                                             <td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td>
                                             <td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td>
-                                            <td>${doc.data_referencia ? formatarData(doc.data_referencia) : '-'}</td>
+                                            <td>${doc.data_referencia ? formatarDataBrasil(doc.data_referencia) : '-'}</td>
                                             <td><span class="badge-tipo badge-justificativa">Justificativa</span></td>
-                                            <td>${doc.data_formatada || doc.data_upload}</td>
+                                            <td>${doc.data_formatada || '-'}</td>
                                             <td>
                                                 <button class="btn-acao btn-visualizar" onclick="visualizarDocumento('${doc._id}')">👁️</button>
                                                 <button class="btn-acao btn-download" onclick="baixarDocumento('${doc._id}')">⬇️</button>
@@ -1116,15 +1200,6 @@
                 html += `</div></div>`;
                 return html;
             }).join('');
-        }
-
-        function formatarData(dataStr) {
-            if (!dataStr) return '-';
-            const partes = dataStr.split('-');
-            if (partes.length === 3) {
-                return `${partes[2]}/${partes[1]}/${partes[0]}`;
-            }
-            return dataStr;
         }
 
         function toggleGrupo(element) {
@@ -1224,12 +1299,8 @@
             document.getElementById('formUpload').reset();
             document.getElementById('editId').value = '';
             
-            // Restaurar data padrão
-            const hoje = new Date();
-            const ano = hoje.getFullYear();
-            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-            const dia = String(hoje.getDate()).padStart(2, '0');
-            document.getElementById('dataReferencia').value = `${ano}-${mes}-${dia}`;
+            // Restaurar data padrão (hoje em Brasília)
+            document.getElementById('dataReferencia').value = getDataPadraoFormulario();
         }
 
         document.getElementById('formUpload').addEventListener('submit', async (e) => {
@@ -1268,6 +1339,11 @@
             formData.append('unidade', unidade);
             formData.append('nome_pessoa', nomePessoa);
             formData.append('data_referencia', dataReferencia);
+            
+            // Adiciona o horário de Brasília no momento do upload
+            const dataHoraBrasilia = getDataHoraAtualBrasilia();
+            formData.append('data_upload_client', dataHoraBrasilia.toISOString());
+            
             if (arquivo) formData.append('arquivo', arquivo);
             if (editando) formData.append('documento_id', editId);
 
