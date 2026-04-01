@@ -359,7 +359,6 @@
             color: var(--netflix-red);
         }
 
-        /* Modal Profissional */
         .modal {
             display: none;
             position: fixed;
@@ -449,19 +448,6 @@
             background-color: var(--netflix-gray);
             color: var(--white);
             padding: 12px;
-        }
-
-        .form-group select:focus,
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: var(--netflix-red);
-            background: rgba(229, 9, 20, 0.05);
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
         }
 
         .radio-group {
@@ -571,7 +557,6 @@
             background: rgba(255,255,255,0.1);
         }
 
-        /* Modal de Confirmação */
         .modal-confirmacao {
             display: none;
             position: fixed;
@@ -643,19 +628,9 @@
             transition: all 0.2s;
         }
 
-        .btn-confirmar:hover, .btn-cancelar-modal:hover {
-            transform: translateY(-2px);
-        }
-
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .notificacao-flutuante {
@@ -806,7 +781,6 @@
         </main>
     </div>
 
-    <!-- Modal de Upload/Edição -->
     <div id="modalUpload" class="modal">
         <div class="modal-content">
             <h3 id="modalTitle">Novo Documento</h3>
@@ -861,7 +835,6 @@
         </div>
     </div>
 
-    <!-- Modal de Confirmação de Exclusão -->
     <div id="modalExclusao" class="modal-confirmacao">
         <div class="modal-confirmacao-content">
             <h3>⚠️ Confirmar Exclusão</h3>
@@ -880,7 +853,6 @@
         let editandoId = null;
         let documentoParaExcluir = null;
 
-        // ===== MAPEAMENTO COMPLETO DE MESES (COM E SEM ZERO À ESQUERDA) =====
         const mesesMap = {
             '1': 'Janeiro', '01': 'Janeiro',
             '2': 'Fevereiro', '02': 'Fevereiro',
@@ -896,46 +868,30 @@
             '12': 'Dezembro', '12': 'Dezembro'
         };
 
-        // ===== FUNÇÃO PARA CONVERTER MÊS PARA NOME =====
         function getNomeMes(mes) {
             if (!mes) return '?';
             const mesStr = String(mes).trim();
             return mesesMap[mesStr] || mesStr;
         }
 
-        // ===== FUNÇÃO PARA CONVERTER DATA UTC PARA BRASÍLIA =====
         function converterParaBrasilia(dataUTC) {
             if (!dataUTC) return null;
-            
-            let data;
-            if (typeof dataUTC === 'string') {
-                data = new Date(dataUTC);
-            } else {
-                data = new Date(dataUTC);
-            }
-            
+            let data = typeof dataUTC === 'string' ? new Date(dataUTC) : new Date(dataUTC);
             if (isNaN(data.getTime())) return null;
-            
-            const dataBrasilia = new Date(data.getTime() + (3 * 60 * 60 * 1000));
-            return dataBrasilia;
+            return new Date(data.getTime() + (3 * 60 * 60 * 1000));
         }
 
-        // ===== FUNÇÃO PARA FORMATAR APENAS DATA =====
         function formatarDataBrasilia(dataUTC) {
             const dataBrasilia = converterParaBrasilia(dataUTC);
             if (!dataBrasilia) return '-';
-            
             const dia = String(dataBrasilia.getDate()).padStart(2, '0');
             const mes = String(dataBrasilia.getMonth() + 1).padStart(2, '0');
             const ano = dataBrasilia.getFullYear();
-            
             return `${dia}/${mes}/${ano}`;
         }
 
-        // ===== FUNÇÃO PARA FORMATAR DATA DE REFERÊNCIA =====
         function formatarDataBrasil(data) {
             if (!data) return '-';
-            
             let dataObj;
             if (typeof data === 'string') {
                 if (data.includes('-')) {
@@ -950,26 +906,20 @@
             } else {
                 dataObj = new Date(data);
             }
-            
             if (isNaN(dataObj.getTime())) return '-';
-            
             const dia = String(dataObj.getDate()).padStart(2, '0');
             const mes = String(dataObj.getMonth() + 1).padStart(2, '0');
             const ano = dataObj.getFullYear();
-            
             return `${dia}/${mes}/${ano}`;
         }
 
-        // ===== FUNÇÃO PARA OBTER DATA/HORA ATUAL EM BRASÍLIA =====
         function getDataHoraAtualBrasilia() {
             const agora = new Date();
             const offsetBrasilia = -3;
             const utc = agora.getTime() + (agora.getTimezoneOffset() * 60000);
-            const dataBrasilia = new Date(utc + (offsetBrasilia * 3600000));
-            return dataBrasilia;
+            return new Date(utc + (offsetBrasilia * 3600000));
         }
 
-        // ===== FUNÇÃO PARA OBTER DATA PADRÃO DO FORMULÁRIO =====
         function getDataPadraoFormulario() {
             const dataBrasilia = getDataHoraAtualBrasilia();
             const ano = dataBrasilia.getFullYear();
@@ -978,7 +928,6 @@
             return `${ano}-${mes}-${dia}`;
         }
 
-        // Carregar anos dinamicamente
         function carregarAnosDinamicamente() {
             const filtroAno = document.getElementById('filtroAno');
             const dataReferencia = document.getElementById('dataReferencia');
@@ -989,14 +938,10 @@
             
             if (filtroAno) {
                 filtroAno.innerHTML = '<option value="">Todos os anos</option>';
-            }
-            
-            for (let ano = anoInicio; ano <= anoFim; ano++) {
-                if (filtroAno) {
+                for (let ano = anoInicio; ano <= anoFim; ano++) {
                     filtroAno.innerHTML += `<option value="${ano}">${ano}</option>`;
                 }
             }
-            
             if (dataReferencia) {
                 dataReferencia.value = getDataPadraoFormulario();
             }
@@ -1014,7 +959,6 @@
             const contador = document.getElementById('contadorTotal');
             const total = documentos.length;
             contador.textContent = `${total} ${total === 1 ? 'documento' : 'documentos'}`;
-            
             const semDocsDiv = document.getElementById('semDocumentos');
             if (total === 0) {
                 semDocsDiv.style.display = 'block';
@@ -1058,8 +1002,6 @@
             const grupos = {};
             
             documentos.forEach(doc => {
-                // CONVERTE O MÊS PARA NOME (CORREÇÃO PRINCIPAL)
-                // Aceita tanto "5" quanto "05"
                 const mesNome = getNomeMes(doc.mes);
                 const chave = `${mesNome}/${doc.ano}`;
                 
@@ -1073,7 +1015,6 @@
                     };
                 }
                 
-                // Formatar data de upload - APENAS DATA
                 const dataUploadFormatada = doc.data_upload ? formatarDataBrasilia(doc.data_upload) : '-';
                 doc.data_formatada = dataUploadFormatada;
                 
@@ -1116,7 +1057,6 @@
                         <div class="grupo-conteudo">
                 `;
                 
-                // Atestados
                 if (atestadosOrdenados.length > 0) {
                     html += `
                         <div style="margin-bottom: 30px;">
@@ -1124,13 +1064,12 @@
                                 🏥 Atestados (${atestadosOrdenados.length})
                             </div>
                             <table class="tabela-documentos-grupo">
-                                <thead><tr><th>Nome</th><th>Unidade</th><th>Data Ref.</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></thead>
+                                <thead><tr><th>Nome</th><th>Unidade</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></tr></thead>
                                 <tbody>
                                     ${atestadosOrdenados.map(doc => `
                                         <tr>
                                             <td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td>
                                             <td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td>
-                                            <td>${doc.data_referencia ? formatarDataBrasil(doc.data_referencia) : '-'}</td>
                                             <td><span class="badge-tipo badge-atestado">Atestado</span></td>
                                             <td>${doc.data_formatada || '-'}</td>
                                             <td>
@@ -1147,7 +1086,6 @@
                     `;
                 }
                 
-                // Declarações
                 if (declaracoesOrdenadas.length > 0) {
                     html += `
                         <div style="margin-bottom: 30px;">
@@ -1155,13 +1093,12 @@
                                 📝 Declarações (${declaracoesOrdenadas.length})
                             </div>
                             <table class="tabela-documentos-grupo">
-                                <thead><tr><th>Nome</th><th>Unidade</th><th>Data Ref.</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></tr></thead>
+                                <thead><tr><th>Nome</th><th>Unidade</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></tr></thead>
                                 <tbody>
                                     ${declaracoesOrdenadas.map(doc => `
                                         <tr>
                                             <td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td>
                                             <td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td>
-                                            <td>${doc.data_referencia ? formatarDataBrasil(doc.data_referencia) : '-'}</td>
                                             <td><span class="badge-tipo badge-declaracao">Declaração</span></td>
                                             <td>${doc.data_formatada || '-'}</td>
                                             <td>
@@ -1178,7 +1115,6 @@
                     `;
                 }
                 
-                // Justificativas
                 if (justificativasOrdenadas.length > 0) {
                     html += `
                         <div>
@@ -1186,13 +1122,12 @@
                                 📋 Justificativas (${justificativasOrdenadas.length})
                             </div>
                             <table class="tabela-documentos-grupo">
-                                <thead><tr><th>Nome</th><th>Unidade</th><th>Data Ref.</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></tr></thead>
+                                <thead><tr><th>Nome</th><th>Unidade</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></tr></thead>
                                 <tbody>
                                     ${justificativasOrdenadas.map(doc => `
                                         <tr>
                                             <td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td>
                                             <td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td>
-                                            <td>${doc.data_referencia ? formatarDataBrasil(doc.data_referencia) : '-'}</td>
                                             <td><span class="badge-tipo badge-justificativa">Justificativa</span></td>
                                             <td>${doc.data_formatada || '-'}</td>
                                             <td>
@@ -1276,18 +1211,15 @@
             if (doc) {
                 editando = true;
                 editandoId = id;
-                
                 document.getElementById('modalTitle').textContent = 'Editar Documento';
                 document.getElementById('btnSubmit').textContent = 'Atualizar';
                 document.getElementById('arquivoRequired').textContent = '(opcional)';
                 document.getElementById('arquivoUpload').required = false;
-                
                 document.getElementById('editId').value = id;
                 document.getElementById('unidadeSelect').value = doc.unidade || '';
                 document.querySelector(`input[name="tipo"][value="${doc.tipo}"]`).checked = true;
                 document.getElementById('nomePessoa').value = doc.nome_pessoa || '';
                 document.getElementById('dataReferencia').value = doc.data_referencia || '';
-                
                 abrirModalUpload();
             }
         }
@@ -1310,7 +1242,6 @@
             document.getElementById('arquivoUpload').required = true;
             document.getElementById('formUpload').reset();
             document.getElementById('editId').value = '';
-            
             document.getElementById('dataReferencia').value = getDataPadraoFormulario();
         }
 
@@ -1324,33 +1255,17 @@
             const arquivo = document.getElementById('arquivoUpload').files[0];
             const editId = document.getElementById('editId').value;
 
-            if (!tipo) {
-                mostrarNotificacao('Selecione o tipo de documento', 'warning');
-                return;
-            }
-            if (!unidade) {
-                mostrarNotificacao('Selecione a unidade', 'warning');
-                return;
-            }
-            if (!nomePessoa) {
-                mostrarNotificacao('Nome é obrigatório', 'warning');
-                return;
-            }
-            if (!dataReferencia) {
-                mostrarNotificacao('Data de referência é obrigatória', 'warning');
-                return;
-            }
-            if (!editando && !arquivo) {
-                mostrarNotificacao('Selecione um arquivo', 'warning');
-                return;
-            }
+            if (!tipo) { mostrarNotificacao('Selecione o tipo de documento', 'warning'); return; }
+            if (!unidade) { mostrarNotificacao('Selecione a unidade', 'warning'); return; }
+            if (!nomePessoa) { mostrarNotificacao('Nome é obrigatório', 'warning'); return; }
+            if (!dataReferencia) { mostrarNotificacao('Data de referência é obrigatória', 'warning'); return; }
+            if (!editando && !arquivo) { mostrarNotificacao('Selecione um arquivo', 'warning'); return; }
 
             const formData = new FormData();
             formData.append('tipo', tipo.value);
             formData.append('unidade', unidade);
             formData.append('nome_pessoa', nomePessoa);
             formData.append('data_referencia', dataReferencia);
-            
             if (arquivo) formData.append('arquivo', arquivo);
             if (editando) formData.append('documento_id', editId);
 
@@ -1363,7 +1278,6 @@
             try {
                 const response = await fetch(url, { method: 'POST', body: formData });
                 const data = await response.json();
-
                 if (data.sucesso) {
                     mostrarNotificacao(editando ? 'Documento atualizado com sucesso!' : 'Documento enviado com sucesso!', 'success');
                     fecharModalUpload();
