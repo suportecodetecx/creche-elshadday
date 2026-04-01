@@ -1056,7 +1056,7 @@
             <!-- NOVO CARD: Gestão de Documentos -->
             <a href="/documentos/gestao" class="card-admin">
                 <h3>📄 Gestão de Documentos</h3>
-                <p>Upload e gerenciamento de prestações de contas e atestados.</p>
+                <p>Upload e gerenciamento.</p>
                 <span class="card-badge">Documentos administrativos</span>
             </a>
         </div>
@@ -1171,7 +1171,7 @@
     <script>
         let alunosData = [];
         let usuarioLogado = null;
-        let tipoAcesso = 'pedagogico'; // 'pedagogico' ou 'admin'
+        let tipoAcesso = 'pedagogico';
 
         // Verificar se já tem usuário logado (sessionStorage)
         function verificarSessao() {
@@ -1186,70 +1186,62 @@
             }
         }
 
-       // Mostrar sistema após login
-function mostrarSistemaLogado() {
-    document.getElementById('cardsAcesso').style.display = 'none';
-    
-    // LOG PARA DEBUG
-    console.log('===== USUÁRIO LOGADO =====');
-    console.log('usuario:', usuarioLogado.usuario);
-    console.log('perfil:', usuarioLogado.perfil);
-    console.log('nome:', usuarioLogado.nome);
-    console.log('unidade:', usuarioLogado.unidade);
-    console.log('==========================');
-    
-    // Verificar se é MASTER (perfil 'master' ou usuário 'master')
-    const isMaster = usuarioLogado.perfil === 'master' || usuarioLogado.usuario === 'master';
-    
-    // Verificar se é ADMIN (perfil admin, mas NÃO master)
-    const isAdmin = usuarioLogado.perfil === 'admin' && !isMaster;
-    
-    console.log('isMaster:', isMaster);
-    console.log('isAdmin:', isAdmin);
-    
-    if (isMaster) {
-        // MASTER: vê todos os 5 cards (3 pedagógicos + 3 administrativos)
-        console.log('✅ MODO MASTER ATIVADO - 6 cards');
-        document.getElementById('cardsPedagogico').classList.add('active');
-        document.getElementById('cardsAdmin').classList.add('active');
-    } else if (isAdmin) {
-        // ADMIN comum: vê apenas os 3 cards administrativos
-        console.log('✅ MODO ADMIN - 3 cards');
-        document.getElementById('cardsPedagogico').classList.remove('active');
-        document.getElementById('cardsAdmin').classList.add('active');
-    } else {
-        // PEDAGÓGICO: vê apenas os 3 cards pedagógicos
-        console.log('✅ MODO PEDAGÓGICO - 3 cards');
-        document.getElementById('cardsPedagogico').classList.add('active');
-        document.getElementById('cardsAdmin').classList.remove('active');
-    }
-    
-    const userInfo = document.getElementById('userInfo');
-    userInfo.classList.add('active');
-    document.getElementById('userName').textContent = usuarioLogado.nome || usuarioLogado.usuario || 'Usuário';
-    document.getElementById('userAvatar').textContent = usuarioLogado.nome ? usuarioLogado.nome.charAt(0).toUpperCase() : '👤';
-    
-    const userRoleSpan = document.getElementById('userRole');
-    if (isMaster) {
-        userRoleSpan.textContent = '👑 Administrador Master';
-    } else if (isAdmin) {
-        userRoleSpan.textContent = '👨‍💼 Administrador';
-    } else if (usuarioLogado.unidade) {
-        if (usuarioLogado.unidade === 'CEIC El Shadday') {
-            userRoleSpan.innerHTML = '🏫 CEIC El Shadday';
-        } else if (usuarioLogado.unidade === 'CEIM Prof. Egberto Malta Moreira') {
-            userRoleSpan.innerHTML = '🏫 CEIM Prof. Egberto Malta Moreira';
-        } else {
-            userRoleSpan.textContent = usuarioLogado.unidade;
+        // Mostrar sistema após login
+        function mostrarSistemaLogado() {
+            document.getElementById('cardsAcesso').style.display = 'none';
+            
+            console.log('===== USUÁRIO LOGADO =====');
+            console.log('usuario:', usuarioLogado.usuario);
+            console.log('perfil:', usuarioLogado.perfil);
+            console.log('nome:', usuarioLogado.nome);
+            console.log('unidade:', usuarioLogado.unidade);
+            console.log('==========================');
+            
+            const isMaster = usuarioLogado.perfil === 'master' || usuarioLogado.usuario === 'master';
+            const isAdmin = usuarioLogado.perfil === 'admin' && !isMaster;
+            
+            console.log('isMaster:', isMaster);
+            console.log('isAdmin:', isAdmin);
+            
+            if (isMaster) {
+                console.log('✅ MODO MASTER ATIVADO - 6 cards');
+                document.getElementById('cardsPedagogico').classList.add('active');
+                document.getElementById('cardsAdmin').classList.add('active');
+            } else if (isAdmin) {
+                console.log('✅ MODO ADMIN - 3 cards');
+                document.getElementById('cardsPedagogico').classList.remove('active');
+                document.getElementById('cardsAdmin').classList.add('active');
+            } else {
+                console.log('✅ MODO PEDAGÓGICO - 3 cards');
+                document.getElementById('cardsPedagogico').classList.add('active');
+                document.getElementById('cardsAdmin').classList.remove('active');
+            }
+            
+            const userInfo = document.getElementById('userInfo');
+            userInfo.classList.add('active');
+            document.getElementById('userName').textContent = usuarioLogado.nome || usuarioLogado.usuario || 'Usuário';
+            document.getElementById('userAvatar').textContent = usuarioLogado.nome ? usuarioLogado.nome.charAt(0).toUpperCase() : '👤';
+            
+            const userRoleSpan = document.getElementById('userRole');
+            if (isMaster) {
+                userRoleSpan.textContent = '👑 Administrador Master';
+            } else if (isAdmin) {
+                userRoleSpan.textContent = '👨‍💼 Administrador';
+            } else if (usuarioLogado.unidade) {
+                if (usuarioLogado.unidade === 'CEIC El Shadday') {
+                    userRoleSpan.innerHTML = '🏫 CEIC El Shadday';
+                } else if (usuarioLogado.unidade === 'CEIM Prof. Egberto Malta Moreira') {
+                    userRoleSpan.innerHTML = '🏫 CEIM Prof. Egberto Malta Moreira';
+                } else {
+                    userRoleSpan.textContent = usuarioLogado.unidade;
+                }
+            } else {
+                userRoleSpan.textContent = '👩‍🏫 Pedagógico';
+            }
+            
+            carregarAlunos();
         }
-    } else {
-        userRoleSpan.textContent = '👩‍🏫 Pedagógico';
-    }
-    
-    carregarAlunos();
-}
 
-        // Função para mostrar/esconder senha no modal
         function togglePasswordModal() {
             const passwordInput = document.getElementById('loginSenha');
             const toggleBtn = document.querySelector('.toggle-password');
@@ -1263,7 +1255,6 @@ function mostrarSistemaLogado() {
             }
         }
 
-        // Abrir modal de login para Pedagógico
         function abrirLoginPedagogico() {
             tipoAcesso = 'pedagogico';
             document.getElementById('modalLoginTitle').innerHTML = '🔐 Acesso Pedagógico';
@@ -1274,7 +1265,6 @@ function mostrarSistemaLogado() {
             document.getElementById('loginError').classList.remove('show');
         }
 
-        // Abrir modal de login para Administrativo
         function abrirLoginAdmin() {
             tipoAcesso = 'admin';
             document.getElementById('modalLoginTitle').innerHTML = '👨‍💼 Acesso Administrativo';
@@ -1307,7 +1297,6 @@ function mostrarSistemaLogado() {
             .then(response => response.json())
             .then(data => {
                 if (data.sucesso) {
-                    // Verificar se o acesso é compatível
                     if (tipoAcesso === 'admin' && data.usuario.perfil !== 'admin') {
                         mostrarErroLogin('Acesso negado! Esta área é restrita para administradores.');
                         return;
@@ -1347,7 +1336,7 @@ function mostrarSistemaLogado() {
             alert(`🔒 O módulo "${modulo}" está em desenvolvimento e será disponibilizado em breve!`);
         }
 
-        // Funções de Termos
+        // ===== FUNÇÕES DE TERMOS - CORRIGIDAS =====
         function toggleTermosSection() {
             const section = document.getElementById('termosSection');
             if (section.style.display === 'none') {
@@ -1358,29 +1347,54 @@ function mostrarSistemaLogado() {
             }
         }
 
+        // FUNÇÃO CORRIGIDA - USA A MESMA LÓGICA DA PÁGINA DE BUSCA
         function getFotoUrl(aluno, tipo) {
-            if (!aluno || !aluno.arquivos || aluno.arquivos.length === 0) {
-                return null;
+            if (!aluno) return null;
+            
+            // NOVA ESTRUTURA: arquivos_ids (GridFS)
+            const arquivosIds = aluno.arquivos_ids || {};
+            
+            const campoMap = {
+                'aluno': 'foto_aluno',
+                'responsavel1': 'foto_responsavel1',
+                'responsavel2': 'foto_responsavel2',
+                'responsavel3': 'foto_responsavel3',
+                'terceiro1': 'foto_terceiro1',
+                'terceiro2': 'foto_terceiro2',
+                'transporte': 'foto_transporte'
+            };
+            
+            const campoFoto = campoMap[tipo] || (tipo === 'aluno' ? 'foto_aluno' : null);
+            
+            if (campoFoto && arquivosIds[campoFoto]) {
+                const fileId = arquivosIds[campoFoto];
+                return `/api/alunos/arquivo/${fileId}`;
             }
-            const arquivoFoto = aluno.arquivos.find(a => a.campo === 'foto_aluno');
-            if (arquivoFoto) {
-                if (arquivoFoto.data_url && arquivoFoto.data_url.startsWith('data:')) {
-                    return arquivoFoto.data_url;
-                }
-                if (arquivoFoto.caminho) {
-                    return arquivoFoto.caminho;
-                }
-                if (arquivoFoto.url) {
-                    return arquivoFoto.url;
+            
+            // FALLBACK: estrutura antiga
+            if (aluno.arquivos && aluno.arquivos.length > 0) {
+                const arquivoFoto = aluno.arquivos.find(a => a.campo === campoFoto);
+                if (arquivoFoto) {
+                    if (arquivoFoto.data_url && arquivoFoto.data_url.startsWith('data:')) {
+                        return arquivoFoto.data_url;
+                    }
+                    if (arquivoFoto.caminho) return arquivoFoto.caminho;
+                    if (arquivoFoto.url) return arquivoFoto.url;
                 }
             }
+            
             return null;
         }
 
         function handleImageError(img) {
             img.style.display = 'none';
-            const placeholder = img.nextElementSibling;
-            if (placeholder) placeholder.style.display = 'flex';
+            let placeholder = img.nextElementSibling;
+            if (!placeholder || !placeholder.classList || !placeholder.classList.contains('foto-aluno-placeholder')) {
+                placeholder = img.parentElement.querySelector('.foto-aluno-placeholder');
+            }
+            if (placeholder) {
+                placeholder.style.display = 'flex';
+            }
         }
 
         function carregarAlunos() {
@@ -1507,7 +1521,7 @@ function mostrarSistemaLogado() {
                 <div class="termo-card">
                     <div class="termo-card-header">
                         ${fotoUrl ? `<img src="${fotoUrl}" class="foto-aluno" onerror="handleImageError(this)">` : ''}
-                        <div class="foto-aluno-placeholder" style="${fotoUrl ? 'display: none;' : 'display: flex;'}">${nome.charAt(0)}</div>
+                        <div class="foto-aluno-placeholder" style="${fotoUrl ? 'display: none;' : 'display: flex;'}">${nome.charAt(0).toUpperCase()}</div>
                         <div class="termo-info">
                             <h3>${nome}</h3>
                             <div class="termo-meta"><span>📌 Matrícula ${numInscricao}</span><span>🏫 ${turma}</span><span>📍 ${unidade}</span></div>
