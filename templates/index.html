@@ -157,12 +157,28 @@
             justify-content: center;
             margin: 0 auto 20px;
             font-size: 2.5rem;
-            transition: all 0.3s ease;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease, box-shadow 0.3s ease;
             box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3);
         }
 
+        /* EFEITO DE ÍCONE PULANDO - ESTILO SED */
         .card-acesso:hover .card-icon {
-            transform: scale(1.05);
+            transform: translateY(-18px) scale(1.02);
+            box-shadow: 0 15px 30px -8px rgba(0,0,0,0.5);
+        }
+
+        /* Efeito específico para cada card no hover do ícone */
+        .card-acesso.pedagogico:hover .card-icon {
+            background: linear-gradient(135deg, #F40612, #E50914);
+        }
+        .card-acesso.administracao:hover .card-icon {
+            background: linear-gradient(135deg, #B87DE0, #A06CD5);
+        }
+        .card-acesso.professores:hover .card-icon {
+            background: linear-gradient(135deg, #5FDFD7, #4ECDC4);
+        }
+        .card-acesso.colaboradores:hover .card-icon {
+            background: linear-gradient(135deg, #FFDE85, #FFD166);
         }
 
         .card-acesso h3 {
@@ -902,6 +918,11 @@
             font-weight: 600;
             cursor: pointer;
             border: none;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        
+        .termo-link:hover {
+            transform: translateY(-5px);
         }
         
         .termo-link.matricula { background: #E50914; color: white; }
