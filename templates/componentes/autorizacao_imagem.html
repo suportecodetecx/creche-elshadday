@@ -609,8 +609,7 @@
                     <div class="assinatura-cargo">RESPONSÁVEL LEGAL</div>
                     <div class="linha-assinatura"></div>
                     <div class="assinatura-nome">{{ aluno.responsaveis[0].nome if aluno.responsaveis else '__________________________' }}</div>
-                    <div class="assinatura-funcao">{{ aluno.responsaveis[0].parentesco if aluno.responsaveis else 'Responsável pelo aluno' }}</div>
-                    
+                    <div class="assinatura-funcao">{{ aluno.responsaveis[0].parentesco.capitalize() if aluno.responsaveis and aluno.responsaveis[0].parentesco else 'Responsável pelo aluno' }}</div>
                     <div class="dados-assinante">
                         <div class="linha-dado">
                             <span>CPF:</span>
