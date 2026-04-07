@@ -438,6 +438,15 @@
             font-family: inherit;
         }
 
+        .form-group input[type="date"] {
+            color-scheme: dark;
+        }
+
+        .form-group input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
         .form-group select {
             background-color: var(--netflix-gray);
             color: var(--white);
@@ -816,6 +825,7 @@
                     <div class="form-group">
                         <label>Data de Referência <span class="required">*</span></label>
                         <input type="date" id="dataReferencia" required>
+                        <small style="color: var(--netflix-light); display: block; margin-top: 5px;">Selecione qualquer data (não precisa ser hoje)</small>
                     </div>
                 </div>
 
@@ -890,29 +900,6 @@
             return `${dia}/${mes}/${ano}`;
         }
 
-        function formatarDataBrasil(data) {
-            if (!data) return '-';
-            let dataObj;
-            if (typeof data === 'string') {
-                if (data.includes('-')) {
-                    const partes = data.split('-');
-                    dataObj = new Date(partes[0], partes[1] - 1, partes[2]);
-                } else if (data.includes('/')) {
-                    const partes = data.split('/');
-                    dataObj = new Date(partes[2], partes[1] - 1, partes[0]);
-                } else {
-                    dataObj = new Date(data);
-                }
-            } else {
-                dataObj = new Date(data);
-            }
-            if (isNaN(dataObj.getTime())) return '-';
-            const dia = String(dataObj.getDate()).padStart(2, '0');
-            const mes = String(dataObj.getMonth() + 1).padStart(2, '0');
-            const ano = dataObj.getFullYear();
-            return `${dia}/${mes}/${ano}`;
-        }
-
         function getDataHoraAtualBrasilia() {
             const agora = new Date();
             const offsetBrasilia = -3;
@@ -933,7 +920,7 @@
             const dataReferencia = document.getElementById('dataReferencia');
             const dataBrasilia = getDataHoraAtualBrasilia();
             const anoAtual = dataBrasilia.getFullYear();
-            const anoInicio = 2026;
+            const anoInicio = 2020;
             const anoFim = anoAtual + 5;
             
             if (filtroAno) {
@@ -944,6 +931,8 @@
             }
             if (dataReferencia) {
                 dataReferencia.value = getDataPadraoFormulario();
+                dataReferencia.removeAttribute('max');
+                dataReferencia.removeAttribute('min');
             }
         }
 
@@ -998,6 +987,7 @@
                 });
         }
 
+        // FUNÇÃO CORRIGIDA - Agora exibe Data de Referência em vez de Data Upload
         function agruparEExibirDocumentos() {
             const grupos = {};
             
@@ -1014,9 +1004,6 @@
                         justificativas: []
                     };
                 }
-                
-                const dataUploadFormatada = doc.data_upload ? formatarDataBrasilia(doc.data_upload) : '-';
-                doc.data_formatada = dataUploadFormatada;
                 
                 if (doc.tipo === 'atestado') {
                     grupos[chave].atestados.push(doc);
@@ -1064,14 +1051,16 @@
                                 🏥 Atestados (${atestadosOrdenados.length})
                             </div>
                             <table class="tabela-documentos-grupo">
-                                <thead><tr><th>Nome</th><th>Unidade</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></tr></thead>
+                                <thead>
+                                    <tr><th>Nome</th><th>Unidade</th><th>Tipo</th><th>Data de Referência</th><th>Ações</th></tr>
+                                </thead>
                                 <tbody>
                                     ${atestadosOrdenados.map(doc => `
                                         <tr>
                                             <td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td>
                                             <td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td>
                                             <td><span class="badge-tipo badge-atestado">Atestado</span></td>
-                                            <td>${doc.data_formatada || '-'}</td>
+                                            <td>${doc.data_referencia_formatada || doc.data_referencia || '-'}</td>
                                             <td>
                                                 <button class="btn-acao btn-visualizar" onclick="visualizarDocumento('${doc._id}')">👁️</button>
                                                 <button class="btn-acao btn-download" onclick="baixarDocumento('${doc._id}')">⬇️</button>
@@ -1093,14 +1082,16 @@
                                 📝 Declarações (${declaracoesOrdenadas.length})
                             </div>
                             <table class="tabela-documentos-grupo">
-                                <thead><tr><th>Nome</th><th>Unidade</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></tr></thead>
+                                <thead>
+                                    <tr><th>Nome</th><th>Unidade</th><th>Tipo</th><th>Data de Referência</th><th>Ações</th></tr>
+                                </thead>
                                 <tbody>
                                     ${declaracoesOrdenadas.map(doc => `
                                         <tr>
                                             <td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td>
                                             <td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td>
                                             <td><span class="badge-tipo badge-declaracao">Declaração</span></td>
-                                            <td>${doc.data_formatada || '-'}</td>
+                                            <td>${doc.data_referencia_formatada || doc.data_referencia || '-'}</td>
                                             <td>
                                                 <button class="btn-acao btn-visualizar" onclick="visualizarDocumento('${doc._id}')">👁️</button>
                                                 <button class="btn-acao btn-download" onclick="baixarDocumento('${doc._id}')">⬇️</button>
@@ -1122,14 +1113,16 @@
                                 📋 Justificativas (${justificativasOrdenadas.length})
                             </div>
                             <table class="tabela-documentos-grupo">
-                                <thead><tr><th>Nome</th><th>Unidade</th><th>Tipo</th><th>Data Upload</th><th>Ações</th></tr></thead>
+                                <thead>
+                                    <tr><th>Nome</th><th>Unidade</th><th>Tipo</th><th>Data de Referência</th><th>Ações</th></tr>
+                                </thead>
                                 <tbody>
                                     ${justificativasOrdenadas.map(doc => `
                                         <tr>
                                             <td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td>
                                             <td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td>
                                             <td><span class="badge-tipo badge-justificativa">Justificativa</span></td>
-                                            <td>${doc.data_formatada || '-'}</td>
+                                            <td>${doc.data_referencia_formatada || doc.data_referencia || '-'}</td>
                                             <td>
                                                 <button class="btn-acao btn-visualizar" onclick="visualizarDocumento('${doc._id}')">👁️</button>
                                                 <button class="btn-acao btn-download" onclick="baixarDocumento('${doc._id}')">⬇️</button>
@@ -1219,7 +1212,9 @@
                 document.getElementById('unidadeSelect').value = doc.unidade || '';
                 document.querySelector(`input[name="tipo"][value="${doc.tipo}"]`).checked = true;
                 document.getElementById('nomePessoa').value = doc.nome_pessoa || '';
-                document.getElementById('dataReferencia').value = doc.data_referencia || '';
+                if (doc.data_referencia) {
+                    document.getElementById('dataReferencia').value = doc.data_referencia;
+                }
                 abrirModalUpload();
             }
         }
@@ -1243,6 +1238,8 @@
             document.getElementById('formUpload').reset();
             document.getElementById('editId').value = '';
             document.getElementById('dataReferencia').value = getDataPadraoFormulario();
+            document.getElementById('dataReferencia').removeAttribute('max');
+            document.getElementById('dataReferencia').removeAttribute('min');
         }
 
         document.getElementById('formUpload').addEventListener('submit', async (e) => {
@@ -1260,6 +1257,12 @@
             if (!nomePessoa) { mostrarNotificacao('Nome é obrigatório', 'warning'); return; }
             if (!dataReferencia) { mostrarNotificacao('Data de referência é obrigatória', 'warning'); return; }
             if (!editando && !arquivo) { mostrarNotificacao('Selecione um arquivo', 'warning'); return; }
+
+            const dataObj = new Date(dataReferencia);
+            if (isNaN(dataObj.getTime())) {
+                mostrarNotificacao('Data de referência inválida', 'warning');
+                return;
+            }
 
             const formData = new FormData();
             formData.append('tipo', tipo.value);

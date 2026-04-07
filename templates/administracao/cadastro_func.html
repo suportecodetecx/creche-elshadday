@@ -157,6 +157,7 @@
             align-items: center;
             gap: 12px;
             margin-bottom: 24px;
+            flex-wrap: wrap;
         }
 
         .header-icon {
@@ -190,7 +191,7 @@
             color: white;
         }
 
-        /* Contador de funcionários - MESMO ESTILO DO BOTÃO SALVAR */
+        /* Contador de funcionários */
         .contador-funcionarios {
             display: inline-flex;
             align-items: center;
@@ -202,6 +203,30 @@
             color: white;
             box-shadow: 0 2px 8px rgba(229, 9, 20, 0.2);
             transition: all 0.2s ease;
+        }
+
+        /* Botão PDF - Mesmo estilo dos botões principais */
+        .btn-pdf {
+            background: var(--netflix-red);
+            color: white;
+            border: none;
+            margin-left: auto;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 8px rgba(229, 9, 20, 0.2);
+        }
+
+        .btn-pdf:hover {
+            background: var(--netflix-red-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(229, 9, 20, 0.3);
         }
 
         /* Filtros */
@@ -548,6 +573,12 @@
                 text-align: center;
                 padding: 8px 12px;
             }
+            
+            .btn-pdf {
+                margin-left: 0;
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -625,6 +656,9 @@
                 <div class="card-header">
                     <div class="header-icon">🔍</div>
                     <h2>Filtrar Funcionários</h2>
+                    <button class="btn-pdf" onclick="gerarPDFUnidade()">
+                        📄 Gerar PDF da Unidade Selecionada
+                    </button>
                 </div>
                 <div class="filtros-container">
                     <input type="text" id="filtroNome" class="filtro-input" placeholder="Filtrar por nome..." onkeyup="filtrarFuncionarios()">
@@ -648,7 +682,7 @@
                 <div class="tabela-container">
                     <table class="tabela-funcionarios" id="tabelaFuncionarios">
                         <thead>
-                            32
+                            <tr>
                                 <th>Nome</th>
                                 <th>RGM</th>
                                 <th>Telefone</th>
@@ -701,6 +735,32 @@
             "Serviços Gerais"
         ];
 
+        // Configurações das unidades
+        const UNIDADES_CONFIG = {
+            "CEIC El Shadday": {
+                "nome": "CEIC El Shadday",
+                "endereco": "Rua Francisco Vilani Bicudo, 470",
+                "bairro": "Vila Nova Aparecida",
+                "cidade": "Mogi das Cruzes",
+                "uf": "SP",
+                "cep": "08830-340",
+                "cnpj": "03.067.526/0001-87",
+                "telefone": "(11) 4739-3549",
+                "INEP": "35195340"
+            },
+            "CEIM Prof. Egberto Malta Moreira": {
+                "nome": "CEIM Prof. Egberto Malta Moreira",
+                "endereco": "Rua Ten. Agenor Bertini, 202",
+                "bairro": "Vila Rei",
+                "cidade": "Mogi das Cruzes",
+                "uf": "SP",
+                "cep": "08717-875",
+                "cnpj": "03.067.526/0002-68",
+                "telefone": "(11) 4726-6241",
+                "INEP": "35006743"
+            }
+        };
+
         // Carregar funcionários ao iniciar
         document.addEventListener('DOMContentLoaded', function() {
             carregarFuncoes();
@@ -715,8 +775,6 @@
             FUNCOES.forEach(funcao => {
                 selectFuncao.innerHTML += `<option value="${funcao}">${funcao}</option>`;
             });
-            
-            console.log(`✅ ${FUNCOES.length} funções carregadas em ordem alfabética`);
         }
 
         function carregarFuncoesFiltro() {
@@ -726,8 +784,6 @@
             FUNCOES.forEach(funcao => {
                 selectFiltroFuncao.innerHTML += `<option value="${funcao}">${funcao}</option>`;
             });
-            
-            console.log(`✅ ${FUNCOES.length} funções carregadas no filtro em ordem alfabética`);
         }
 
         function carregarFuncionarios() {
@@ -786,7 +842,7 @@
                     <tr>
                         <td>${escapeHtml(func.nome)}</td>
                         <td>${escapeHtml(func.rgm)}</td>
-                        <td>${escapeHtml(func.telefone || 'Não informado')}</td>
+                        <td>${escapeHtml(func.telefone && func.telefone.trim() !== '' ? func.telefone : '—')}</td>
                         <td>${escapeHtml(func.unidade)}</td>
                         <td>${escapeHtml(func.funcao)}</td>
                         <td class="acoes-container">
@@ -796,8 +852,297 @@
                     </tr>
                 `).join('');
             } else {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum funcionário encontrado</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum funcionário encontrado</td>'};
+        }
+
+        // Função para gerar PDF da unidade selecionada
+        function gerarPDFUnidade() {
+            const unidadeSelecionada = document.getElementById('filtroUnidade').value;
+            
+            if (!unidadeSelecionada) {
+                mostrarNotificacao('❌ Selecione uma unidade no filtro antes de gerar o PDF!', 'warning');
+                return;
             }
+
+            // Filtrar funcionários da unidade selecionada
+            const funcionariosUnidade = funcionarios.filter(func => func.unidade === unidadeSelecionada);
+            
+            if (funcionariosUnidade.length === 0) {
+                mostrarNotificacao(`⚠️ Nenhum funcionário encontrado na unidade ${unidadeSelecionada}`, 'warning');
+                return;
+            }
+
+            mostrarNotificacao(`📄 Gerando PDF da unidade ${unidadeSelecionada}...`, 'success');
+
+            const unidadeInfo = UNIDADES_CONFIG[unidadeSelecionada];
+            const dataAtual = new Date().toLocaleDateString('pt-BR');
+            const horaAtual = new Date().toLocaleTimeString('pt-BR');
+
+            // Criar uma nova janela com o conteúdo formatado
+            const printWindow = window.open('', '_blank');
+            
+            // Escrever o HTML completo com estilos embutidos
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Lista de Funcionários - ${unidadeSelecionada}</title>
+                    <style>
+                        * {
+                            margin: 0;
+                            padding: 0;
+                            box-sizing: border-box;
+                        }
+                        
+                        body {
+                            font-family: 'Inter', Arial, Helvetica, sans-serif;
+                            margin: 0;
+                            padding: 30px;
+                            background: white;
+                            color: #333;
+                        }
+                        
+                        .pdf-container {
+                            max-width: 1200px;
+                            margin: 0 auto;
+                            background: white;
+                        }
+                        
+                        .header {
+                            text-align: center;
+                            margin-bottom: 30px;
+                            padding-bottom: 20px;
+                            border-bottom: 3px solid #E50914;
+                        }
+                        
+                        .header h1 {
+                            color: #E50914;
+                            margin: 0 0 5px 0;
+                            font-size: 28px;
+                            font-weight: 700;
+                        }
+                        
+                        .header h2 {
+                            color: #333;
+                            margin: 0 0 10px 0;
+                            font-size: 18px;
+                            font-weight: 500;
+                        }
+                        
+                        .header .data-hora {
+                            color: #666;
+                            font-size: 11px;
+                            margin-top: 5px;
+                        }
+                        
+                        .unidade-info {
+                            background: #f8f9fa;
+                            padding: 20px;
+                            border-radius: 8px;
+                            margin-bottom: 25px;
+                            border-left: 4px solid #E50914;
+                        }
+                        
+                        .unidade-info h3 {
+                            color: #E50914;
+                            margin: 0 0 15px 0;
+                            font-size: 16px;
+                            font-weight: 600;
+                        }
+                        
+                        .info-grid {
+                            display: grid;
+                            grid-template-columns: repeat(2, 1fr);
+                            gap: 10px;
+                        }
+                        
+                        .info-item {
+                            font-size: 12px;
+                            line-height: 1.5;
+                        }
+                        
+                        .info-item strong {
+                            color: #333;
+                            font-weight: 600;
+                        }
+                        
+                        .titulo-tabela {
+                            margin: 25px 0 15px 0;
+                            font-size: 16px;
+                            font-weight: 600;
+                            color: #E50914;
+                        }
+                        
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 10px;
+                            font-size: 11px;
+                        }
+                        
+                        th {
+                            background: #E50914;
+                            color: white;
+                            padding: 12px 8px;
+                            text-align: left;
+                            font-weight: 600;
+                            border: 1px solid #c40812;
+                        }
+                        
+                        td {
+                            padding: 10px 8px;
+                            border: 1px solid #ddd;
+                            vertical-align: top;
+                        }
+                        
+                        .telefone-vazio {
+                            color: #999;
+                            font-style: italic;
+                            letter-spacing: 1px;
+                            font-family: monospace;
+                            font-size: 12px;
+                        }
+                        
+                        .footer {
+                            margin-top: 30px;
+                            text-align: center;
+                            font-size: 10px;
+                            color: #999;
+                            border-top: 1px solid #ddd;
+                            padding-top: 20px;
+                        }
+                        
+                        .total-funcionarios {
+                            background: #E50914;
+                            color: white;
+                            padding: 8px 20px;
+                            border-radius: 20px;
+                            display: inline-block;
+                            margin-top: 20px;
+                            font-weight: bold;
+                            font-size: 13px;
+                        }
+                        
+                        .assinatura {
+                            margin-top: 40px;
+                            text-align: center;
+                        }
+                        
+                        .linha-assinatura {
+                            width: 300px;
+                            margin: 20px auto 5px auto;
+                            border-top: 1px solid #333;
+                        }
+                        
+                        @media print {
+                            body {
+                                padding: 0;
+                                margin: 0;
+                            }
+                            .pdf-container {
+                                max-width: 100%;
+                            }
+                            .no-print {
+                                display: none;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="pdf-container">
+                        <div class="header">
+                            <h1>CRECHE EL SHADDAY</h1>
+                            <h2>Lista de Funcionários por Unidade</h2>
+                            <div class="data-hora">
+                                Documento gerado em: ${dataAtual} às ${horaAtual}
+                            </div>
+                        </div>
+                        
+                        <div class="unidade-info">
+                            <h3>📌 INFORMAÇÕES DA UNIDADE</h3>
+                            <div class="info-grid">
+                                <div class="info-item"><strong>Unidade:</strong> ${unidadeInfo.nome}</div>
+                                <div class="info-item"><strong>INEP:</strong> ${unidadeInfo.INEP}</div>
+                                <div class="info-item"><strong>Endereço:</strong> ${unidadeInfo.endereco}</div>
+                                <div class="info-item"><strong>Bairro:</strong> ${unidadeInfo.bairro}</div>
+                                <div class="info-item"><strong>Cidade/UF:</strong> ${unidadeInfo.cidade}/${unidadeInfo.uf}</div>
+                                <div class="info-item"><strong>CEP:</strong> ${unidadeInfo.cep}</div>
+                                <div class="info-item"><strong>Telefone:</strong> ${unidadeInfo.telefone}</div>
+                                <div class="info-item"><strong>CNPJ:</strong> ${unidadeInfo.cnpj}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="titulo-tabela">👥 RELAÇÃO DE FUNCIONÁRIOS</div>
+                        
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 5%;">Nº</th>
+                                    <th style="width: 35%;">Nome Completo</th>
+                                    <th style="width: 15%;">RGM</th>
+                                    <th style="width: 25%;">Função</th>
+                                    <th style="width: 20%;">Telefone para Contato</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${funcionariosUnidade.map((func, index) => {
+                                    // Verifica se o telefone está vazio ou null
+                                    let telefoneDisplay = '';
+                                    if (!func.telefone || func.telefone.trim() === '' || func.telefone === 'null') {
+                                        telefoneDisplay = '<span class="telefone-vazio">_________________________</span>';
+                                    } else {
+                                        telefoneDisplay = func.telefone;
+                                    }
+                                    
+                                    return `
+                                    <tr>
+                                        <td style="text-align: center;">${index + 1}</td>
+                                        <td>${escapeHtml(func.nome)}</td>
+                                        <td>${escapeHtml(func.rgm)}</td>
+                                        <td>${escapeHtml(func.funcao)}</td>
+                                        <td>${telefoneDisplay}</td>
+                                    </tr>
+                                `}).join('')}
+                            </tbody>
+                        </table>
+                        
+                        <div style="text-align: center;">
+                            <div class="total-funcionarios">
+                                📊 Total de Funcionários: ${funcionariosUnidade.length}
+                            </div>
+                        </div>
+                        
+                        <div class="assinatura">
+                            <div class="linha-assinatura"></div>
+                            <p style="font-size: 11px;">Assinatura do Responsável</p>
+                        </div>
+                        
+                        <div class="footer">
+                            <p>Documento gerado eletronicamente - Creche El Shadday</p>
+                            <p style="font-size: 9px; margin-top: 5px;">Campos com "_________" estão disponíveis para preenchimento manual após impressão.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="no-print" style="text-align: center; margin-top: 20px; padding: 20px; position: fixed; bottom: 20px; left: 0; right: 0; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);">
+                        <button onclick="window.print()" style="padding: 12px 40px; background: #E50914; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold;">
+                            🖨️ Imprimir / Salvar como PDF
+                        </button>
+                        <button onclick="window.close()" style="padding: 12px 30px; background: #333; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; margin-left: 10px;">
+                            ✖ Fechar
+                        </button>
+                    </div>
+                    
+                    <script>
+                        setTimeout(function() {
+                            window.print();
+                        }, 500);
+                    <\/script>
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
         }
 
         function abrirModalExclusao(rgm, nome) {
