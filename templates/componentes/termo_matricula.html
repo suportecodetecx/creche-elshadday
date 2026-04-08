@@ -361,21 +361,21 @@
         </div>
 
         <!-- CABEÇALHO COM IMAGENS LADO A LADO -->
-<div class="cabecalho">
-    <div class="header-topo">
-        <div class="header-imagens">
-            <img src="/static/img/logo-creche.png" alt="Creche El Shadday" class="logo-creche" onerror="this.style.display='none'">
-            <img src="/static/img/Mogi.jpg" alt="Mogi das Cruzes" class="logo-mogi" onerror="this.style.display='none'">
+        <div class="cabecalho">
+            <div class="header-topo">
+                <div class="header-imagens">
+                    <img src="/static/img/logo-creche.png" alt="Creche El Shadday" class="logo-creche" onerror="this.style.display='none'">
+                    <img src="/static/img/Mogi.jpg" alt="Mogi das Cruzes" class="logo-mogi" onerror="this.style.display='none'">
+                </div>
+                <div class="header-textos">
+                    <h1>CRECHE EL SHADDAY</h1>
+                    <h2>FICHA CADASTRAL DO ALUNO - EDUCAÇÃO INFANTIL</h2>
+                    <h3 id="subtitulo-unidade">{{ unidade.tipo }}</h3>
+                    <p>CNPJ: {{ unidade.cnpj }} | INEP: {{ unidade.INEP }}</p>
+                </div>
+            </div>
         </div>
-        <div class="header-textos">
-            <h1>CRECHE EL SHADDAY</h1>
-            <h2>FICHA CADASTRAL DO ALUNO - EDUCAÇÃO INFANTIL</h2>
-            <h3 id="subtitulo-unidade">{{ unidade.tipo }}</h3>
-            <p>CNPJ: {{ unidade.cnpj }} | INEP: {{ unidade.INEP }}</p>
-        </div>
-    </div>
-</div>
-<div class="linha-simples"></div>
+        <div class="linha-simples"></div>
 
         <!-- TÍTULO -->
         <div class="titulo">FICHA CADASTRAL DO ALUNO - EDUCAÇÃO INFANTIL</div>
@@ -476,29 +476,29 @@
             {% endif %}
         {% endfor %}
 
-       <!-- ENDEREÇO -->
-<div class="endereco-box">
-    <div class="dados-linha" style="border-bottom: none;">
-        <span class="dados-label">Endereço:</span>
-        <span class="dados-valor">{{ aluno.endereco.logradouro or '_________________________________' }}</span>
-        <span style="margin-left: 15px; font-weight: bold;">Número:</span>
-        <span>{{ aluno.endereco.numero or '___' }}</span>
-    </div>
-    <div class="dados-linha" style="border-bottom: none;">
-        <span class="dados-label">Bairro:</span>
-        <span class="dados-valor">{{ aluno.endereco.bairro or '______________________' }}</span>
-        <span style="margin-left: 15px; font-weight: bold;">Cidade:</span>
-        <span>{{ aluno.endereco.cidade or '________________' }}</span>
-        {% if aluno.endereco.complemento %}
-        <span style="margin-left: 15px; font-weight: bold;">Complemento:</span>
-        <span>{{ aluno.endereco.complemento }}</span>
-        {% endif %}
-    </div>
-    <div class="dados-linha" style="border-bottom: none;">
-        <span class="dados-label">CEP:</span>
-        <span class="dados-valor">{{ aluno.endereco.cep or '___________' }}</span>
-    </div>
-</div>
+        <!-- ENDEREÇO -->
+        <div class="endereco-box">
+            <div class="dados-linha" style="border-bottom: none;">
+                <span class="dados-label">Endereço:</span>
+                <span class="dados-valor">{{ aluno.endereco.logradouro or '_________________________________' }}</span>
+                <span style="margin-left: 15px; font-weight: bold;">Número:</span>
+                <span>{{ aluno.endereco.numero or '___' }}</span>
+            </div>
+            <div class="dados-linha" style="border-bottom: none;">
+                <span class="dados-label">Bairro:</span>
+                <span class="dados-valor">{{ aluno.endereco.bairro or '______________________' }}</span>
+                <span style="margin-left: 15px; font-weight: bold;">Cidade:</span>
+                <span>{{ aluno.endereco.cidade or '________________' }}</span>
+                {% if aluno.endereco.complemento %}
+                <span style="margin-left: 15px; font-weight: bold;">Complemento:</span>
+                <span>{{ aluno.endereco.complemento }}</span>
+                {% endif %}
+            </div>
+            <div class="dados-linha" style="border-bottom: none;">
+                <span class="dados-label">CEP:</span>
+                <span class="dados-valor">{{ aluno.endereco.cep or '___________' }}</span>
+            </div>
+        </div>
 
         <!-- SAÚDE - SOMENTE CAMPOS PREENCHIDOS COM CORES -->
         <div class="saude-section">
@@ -552,8 +552,17 @@
             </div>
             {% endif %}
             
+            <!-- ========== LAUDO - PADRONIZADO COM MESMA COR DOS ALERTAS ========== -->
+            {% if aluno.arquivos_ids and aluno.arquivos_ids.aluno_laudos %}
+            <div class="saude-item saude-destaque-alerta">
+                <span class="saude-label">Laudo:</span>
+                <span class="saude-valor" style="font-weight: bold;">LAUDADO</span>
+            </div>
+            {% endif %}
+            <!-- ========== FIM LAUDO ========== -->
+            
             <!-- Mensagem se nenhum dado de saúde foi preenchido -->
-            {% if not aluno.saude.tipo_sanguineo and not aluno.saude.plano_saude and not aluno.saude.alergias and not aluno.saude.medicamentos and not aluno.saude.restricoes and not (aluno.saude.deficiencia and aluno.saude.deficiencia_desc) %}
+            {% if not aluno.saude.tipo_sanguineo and not aluno.saude.plano_saude and not aluno.saude.alergias and not aluno.saude.medicamentos and not aluno.saude.restricoes and not (aluno.saude.deficiencia and aluno.saude.deficiencia_desc) and not (aluno.arquivos_ids and aluno.arquivos_ids.aluno_laudos) %}
             <div class="saude-item" style="color: #999; font-style: italic;">
                 Nenhuma informação de saúde cadastrada
             </div>
