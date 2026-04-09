@@ -29,6 +29,14 @@ from routes.documentos_routes import documentos_bp
 app = Flask(__name__)
 CORS(app)
 
+# ============================================================
+# 🔧 CONFIGURAÇÃO CRÍTICA - AUMENTAR LIMITE DE UPLOAD
+# ============================================================
+# O erro HTTP 413 acontece porque o Flask rejeita arquivos > 16MB
+# Com esta linha, permitimos arquivos de até 50MB
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB
+# ============================================================
+
 # Configurações do Flask
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-key-123')
@@ -396,5 +404,6 @@ if __name__ == '__main__':
     logger.info(f"📁 Pasta do projeto: {os.getcwd()}")
     logger.info(f"🔧 Debug mode: {debug_mode}")
     logger.info(f"🌐 Port: {port}")
+    logger.info(f"📦 Limite de upload: 50MB")
     
     app.run(debug=debug_mode, host='0.0.0.0', port=port)

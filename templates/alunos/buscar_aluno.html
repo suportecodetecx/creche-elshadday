@@ -28,6 +28,7 @@
             --accent-green: #4ECDC4;
             --accent-purple: #A06CD5;
             --accent-yellow: #FFD166;
+            --accent-orange: #FF9800;
             --white: #FFFFFF;
             --gray-100: #f5f5f5;
             --gray-200: #e5e5e5;
@@ -128,6 +129,7 @@
         .header-buttons {
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
         }
 
         .btn-nav {
@@ -163,7 +165,7 @@
             border-color: var(--netflix-red);
         }
 
-        /* Botão PDF adicionado */
+        /* Botão PDF */
         .btn-pdf {
             background: var(--netflix-red);
             color: white;
@@ -184,6 +186,14 @@
             background: var(--netflix-red-dark);
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(229, 9, 20, 0.4);
+        }
+
+        .btn-pdf-transporte {
+            background: linear-gradient(135deg, var(--accent-orange), #E65100);
+        }
+
+        .btn-pdf-transporte:hover {
+            background: linear-gradient(135deg, #E65100, #BF360C);
         }
 
         main {
@@ -361,7 +371,9 @@
         .pdf-button-container {
             display: flex;
             justify-content: flex-end;
+            gap: 12px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         /* Grid de Resultados - Um card por aluno */
@@ -442,6 +454,10 @@
             font-weight: 600;
             color: white;
             border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .badge-transporte {
+            background: rgba(255, 152, 0, 0.9);
         }
 
         /* Corpo do card - seções de contatos */
@@ -705,6 +721,7 @@
 
             .pdf-button-container {
                 justify-content: center;
+                flex-direction: column;
             }
         }
 
@@ -780,6 +797,7 @@
                     <a href="/" class="btn-nav btn-home">← Início</a>
                     <a href="/alunos/cadastro" class="btn-nav">+ Novo Cadastro</a>
                     <button class="btn-pdf" onclick="gerarPDFListaAtual()">📄 Gerar PDF da Lista</button>
+                    <button class="btn-pdf btn-pdf-transporte" onclick="gerarPDFAlunosTransporte()">🚍 PDF Alunos com Transporte</button>
                 </div>
             </div>
         </header>
@@ -807,6 +825,11 @@
                         <option value="">Todas as unidades</option>
                         <option value="CEIC El Shadday">CEIC El Shadday</option>
                         <option value="CEIM Prof. Egberto Malta Moreira">CEIM Prof. Egberto Malta Moreira</option>
+                    </select>
+                    <select class="filter-select" id="filterTransporte" onchange="buscarAlunos()">
+                        <option value="">🚍 Todos os alunos</option>
+                        <option value="sim">🚌 Alunos com Transporte</option>
+                        <option value="nao">🚶 Alunos sem Transporte</option>
                     </select>
                 </div>
             </div>
@@ -868,6 +891,7 @@
             if (select) select.value = '';
             document.getElementById('filterTurma').value = '';
             document.getElementById('filterUnidade').value = '';
+            document.getElementById('filterTransporte').value = '';
             alunosExibidosAtualmente = [];
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -979,9 +1003,15 @@
             }
         }
 
+        function verificarTransporte(aluno) {
+            const transporte = aluno.transporte || {};
+            return transporte.nome && transporte.nome.trim() !== '';
+        }
+
         function buscarAlunos() {
             const turma = document.getElementById('filterTurma').value;
             const unidade = document.getElementById('filterUnidade').value;
+            const filtroTransporte = document.getElementById('filterTransporte').value;
             
             document.getElementById('emptyState').style.display = 'none';
             document.getElementById('resultsArea').style.display = 'none';
@@ -996,11 +1026,23 @@
                 .then(data => {
                     document.getElementById('loadingIndicator').classList.remove('active');
                     if (data.sucesso) {
-                        const alunos = data.alunos || [];
+                        let alunos = data.alunos || [];
+                        
+                        // Aplicar filtro de transporte
+                        if (filtroTransporte === 'sim') {
+                            alunos = alunos.filter(aluno => verificarTransporte(aluno));
+                        } else if (filtroTransporte === 'nao') {
+                            alunos = alunos.filter(aluno => !verificarTransporte(aluno));
+                        }
+                        
                         if (alunos.length === 0) {
+                            let mensagem = 'Nenhum aluno encontrado';
+                            if (filtroTransporte === 'sim') mensagem = 'Nenhum aluno com transporte escolar encontrado';
+                            if (filtroTransporte === 'nao') mensagem = 'Todos os alunos possuem transporte cadastrado';
+                            
                             document.getElementById('emptyState').innerHTML = `
                                 <i>🔍</i>
-                                <h3>Nenhum aluno encontrado</h3>
+                                <h3>${mensagem}</h3>
                                 <p>Tente buscar com outro filtro</p>
                                 <button class="btn-search" onclick="buscarAlunos()">Buscar Novamente</button>
                             `;
@@ -1026,8 +1068,13 @@
         }
 
         function exibirResultados(alunos) {
-            let html = '<div class="pdf-button-container"><button class="btn-pdf" onclick="gerarPDFListaAtual()">📄 Gerar PDF da Lista Atual</button></div>';
-            html += '<div class="results-container">';
+            let html = `
+                <div class="pdf-button-container">
+                    <button class="btn-pdf" onclick="gerarPDFListaAtual()">📄 Gerar PDF da Lista Atual</button>
+                    <button class="btn-pdf btn-pdf-transporte" onclick="gerarPDFAlunosTransporte()">🚍 PDF Apenas Alunos com Transporte</button>
+                </div>
+                <div class="results-container">
+            `;
             
             alunos.forEach(aluno => {
                 const dadosPessoais = aluno.dados_pessoais || {};
@@ -1038,6 +1085,7 @@
                 const transporte = aluno.transporte || {};
                 const saude = aluno.saude || {};
                 const arquivosIds = aluno.arquivos_ids || {};
+                const temTransporte = verificarTransporte(aluno);
                 
                 const fotoAluno = getFotoUrl(aluno, 'aluno') || AVATAR_SVG;
                 const alunoId = aluno.num_inscricao.replace(/-/g, '');
@@ -1059,7 +1107,9 @@
                 <div class="ra-turma">🎂 ${calcularIdade(dadosPessoais.data_nasc)} (${formatarData(dadosPessoais.data_nasc)})</div>
                 <div class="endereco">📍 ${escapeHtml(endereco.logradouro || '---')}, ${escapeHtml(endereco.numero || '')} - ${escapeHtml(endereco.bairro || '')}, ${escapeHtml(endereco.cidade || '---')}/${escapeHtml(endereco.uf || '---')}</div>
             </div>
-            <div class="status-badge-unificado">N° Inscrição: ${escapeHtml(aluno.num_inscricao || '---')}</div>
+            <div class="status-badge-unificado ${temTransporte ? 'badge-transporte' : ''}">
+                ${temTransporte ? '🚍 Com Transporte' : '🚶 Sem Transporte'}
+            </div>
         </div>
         
         <div class="card-unificado-body">
@@ -1117,7 +1167,7 @@
                 }
                 
                 // Seção de Transporte
-                if (transporte && transporte.nome) {
+                if (temTransporte) {
                     const fotoTransp = getFotoUrl(aluno, 'transporte') || AVATAR_SVG;
                     html += `<div class="secao-contatos"><div class="secao-titulo">🚍 Transporte Escolar</div><div class="contatos-grid">
                         <div class="contato-card">
@@ -1125,6 +1175,7 @@
                             <div class="contato-info">
                                 <h4>${escapeHtml(transporte.nome)}</h4>
                                 <div class="contato-telefone"><i>📞</i> ${escapeHtml(transporte.telefone || '---')}</div>
+                                ${transporte.placa ? `<div class="contato-telefone"><i>🚗</i> Placa: ${escapeHtml(transporte.placa)}</div>` : ''}
                             </div>
                         </div>
                     </div></div>`;
@@ -1212,7 +1263,340 @@
             });
         }
 
-        // ========== NOVA FUNÇÃO PARA GERAR PDF ==========
+        // ========== FUNÇÃO PARA GERAR PDF APENAS ALUNOS COM TRANSPORTE ==========
+        function gerarPDFAlunosTransporte() {
+            const alunosComTransporte = alunosExibidosAtualmente.filter(aluno => verificarTransporte(aluno));
+            
+            if (alunosComTransporte.length === 0) {
+                mostrarNotificacao('❌ Nenhum aluno com transporte escolar encontrado!', 'warning');
+                return;
+            }
+
+            const unidadeSelecionada = document.getElementById('filterUnidade').value;
+            const turmaSelecionada = document.getElementById('filterTurma').value;
+            
+            let tituloRelatorio = 'Relatório de Alunos com Transporte Escolar';
+            let subtitulo = '';
+            
+            if (unidadeSelecionada && turmaSelecionada) {
+                subtitulo = `${unidadeSelecionada} - Turma: ${turmaSelecionada}`;
+            } else if (unidadeSelecionada) {
+                subtitulo = unidadeSelecionada;
+            } else if (turmaSelecionada) {
+                subtitulo = `Turma: ${turmaSelecionada}`;
+            } else {
+                subtitulo = 'Relação completa de alunos que utilizam transporte escolar';
+            }
+            
+            const dataAtual = new Date().toLocaleDateString('pt-BR');
+            const horaAtual = new Date().toLocaleTimeString('pt-BR');
+            
+            const UNIDADES_CONFIG = {
+                "CEIC El Shadday": {
+                    "nome": "CEIC El Shadday",
+                    "endereco": "Rua Francisco Vilani Bicudo, 470",
+                    "bairro": "Vila Nova Aparecida",
+                    "cidade": "Mogi das Cruzes",
+                    "uf": "SP",
+                    "cep": "08830-340",
+                    "cnpj": "03.067.526/0001-87",
+                    "telefone": "(11) 4739-3549"
+                },
+                "CEIM Prof. Egberto Malta Moreira": {
+                    "nome": "CEIM Prof. Egberto Malta Moreira",
+                    "endereco": "Rua Ten. Agenor Bertini, 202",
+                    "bairro": "Vila Rei",
+                    "cidade": "Mogi das Cruzes",
+                    "uf": "SP",
+                    "cep": "08717-875",
+                    "cnpj": "03.067.526/0002-68",
+                    "telefone": "(11) 4726-6241"
+                }
+            };
+            
+            let unidadeInfoHTML = '';
+            if (unidadeSelecionada && UNIDADES_CONFIG[unidadeSelecionada]) {
+                const info = UNIDADES_CONFIG[unidadeSelecionada];
+                unidadeInfoHTML = `
+                    <div class="unidade-info">
+                        <h3>📌 INFORMAÇÕES DA UNIDADE</h3>
+                        <div class="info-grid">
+                            <div class="info-item"><strong>Unidade:</strong> ${info.nome}</div>
+                            <div class="info-item"><strong>INEP:</strong> ${info.INEP}</div>
+                            <div class="info-item"><strong>Endereço:</strong> ${info.endereco}</div>
+                            <div class="info-item"><strong>Bairro:</strong> ${info.bairro}</div>
+                            <div class="info-item"><strong>Cidade/UF:</strong> ${info.cidade}/${info.uf}</div>
+                            <div class="info-item"><strong>CEP:</strong> ${info.cep}</div>
+                            <div class="info-item"><strong>Telefone:</strong> ${info.telefone}</div>
+                            <div class="info-item"><strong>CNPJ:</strong> ${info.cnpj}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            const printWindow = window.open('', '_blank');
+            
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>${tituloRelatorio} - Creche El Shadday</title>
+                    <style>
+                        * {
+                            margin: 0;
+                            padding: 0;
+                            box-sizing: border-box;
+                        }
+                        
+                        body {
+                            font-family: 'Inter', Arial, Helvetica, sans-serif;
+                            margin: 0;
+                            padding: 30px;
+                            background: white;
+                            color: #333;
+                        }
+                        
+                        .pdf-container {
+                            max-width: 1200px;
+                            margin: 0 auto;
+                            background: white;
+                        }
+                        
+                        .header {
+                            text-align: center;
+                            margin-bottom: 30px;
+                            padding-bottom: 20px;
+                            border-bottom: 3px solid #E50914;
+                        }
+                        
+                        .header h1 {
+                            color: #E50914;
+                            margin: 0 0 5px 0;
+                            font-size: 28px;
+                            font-weight: 700;
+                        }
+                        
+                        .header h2 {
+                            color: #333;
+                            margin: 0 0 10px 0;
+                            font-size: 18px;
+                            font-weight: 500;
+                        }
+                        
+                        .header .subtitulo {
+                            color: #666;
+                            font-size: 14px;
+                            margin-top: 5px;
+                        }
+                        
+                        .header .data-hora {
+                            color: #999;
+                            font-size: 11px;
+                            margin-top: 5px;
+                        }
+                        
+                        .badge-transporte {
+                            background: #FF9800;
+                            color: white;
+                            padding: 4px 12px;
+                            border-radius: 20px;
+                            display: inline-block;
+                            font-size: 11px;
+                            font-weight: bold;
+                        }
+                        
+                        .unidade-info {
+                            background: #f8f9fa;
+                            padding: 20px;
+                            border-radius: 8px;
+                            margin-bottom: 25px;
+                            border-left: 4px solid #E50914;
+                        }
+                        
+                        .unidade-info h3 {
+                            color: #E50914;
+                            margin: 0 0 15px 0;
+                            font-size: 16px;
+                            font-weight: 600;
+                        }
+                        
+                        .info-grid {
+                            display: grid;
+                            grid-template-columns: repeat(2, 1fr);
+                            gap: 10px;
+                        }
+                        
+                        .info-item {
+                            font-size: 12px;
+                            line-height: 1.5;
+                        }
+                        
+                        .info-item strong {
+                            color: #333;
+                            font-weight: 600;
+                        }
+                        
+                        .titulo-tabela {
+                            margin: 25px 0 15px 0;
+                            font-size: 16px;
+                            font-weight: 600;
+                            color: #E50914;
+                        }
+                        
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 10px;
+                            font-size: 11px;
+                        }
+                        
+                        th {
+                            background: #E50914;
+                            color: white;
+                            padding: 12px 8px;
+                            text-align: left;
+                            font-weight: 600;
+                            border: 1px solid #c40812;
+                        }
+                        
+                        td {
+                            padding: 10px 8px;
+                            border: 1px solid #ddd;
+                            vertical-align: top;
+                        }
+                        
+                        .footer {
+                            margin-top: 30px;
+                            text-align: center;
+                            font-size: 10px;
+                            color: #999;
+                            border-top: 1px solid #ddd;
+                            padding-top: 20px;
+                        }
+                        
+                        .total-alunos {
+                            background: #FF9800;
+                            color: white;
+                            padding: 8px 20px;
+                            border-radius: 20px;
+                            display: inline-block;
+                            margin-top: 20px;
+                            font-weight: bold;
+                            font-size: 13px;
+                        }
+                        
+                        .assinatura {
+                            margin-top: 40px;
+                            text-align: center;
+                        }
+                        
+                        .linha-assinatura {
+                            width: 300px;
+                            margin: 20px auto 5px auto;
+                            border-top: 1px solid #333;
+                        }
+                        
+                        @media print {
+                            body {
+                                padding: 0;
+                                margin: 0;
+                            }
+                            .pdf-container {
+                                max-width: 100%;
+                            }
+                            .no-print {
+                                display: none;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="pdf-container">
+                        <div class="header">
+                            <h1>CRECHE EL SHADDAY</h1>
+                            <h2>${tituloRelatorio}</h2>
+                            <div class="subtitulo">${subtitulo}</div>
+                            <div class="data-hora">
+                                Documento gerado em: ${dataAtual} às ${horaAtual}
+                            </div>
+                        </div>
+                        
+                        ${unidadeInfoHTML}
+                        
+                        <div class="titulo-tabela">🚍 RELAÇÃO DE ALUNOS COM TRANSPORTE ESCOLAR</div>
+                        
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 5%;">Nº</th>
+                                    <th style="width: 35%;">Nome do Aluno</th>
+                                    <th style="width: 15%;">RA</th>
+                                    <th style="width: 20%;">Unidade</th>
+                                    <th style="width: 15%;">Turma</th>
+                                    <th style="width: 10%;">Idade</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${alunosComTransporte.map((aluno, index) => {
+                                    const dadosPessoais = aluno.dados_pessoais || {};
+                                    const turma = aluno.turma || {};
+                                    const idade = calcularIdade(dadosPessoais.data_nasc);
+                                    const transporte = aluno.transporte || {};
+                                    
+                                    return `
+                                    <tr>
+                                        <td style="text-align: center;">${index + 1}</td>
+                                        <td><strong>${escapeHtml(dadosPessoais.nome || '---')}</strong><br><span class="badge-transporte">🚍 ${escapeHtml(transporte.nome || 'Transporte')}</span></td>
+                                        <td>${escapeHtml(dadosPessoais.ra || '---')}</td>
+                                        <td>${escapeHtml(turma.unidade || '---')}</td>
+                                        <td>${escapeHtml(turma.turma || '---')}</td>
+                                        <td>${idade}</td>
+                                    </tr>
+                                `}).join('')}
+                            </tbody>
+                        </table>
+                        
+                        <div style="text-align: center;">
+                            <div class="total-alunos">
+                                🚍 Total de Alunos com Transporte: ${alunosComTransporte.length}
+                            </div>
+                        </div>
+                        
+                        <div class="assinatura">
+                            <div class="linha-assinatura"></div>
+                            <p style="font-size: 11px;">Assinatura do Responsável pelo Transporte</p>
+                        </div>
+                        
+                        <div class="footer">
+                            <p>Documento gerado eletronicamente - Creche El Shadday</p>
+                            <p style="font-size: 9px; margin-top: 5px;">Sistema de Gestão Escolar</p>
+                        </div>
+                    </div>
+                    
+                    <div class="no-print" style="text-align: center; margin-top: 20px; padding: 20px; position: fixed; bottom: 20px; left: 0; right: 0; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);">
+                        <button onclick="window.print()" style="padding: 12px 40px; background: #E50914; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold;">
+                            🖨️ Imprimir / Salvar como PDF
+                        </button>
+                        <button onclick="window.close()" style="padding: 12px 30px; background: #333; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; margin-left: 10px;">
+                            ✖ Fechar
+                        </button>
+                    </div>
+                    
+                    <script>
+                        setTimeout(function() {
+                            window.print();
+                        }, 500);
+                    <\/script>
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+            mostrarNotificacao(`🚍 Gerando PDF com ${alunosComTransporte.length} aluno(s) com transporte...`, 'success');
+        }
+
+        // ========== FUNÇÃO PARA GERAR PDF DA LISTA ATUAL ==========
         function gerarPDFListaAtual() {
             if (alunosExibidosAtualmente.length === 0) {
                 mostrarNotificacao('❌ Nenhum aluno para gerar o PDF!', 'warning');
@@ -1221,6 +1605,7 @@
 
             const unidadeSelecionada = document.getElementById('filterUnidade').value;
             const turmaSelecionada = document.getElementById('filterTurma').value;
+            const filtroTransporte = document.getElementById('filterTransporte').value;
             
             let tituloRelatorio = 'Relatório de Alunos';
             let subtitulo = '';
@@ -1234,6 +1619,12 @@
             } else if (turmaSelecionada) {
                 tituloRelatorio = 'Alunos por Turma';
                 subtitulo = `Turma: ${turmaSelecionada}`;
+            } else if (filtroTransporte === 'sim') {
+                tituloRelatorio = 'Alunos com Transporte Escolar';
+                subtitulo = 'Relação de alunos que utilizam transporte escolar';
+            } else if (filtroTransporte === 'nao') {
+                tituloRelatorio = 'Alunos sem Transporte Escolar';
+                subtitulo = 'Relação de alunos que NÃO utilizam transporte escolar';
             } else {
                 tituloRelatorio = 'Relatório Geral de Alunos';
                 subtitulo = 'Relação completa de todos os alunos cadastrados';
@@ -1242,7 +1633,6 @@
             const dataAtual = new Date().toLocaleDateString('pt-BR');
             const horaAtual = new Date().toLocaleTimeString('pt-BR');
             
-            // Informações da unidade (se houver uma unidade específica)
             const UNIDADES_CONFIG = {
                 "CEIC El Shadday": {
                     "nome": "CEIC El Shadday",
@@ -1348,6 +1738,16 @@
                             color: #999;
                             font-size: 11px;
                             margin-top: 5px;
+                        }
+                        
+                        .badge-transporte {
+                            background: #FF9800;
+                            color: white;
+                            padding: 2px 8px;
+                            border-radius: 12px;
+                            font-size: 9px;
+                            font-weight: bold;
+                            margin-left: 5px;
                         }
                         
                         .unidade-info {
@@ -1486,11 +1886,13 @@
                                     const dadosPessoais = aluno.dados_pessoais || {};
                                     const turma = aluno.turma || {};
                                     const idade = calcularIdade(dadosPessoais.data_nasc);
+                                    const temTransporte = verificarTransporte(aluno);
+                                    const transporteBadge = temTransporte ? '<span class="badge-transporte">🚍 Transporte</span>' : '';
                                     
                                     return `
                                     <tr>
                                         <td style="text-align: center;">${index + 1}</td>
-                                        <td><strong>${escapeHtml(dadosPessoais.nome || '---')}</strong></td>
+                                        <td><strong>${escapeHtml(dadosPessoais.nome || '---')}</strong> ${transporteBadge}</td>
                                         <td>${escapeHtml(dadosPessoais.ra || '---')}</td>
                                         <td>${escapeHtml(turma.unidade || '---')}</td>
                                         <td>${escapeHtml(turma.turma || '---')}</td>
