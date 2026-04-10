@@ -16,12 +16,5 @@
       "dest": "app.py"
     }
   ],
-  "trailingSlash": false,
-  "functions": {
-    "app.py": {
-      "maxDuration": 60,
-      "memory": 1024,
-      "maxRequestBodySize": "15mb"
-    }
-  }
+  "trailingSlash": false
 }
