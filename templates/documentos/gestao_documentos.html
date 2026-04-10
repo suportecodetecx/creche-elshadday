@@ -204,7 +204,6 @@
             border-color: var(--netflix-red);
         }
 
-        /* Estilo para o select de colaborador */
         .select-colaborador {
             background-color: var(--netflix-gray);
             color: var(--white);
@@ -1176,7 +1175,7 @@
                                         </tr>
                                     `).join('')}
                                 </tbody>
-                            </table>
+                            </td>
                         </div>
                     `;
                 }
@@ -1382,72 +1381,124 @@
             });
         }
 
-        // ===== SUBMIT DO FORMULÁRIO COM COMPRESSÃO =====
-       // ===== SUBMIT DO FORMULÁRIO (APENAS COMPRESSÃO DE IMAGEM) =====
-document.getElementById('formUpload').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const tipo = document.querySelector('input[name="tipo"]:checked');
-    const unidade = document.getElementById('unidadeSelect').value;
-    const nomePessoa = document.getElementById('nomePessoa').value.trim();
-    const dataReferencia = document.getElementById('dataReferencia').value;
-    let arquivo = document.getElementById('arquivoUpload').files[0];
-    const editId = document.getElementById('editId').value;
-
-    if (!tipo) { mostrarNotificacao('Selecione o tipo de documento', 'warning'); return; }
-    if (!unidade) { mostrarNotificacao('Selecione a unidade', 'warning'); return; }
-    if (!nomePessoa) { mostrarNotificacao('Selecione o nome do colaborador', 'warning'); return; }
-    if (!dataReferencia) { mostrarNotificacao('Data de referência é obrigatória', 'warning'); return; }
-    if (!editando && !arquivo) { mostrarNotificacao('Selecione um arquivo', 'warning'); return; }
-
-    // COMPRIMIR APENAS IMAGENS GRANDES
-    if (arquivo && arquivo.type.startsWith('image/') && arquivo.size > 1.5 * 1024 * 1024) {
-        mostrarNotificacao('🔄 Comprimindo imagem...', 'warning');
-        arquivo = await comprimirImagem(arquivo, 500);
-    }
-    
-    
-   // Verificar tamanho final (máximo 15MB)
-if (arquivo && arquivo.size > 15 * 1024 * 1024) {
-    mostrarNotificacao(`❌ Arquivo muito grande (${(arquivo.size / 1024 / 1024).toFixed(1)}MB). Máximo 15MB.`, 'error');
-    return;
-}
-
-    const dataObj = new Date(dataReferencia);
-    if (isNaN(dataObj.getTime())) {
-        mostrarNotificacao('Data de referência inválida', 'warning');
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append('tipo', tipo.value);
-    formData.append('unidade', unidade);
-    formData.append('nome_pessoa', nomePessoa);
-    formData.append('data_referencia', dataReferencia);
-    if (arquivo) formData.append('arquivo', arquivo);
-    if (editando) formData.append('documento_id', editId);
-
-    const [anoRef, mesRef] = dataReferencia.split('-');
-    formData.append('mes', mesRef);
-    formData.append('ano', anoRef);
-
-    const url = editando ? '/documentos/api/atualizar' : '/documentos/api/upload';
-
-    try {
-        const response = await fetch(url, { method: 'POST', body: formData });
-        const data = await response.json();
-        if (data.sucesso) {
-            mostrarNotificacao(editando ? 'Documento atualizado com sucesso!' : 'Documento enviado com sucesso!', 'success');
-            fecharModalUpload();
-            carregarDocumentos();
-        } else {
-            mostrarNotificacao(data.erro || 'Erro ao salvar', 'error');
+        // ===== FUNÇÃO DE COMPRESSÃO DE PDF =====
+        async function comprimirPDF(file, tamanhoMaximoMB = 2) {
+            if (file.type !== 'application/pdf') return file;
+            if (file.size <= tamanhoMaximoMB * 1024 * 1024) return file;
+            
+            mostrarNotificacao(`🔄 Comprimindo PDF de ${(file.size / 1024 / 1024).toFixed(2)}MB... Aguarde`, 'warning');
+            
+            try {
+                if (typeof window.PDFLib === 'undefined') {
+                    console.warn('PDF-Lib não carregado');
+                    return file;
+                }
+                
+                const arrayBuffer = await file.arrayBuffer();
+                const { PDFDocument } = window.PDFLib;
+                const pdfDoc = await PDFDocument.load(arrayBuffer);
+                
+                const pageCount = pdfDoc.getPageCount();
+                console.log(`📄 PDF tem ${pageCount} página(s)`);
+                
+                const novoPdf = await PDFDocument.create();
+                
+                for (let i = 0; i < pageCount; i++) {
+                    const [copiedPage] = await novoPdf.copyPages(pdfDoc, [i]);
+                    novoPdf.addPage(copiedPage);
+                }
+                
+                const compressedBytes = await novoPdf.save({
+                    useObjectStreams: true,
+                    addDefaultPage: false,
+                    objectsPerTick: 50
+                });
+                
+                const compressedFile = new File([compressedBytes], file.name, {
+                    type: 'application/pdf',
+                    lastModified: Date.now()
+                });
+                
+                console.log(`   ✅ PDF comprimido: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
+                mostrarNotificacao(`✅ PDF comprimido!`, 'success');
+                
+                return compressedFile;
+            } catch (error) {
+                console.error('Erro ao comprimir PDF:', error);
+                return file;
+            }
         }
-    } catch (error) {
-        console.error('Erro:', error);
-        mostrarNotificacao('Erro de conexão', 'error');
-    }
-});
+
+        // ===== SUBMIT DO FORMULÁRIO COM COMPRESSÃO DE PDF E IMAGEM =====
+        document.getElementById('formUpload').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const tipo = document.querySelector('input[name="tipo"]:checked');
+            const unidade = document.getElementById('unidadeSelect').value;
+            const nomePessoa = document.getElementById('nomePessoa').value.trim();
+            const dataReferencia = document.getElementById('dataReferencia').value;
+            let arquivo = document.getElementById('arquivoUpload').files[0];
+            const editId = document.getElementById('editId').value;
+
+            if (!tipo) { mostrarNotificacao('Selecione o tipo de documento', 'warning'); return; }
+            if (!unidade) { mostrarNotificacao('Selecione a unidade', 'warning'); return; }
+            if (!nomePessoa) { mostrarNotificacao('Selecione o nome do colaborador', 'warning'); return; }
+            if (!dataReferencia) { mostrarNotificacao('Data de referência é obrigatória', 'warning'); return; }
+            if (!editando && !arquivo) { mostrarNotificacao('Selecione um arquivo', 'warning'); return; }
+
+            // COMPRIMIR PDF SE FOR GRANDE (> 2MB)
+            if (arquivo && arquivo.type === 'application/pdf' && arquivo.size > 2 * 1024 * 1024) {
+                mostrarNotificacao('🔄 Comprimindo PDF...', 'warning');
+                arquivo = await comprimirPDF(arquivo, 2);
+            }
+            
+            // COMPRIMIR IMAGEM SE FOR GRANDE (> 1.5MB)
+            if (arquivo && arquivo.type.startsWith('image/') && arquivo.size > 1.5 * 1024 * 1024) {
+                mostrarNotificacao('🔄 Comprimindo imagem...', 'warning');
+                arquivo = await comprimirImagem(arquivo, 500);
+            }
+            
+            // Verificar tamanho final (máximo 15MB)
+            if (arquivo && arquivo.size > 15 * 1024 * 1024) {
+                mostrarNotificacao(`❌ Arquivo muito grande (${(arquivo.size / 1024 / 1024).toFixed(1)}MB). Máximo 15MB.`, 'error');
+                return;
+            }
+
+            const dataObj = new Date(dataReferencia);
+            if (isNaN(dataObj.getTime())) {
+                mostrarNotificacao('Data de referência inválida', 'warning');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('tipo', tipo.value);
+            formData.append('unidade', unidade);
+            formData.append('nome_pessoa', nomePessoa);
+            formData.append('data_referencia', dataReferencia);
+            if (arquivo) formData.append('arquivo', arquivo);
+            if (editando) formData.append('documento_id', editId);
+
+            const [anoRef, mesRef] = dataReferencia.split('-');
+            formData.append('mes', mesRef);
+            formData.append('ano', anoRef);
+
+            const url = editando ? '/documentos/api/atualizar' : '/documentos/api/upload';
+
+            try {
+                const response = await fetch(url, { method: 'POST', body: formData });
+                const data = await response.json();
+                if (data.sucesso) {
+                    mostrarNotificacao(editando ? 'Documento atualizado com sucesso!' : 'Documento enviado com sucesso!', 'success');
+                    fecharModalUpload();
+                    carregarDocumentos();
+                } else {
+                    mostrarNotificacao(data.erro || 'Erro ao salvar', 'error');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                mostrarNotificacao('Erro de conexão', 'error');
+            }
+        });
 
         document.getElementById('modalUpload').addEventListener('click', (e) => {
             if (e.target === document.getElementById('modalUpload')) {
