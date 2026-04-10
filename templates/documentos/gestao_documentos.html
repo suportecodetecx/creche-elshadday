@@ -3,15 +3,15 @@
 <head>
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Gestão de Documentos - Creche El Shadday</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/processo-de-trabalho.png') }}">
     <style>
-        /* ===== SEU CSS ORIGINAL - SEM ALTERAÇÕES ===== */
+        /* ===== DESIGN SYSTEM - GLASSMORPHISM + NETFLIX CORES ===== */
         :root {
             --netflix-red: #E50914;
             --netflix-red-dark: #B81D24;
@@ -25,32 +25,41 @@
             --accent-cyan: #00BCD4;
             --accent-pink: #E91E63;
             --white: #FFFFFF;
+            --glass-bg: rgba(26, 26, 26, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --glass-blur: blur(14px);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: var(--netflix-black);
+            background: radial-gradient(circle at 15% 30%, #0f0f0f, #050505);
             min-height: 100vh;
             color: var(--white);
-            padding: 20px;
+            padding: 24px;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1440px;
             margin: 0 auto;
-            background: var(--netflix-dark);
-            border-radius: 32px;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-radius: 40px;
+            border: 1px solid var(--glass-border);
             overflow: hidden;
-            box-shadow: 0 30px 60px -20px rgba(0,0,0,0.8);
-            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 25px 45px -12px rgba(0,0,0,0.6);
         }
 
         .header-moderno {
-            padding: 24px 40px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            background: var(--netflix-dark);
+            padding: 20px 40px;
+            background: rgba(26, 26, 26, 0.6);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(229, 9, 20, 0.3);
         }
 
         .header-content {
@@ -58,683 +67,535 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 20px;
         }
 
         .logo-wrapper {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 16px;
             cursor: pointer;
+            transition: transform 0.2s;
         }
+        .logo-wrapper:hover { transform: scale(1.02); }
 
         .logo-animated {
-            width: 50px;
-            height: 50px;
+            width: 52px;
+            height: 52px;
             background: linear-gradient(135deg, var(--netflix-red), var(--netflix-red-dark));
-            border-radius: 12px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-weight: 800;
+            font-size: 1.5rem;
             color: white;
-            font-weight: 700;
-            font-size: 1.4rem;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+            box-shadow: 0 6px 18px rgba(229, 9, 20, 0.4);
         }
 
         .logo-text h2 {
-            color: white;
-            font-size: 1.6rem;
+            font-size: 1.7rem;
             font-weight: 700;
-            margin: 0;
-            letter-spacing: -0.5px;
+            letter-spacing: -0.3px;
+            background: linear-gradient(135deg, #fff, #ddd);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
 
         .logo-text p {
+            font-size: 0.8rem;
             color: var(--netflix-light);
-            font-size: 0.85rem;
-            margin: 2px 0 0;
+            font-weight: 500;
         }
 
         .btn-nav {
-            padding: 10px 20px;
-            border-radius: 30px;
+            padding: 10px 24px;
+            border-radius: 40px;
             font-weight: 600;
-            font-size: 0.9rem;
-            background: rgba(255,255,255,0.05);
+            font-size: 0.85rem;
+            background: rgba(255,255,255,0.04);
             color: white;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.12);
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.25s;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
-
         .btn-nav:hover {
-            background: rgba(255,255,255,0.1);
+            background: var(--netflix-red);
             border-color: var(--netflix-red);
+            box-shadow: 0 4px 14px rgba(229,9,20,0.3);
         }
 
-        main {
-            padding: 40px;
-        }
+        main { padding: 32px 40px; }
 
         .form-card {
-            background: var(--netflix-dark);
-            border-radius: 24px;
-            padding: 32px;
-            margin-bottom: 24px;
+            background: rgba(26, 26, 26, 0.5);
+            backdrop-filter: blur(8px);
+            border-radius: 28px;
+            padding: 28px 32px;
+            margin-bottom: 28px;
             border: 1px solid rgba(255,255,255,0.05);
-            transition: all 0.3s ease;
         }
 
         .card-header {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 24px;
+            justify-content: space-between;
             flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
         }
-
         .header-icon {
-            width: 40px;
-            height: 40px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
+            width: 44px;
+            height: 44px;
+            background: rgba(229,9,20,0.12);
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             color: var(--netflix-red);
         }
-
         .card-header h2 {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             font-weight: 600;
-            color: white;
             flex: 1;
-            margin: 0;
         }
-
         .btn-add {
-            background: var(--netflix-red);
-            color: white;
+            background: linear-gradient(95deg, var(--netflix-red), var(--netflix-red-dark));
             border: none;
             padding: 10px 24px;
-            border-radius: 30px;
+            border-radius: 40px;
             font-weight: 600;
+            font-size: 0.85rem;
             cursor: pointer;
-            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             gap: 8px;
+            box-shadow: 0 4px 12px rgba(229,9,20,0.3);
+            transition: all 0.2s;
         }
-
         .btn-add:hover {
-            background: var(--netflix-red-dark);
             transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(229,9,20,0.4);
         }
 
         .filtros-container {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             flex-wrap: wrap;
-            margin-bottom: 30px;
+            margin-bottom: 28px;
         }
-
         .filtro-input {
             flex: 1;
-            min-width: 150px;
-            padding: 12px 16px;
-            background: var(--netflix-gray);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 14px;
-            font-size: 0.9rem;
+            min-width: 140px;
+            padding: 10px 16px;
+            background: rgba(42, 42, 42, 0.8);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 18px;
+            font-size: 0.85rem;
             color: white;
-        }
-
-        .filtro-input option {
-            background: var(--netflix-gray);
-            color: white;
-        }
-
-        .filtro-input:focus {
-            outline: none;
-            border-color: var(--netflix-red);
-        }
-
-        .select-colaborador {
-            background-color: var(--netflix-gray);
-            color: var(--white);
+            font-weight: 500;
             cursor: pointer;
+            transition: all 0.2s;
         }
-
-        .select-colaborador option {
-            background-color: var(--netflix-gray);
-            color: var(--white);
-            padding: 12px;
+        .filtro-input:focus, .filtro-input:hover {
+            border-color: var(--netflix-red);
+            background: rgba(42, 42, 42, 0.95);
+            outline: none;
         }
 
         .grupo-mes {
-            margin-bottom: 30px;
-            border: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 20px;
             border-radius: 20px;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.05);
             overflow: hidden;
         }
-
         .grupo-header {
-            background: linear-gradient(135deg, var(--netflix-gray), var(--netflix-dark));
-            padding: 15px 25px;
+            padding: 14px 20px;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.3s ease;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            background: linear-gradient(135deg, rgba(42,42,42,0.6), rgba(26,26,26,0.6));
+            transition: all 0.2s;
         }
-
-        .grupo-header:hover {
-            background: rgba(229, 9, 20, 0.1);
-        }
-
+        .grupo-header:hover { background: rgba(229,9,20,0.08); }
         .grupo-titulo {
             display: flex;
             align-items: center;
-            gap: 15px;
-            font-size: 1.2rem;
+            gap: 12px;
             font-weight: 600;
-            flex-wrap: wrap;
+            font-size: 1rem;
         }
-
-        .grupo-titulo span:first-child {
-            font-size: 1.5rem;
-        }
-
+        .grupo-titulo span:first-child { font-size: 1.3rem; }
         .grupo-contador {
             background: var(--netflix-red);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            font-weight: 700;
         }
-
-        .grupo-icone {
-            transition: transform 0.3s ease;
-        }
-
-        .grupo-header.collapsed .grupo-icone {
-            transform: rotate(-90deg);
-        }
-
+        .grupo-icone { transition: transform 0.25s ease; font-size: 0.9rem; opacity: 0.7; }
+        .grupo-header.collapsed .grupo-icone { transform: rotate(-90deg); }
         .grupo-conteudo {
-            display: block;
-            padding: 20px;
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
         }
-
-        .grupo-header.collapsed + .grupo-conteudo {
-            display: none;
-        }
+        .grupo-header.collapsed + .grupo-conteudo { display: none; }
 
         .tabela-documentos-grupo {
             width: 100%;
             border-collapse: collapse;
         }
-
-        .tabela-documentos-grupo th,
-        .tabela-documentos-grupo td {
-            padding: 12px;
+        .tabela-documentos-grupo th {
             text-align: left;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 10px 8px;
+            color: var(--netflix-light);
+            font-weight: 500;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+        .tabela-documentos-grupo td {
+            padding: 12px 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
             vertical-align: middle;
         }
 
-        .tabela-documentos-grupo th {
-            color: var(--netflix-red);
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-
         .badge-tipo {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
+            display: inline-flex;
+            padding: 5px 12px;
+            border-radius: 30px;
             font-size: 0.7rem;
             font-weight: 600;
         }
-
-        .badge-atestado {
-            background: var(--accent-green);
-            color: white;
-        }
-
-        .badge-declaracao {
-            background: var(--accent-cyan);
-            color: white;
-        }
-
-        .badge-justificativa {
-            background: var(--accent-pink);
-            color: white;
-        }
-
+        .badge-atestado { background: var(--accent-green); color: #0a0a0a; }
+        .badge-declaracao { background: var(--accent-cyan); color: #0a0a0a; }
+        .badge-justificativa { background: var(--accent-pink); color: white; }
         .badge-unidade {
             display: inline-block;
-            padding: 4px 10px;
+            padding: 3px 8px;
             border-radius: 20px;
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             font-weight: 500;
             background: var(--accent-purple);
             color: white;
         }
 
         .btn-acao {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 500;
+            padding: 5px 10px;
+            border-radius: 28px;
+            font-size: 0.65rem;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.2s;
             border: none;
-            margin-right: 5px;
+            margin-right: 4px;
         }
-
-        .btn-visualizar {
-            background: var(--accent-purple);
-            color: white;
-        }
-
-        .btn-download {
-            background: var(--accent-green);
-            color: white;
-        }
-
-        .btn-editar {
-            background: var(--accent-yellow);
-            color: #1a1a1a;
-        }
-
-        .btn-excluir {
-            background: var(--netflix-red);
-            color: white;
-        }
-
-        .btn-acao:hover {
-            transform: translateY(-1px);
-            opacity: 0.9;
-        }
+        .btn-visualizar { background: var(--accent-purple); color: white; }
+        .btn-download { background: var(--accent-green); color: #111; }
+        .btn-editar { background: var(--accent-yellow); color: #111; }
+        .btn-excluir { background: var(--netflix-red); color: white; }
+        .btn-acao:hover { transform: translateY(-1px); filter: brightness(1.05); }
 
         .contador-total {
-            background: rgba(229, 9, 20, 0.2);
-            padding: 8px 16px;
+            background: rgba(229,9,20,0.2);
+            backdrop-filter: blur(4px);
+            padding: 5px 14px;
             border-radius: 30px;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             font-weight: 500;
             color: var(--netflix-red);
         }
 
-        .modal {
+        /* ===== MODAL COMPACTO E GLASS ===== */
+        .modal, .modal-confirmacao {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(8px);
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(20px);
             z-index: 10000;
             align-items: center;
             justify-content: center;
         }
-
-        .modal.active {
-            display: flex;
-        }
-
+        .modal.active, .modal-confirmacao.active { display: flex; }
+        
         .modal-content {
-            background: var(--netflix-dark);
-            border-radius: 28px;
-            padding: 40px;
+            background: rgba(20, 20, 20, 0.85);
+            backdrop-filter: blur(24px);
+            border-radius: 32px;
+            padding: 28px 32px;
             width: 100%;
-            max-width: 720px;
-            max-height: 90vh;
+            max-width: 680px;
+            max-height: 85vh;
             overflow-y: auto;
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
         }
-
+        
         .modal-content h3 {
-            font-size: 1.6rem;
+            font-size: 1.4rem;
             font-weight: 700;
-            margin-bottom: 28px;
-            color: var(--white);
+            margin-bottom: 20px;
             border-left: 4px solid var(--netflix-red);
-            padding-left: 20px;
+            padding-left: 16px;
         }
-
+        
+        /* Formulário mais compacto */
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
+            gap: 16px;
+            margin-bottom: 12px;
         }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
+        
+        .form-group { margin-bottom: 14px; }
+        
         .form-group label {
             display: block;
-            margin-bottom: 10px;
-            font-weight: 500;
-            font-size: 0.85rem;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.7rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
             color: var(--netflix-light);
         }
-
-        .form-group label .required {
-            color: var(--netflix-red);
-            margin-left: 4px;
-        }
-
+        
         .form-group input, 
-        .form-group select,
+        .form-group select, 
         .form-group textarea {
             width: 100%;
-            padding: 14px 18px;
-            background: var(--netflix-gray);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 14px;
-            font-size: 0.95rem;
-            color: var(--white);
-            transition: all 0.2s ease;
+            padding: 10px 14px;
+            background: rgba(42, 42, 42, 0.7);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            font-size: 0.85rem;
+            color: white;
             font-family: inherit;
+            transition: 0.2s;
         }
-
-        .form-group input[type="date"] {
-            color-scheme: dark;
+        
+        .form-group input:focus, 
+        .form-group select:focus {
+            border-color: var(--netflix-red);
+            outline: none;
+            background: rgba(42, 42, 42, 0.9);
         }
-
-        .form-group input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-            cursor: pointer;
-        }
-
-        .form-group select {
-            background-color: var(--netflix-gray);
-            color: var(--white);
-            cursor: pointer;
-        }
-
-        .form-group select option {
-            background-color: var(--netflix-gray);
-            color: var(--white);
-            padding: 12px;
-        }
-
+        
+        /* Radio group compacto */
         .radio-group {
             display: flex;
-            gap: 20px;
-            margin-top: 10px;
+            gap: 8px;
             flex-wrap: wrap;
+            margin-top: 4px;
         }
-
+        
         .radio-group label {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 6px;
             cursor: pointer;
             font-weight: normal;
             text-transform: none;
-            font-size: 0.9rem;
-            color: var(--white);
+            font-size: 0.75rem;
+            letter-spacing: normal;
             background: rgba(255,255,255,0.05);
-            padding: 8px 16px;
-            border-radius: 40px;
-            transition: all 0.2s;
+            padding: 6px 14px;
+            border-radius: 30px;
+            margin-bottom: 0;
         }
-
-        .radio-group label:hover {
-            background: rgba(255,255,255,0.1);
-        }
-
+        
         .radio-group input[type="radio"] {
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
+            margin: 0;
             accent-color: var(--netflix-red);
         }
-
-        .file-input-wrapper {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
-
+        
+        /* File input compacto */
         .file-input-wrapper input[type="file"] {
-            padding: 12px;
-            background: var(--netflix-gray);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 14px;
-            color: var(--white);
-            cursor: pointer;
+            padding: 8px 12px;
+            background: rgba(42,42,42,0.7);
+            border-radius: 16px;
+            font-size: 0.8rem;
         }
-
+        
         .file-input-wrapper input[type="file"]::file-selector-button {
             background: var(--netflix-red);
             color: white;
             border: none;
-            padding: 8px 20px;
-            border-radius: 30px;
-            margin-right: 15px;
+            padding: 6px 16px;
+            border-radius: 25px;
             cursor: pointer;
-            font-weight: 500;
+            font-size: 0.7rem;
+            margin-right: 12px;
         }
-
-        .file-input-wrapper input[type="file"]::file-selector-button:hover {
-            background: var(--netflix-red-dark);
-        }
-
+        
         .file-input-wrapper small {
-            margin-top: 8px;
+            margin-top: 6px;
+            font-size: 0.65rem;
             color: var(--netflix-light);
-            font-size: 0.75rem;
+            display: block;
         }
-
+        
+        /* Botões do modal */
         .modal-buttons {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             justify-content: flex-end;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255,255,255,0.05);
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.06);
         }
-
-        .btn-modal {
-            padding: 12px 28px;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: none;
-        }
-
+        
         .btn-primary {
             background: var(--netflix-red);
             color: white;
+            padding: 8px 24px;
+            border-radius: 32px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
         }
-
+        
         .btn-primary:hover {
             background: var(--netflix-red-dark);
-            transform: translateY(-2px);
+            transform: translateY(-1px);
         }
-
+        
         .btn-secondary {
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
             color: white;
+            padding: 8px 24px;
+            border-radius: 32px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
         }
-
+        
         .btn-secondary:hover {
             background: rgba(255,255,255,0.1);
         }
-
-        .modal-confirmacao {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(5px);
-            z-index: 10001;
-            align-items: center;
-            justify-content: center;
+        
+        /* Small text dentro do modal */
+        .form-group small {
+            font-size: 0.6rem;
+            color: var(--netflix-light);
+            display: block;
+            margin-top: 4px;
         }
-
-        .modal-confirmacao.active {
-            display: flex;
-        }
-
+        
+        /* Modal de confirmação */
         .modal-confirmacao-content {
-            background: var(--netflix-dark);
-            border-radius: 24px;
-            padding: 32px;
-            max-width: 420px;
+            background: rgba(20,20,20,0.9);
+            backdrop-filter: blur(24px);
+            border-radius: 28px;
+            padding: 28px;
+            max-width: 400px;
             width: 90%;
             text-align: center;
             border: 1px solid rgba(255,255,255,0.1);
-            animation: fadeInUp 0.2s ease;
         }
-
+        
         .modal-confirmacao-content h3 {
-            font-size: 1.4rem;
-            margin-bottom: 16px;
+            font-size: 1.3rem;
+            margin-bottom: 12px;
             color: var(--netflix-red);
             border: none;
             padding: 0;
         }
-
-        .modal-confirmacao-content p {
-            color: rgba(255,255,255,0.8);
-            margin-bottom: 24px;
-            font-size: 0.95rem;
-        }
-
+        
         .modal-confirmacao-buttons {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             justify-content: center;
+            margin-top: 20px;
         }
-
+        
         .btn-confirmar {
             background: var(--netflix-red);
             color: white;
-            padding: 10px 28px;
+            padding: 8px 24px;
             border-radius: 30px;
             font-weight: 600;
             border: none;
             cursor: pointer;
-            transition: all 0.2s;
         }
-
+        
         .btn-cancelar-modal {
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
             color: white;
-            padding: 10px 28px;
+            padding: 8px 24px;
             border-radius: 30px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
         }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
+        
         .notificacao-flutuante {
             position: fixed;
             top: 30px;
             right: 30px;
-            min-width: 320px;
-            background: var(--netflix-dark);
-            border-radius: 12px;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
-            z-index: 99999;
-            animation: slideIn 0.3s ease forwards;
+            min-width: 300px;
+            background: rgba(26,26,26,0.95);
+            backdrop-filter: blur(12px);
+            border-radius: 14px;
             border-left: 4px solid var(--accent-green);
+            z-index: 99999;
+            animation: slideIn 0.3s ease;
+            padding: 12px 20px;
         }
-
-        .notificacao-flutuante.error {
-            border-left-color: var(--netflix-red);
-        }
-
-        .notificacao-flutuante.warning {
-            border-left-color: var(--accent-yellow);
-        }
-
-        .notificacao-conteudo {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 16px 20px;
-        }
-
-        .notificacao-conteudo span {
-            color: white;
-            font-size: 0.9rem;
-        }
-
+        
         @keyframes slideIn {
             from { opacity: 0; transform: translateX(100%); }
             to { opacity: 1; transform: translateX(0); }
         }
-
-        .documento-info {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .documento-nome {
-            font-weight: 600;
-        }
-
+        
+        .documento-info { display: flex; flex-direction: column; gap: 4px; }
+        .documento-nome { font-weight: 600; }
+        
+        /* Scrollbar do modal */
         .modal-content::-webkit-scrollbar {
-            width: 8px;
+            width: 6px;
         }
-
         .modal-content::-webkit-scrollbar-track {
-            background: var(--netflix-gray);
-            border-radius: 4px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px;
         }
-
         .modal-content::-webkit-scrollbar-thumb {
             background: var(--netflix-red);
-            border-radius: 4px;
+            border-radius: 3px;
         }
 
         @media (max-width: 768px) {
-            body { padding: 10px; }
+            body { padding: 12px; }
             main { padding: 20px; }
             .form-card { padding: 20px; }
-            .filtros-container { flex-direction: column; }
-            .header-content { flex-direction: column; text-align: center; }
-            .grupo-header { flex-direction: column; text-align: center; gap: 10px; }
-            .tabela-documentos-grupo { display: block; overflow-x: auto; }
-            .btn-acao { margin-bottom: 5px; display: inline-block; }
             .form-row { grid-template-columns: 1fr; gap: 0; }
-            .modal-content { padding: 25px; }
-            .radio-group label { width: 100%; justify-content: center; }
+            .modal-content { padding: 20px; margin: 16px; }
+            .tabela-documentos-grupo { display: block; overflow-x: auto; }
+            .radio-group label { font-size: 0.7rem; padding: 4px 10px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+<div class="container">
+    <div class="glass-panel">
         <header class="header-moderno">
             <div class="header-content">
                 <div class="logo-wrapper" onclick="window.location.href='/'">
@@ -751,767 +612,182 @@
         <main>
             <div class="form-card">
                 <div class="card-header">
-                    <div class="header-icon">📄</div>
-                    <h2>Documentos Administrativos</h2>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="header-icon">📄</div>
+                        <h2>Documentos Administrativos</h2>
+                    </div>
                     <button class="btn-add" onclick="abrirModalUpload()">+ Novo Documento</button>
                 </div>
 
                 <div class="filtros-container">
-                    <select id="filtroNome" class="filtro-input" onchange="aplicarFiltros()">
-                        <option value="">👤 Todos os colaboradores</option>
-                    </select>
-                    <select id="filtroTipo" class="filtro-input" onchange="aplicarFiltros()">
-                        <option value="">Todos os tipos</option>
-                        <option value="atestado">🏥 Atestados</option>
-                        <option value="declaracao">📝 Declarações</option>
-                        <option value="justificativa">📋 Justificativas</option>
-                    </select>
-                    <select id="filtroUnidade" class="filtro-input" onchange="aplicarFiltros()">
-                        <option value="">Todas as unidades</option>
-                        <option value="CEIC El Shadday">CEIC El Shadday</option>
-                        <option value="CEIM Prof. Egberto Malta Moreira">CEIM Prof. Egberto Malta Moreira</option>
-                    </select>
-                    <select id="filtroMes" class="filtro-input" onchange="aplicarFiltros()">
-                        <option value="">Todos os meses</option>
-                        <option value="1">Janeiro</option>
-                        <option value="2">Fevereiro</option>
-                        <option value="3">Março</option>
-                        <option value="4">Abril</option>
-                        <option value="5">Maio</option>
-                        <option value="6">Junho</option>
-                        <option value="7">Julho</option>
-                        <option value="8">Agosto</option>
-                        <option value="9">Setembro</option>
-                        <option value="10">Outubro</option>
-                        <option value="11">Novembro</option>
-                        <option value="12">Dezembro</option>
-                    </select>
-                    <select id="filtroAno" class="filtro-input" onchange="aplicarFiltros()">
-                        <option value="">Todos os anos</option>
-                    </select>
+                    <select id="filtroNome" class="filtro-input" onchange="aplicarFiltros()"><option value="">👤 Todos os colaboradores</option></select>
+                    <select id="filtroTipo" class="filtro-input" onchange="aplicarFiltros()"><option value="">Todos os tipos</option><option value="atestado">🏥 Atestados</option><option value="declaracao">📝 Declarações</option><option value="justificativa">📋 Justificativas</option></select>
+                    <select id="filtroUnidade" class="filtro-input" onchange="aplicarFiltros()"><option value="">Todas as unidades</option><option value="CEIC El Shadday">CEIC El Shadday</option><option value="CEIM Prof. Egberto Malta Moreira">CEIM Prof. Egberto Malta Moreira</option></select>
+                    <select id="filtroMes" class="filtro-input" onchange="aplicarFiltros()"><option value="">Todos os meses</option><option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option><option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option><option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option></select>
+                    <select id="filtroAno" class="filtro-input" onchange="aplicarFiltros()"><option value="">Todos os anos</option></select>
                 </div>
 
-                <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                     <span class="contador-total" id="contadorTotal">0 documentos</span>
-                    <span style="color: var(--netflix-light); font-size: 0.75rem;">Clique no mês para expandir/recolher</span>
+                    <span style="color: var(--netflix-light); font-size: 0.65rem;">Clique no mês para expandir/recolher</span>
                 </div>
 
                 <div id="documentosAgrupados"></div>
-
-                <div id="semDocumentos" style="display: none; text-align: center; padding: 60px; color: var(--netflix-light);">
+                <div id="semDocumentos" style="display: none; text-align: center; padding: 50px; color: var(--netflix-light);">
                     <p>📭 Nenhum documento encontrado</p>
-                    <p style="font-size: 0.85rem; margin-top: 8px;">Tente ajustar os filtros ou clique em "+ Novo Documento"</p>
+                    <p style="font-size: 0.8rem; margin-top: 6px;">Tente ajustar os filtros ou clique em "+ Novo Documento"</p>
                 </div>
             </div>
         </main>
     </div>
+</div>
 
-    <div id="modalUpload" class="modal">
-        <div class="modal-content">
-            <h3 id="modalTitle">Novo Documento</h3>
-            <form id="formUpload" enctype="multipart/form-data">
-                <input type="hidden" id="editId" value="">
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Unidade <span class="required">*</span></label>
-                        <select id="unidadeSelect" required>
-                            <option value="">Selecione a unidade</option>
-                            <option value="CEIC El Shadday">CEIC El Shadday</option>
-                            <option value="CEIM Prof. Egberto Malta Moreira">CEIM Prof. Egberto Malta Moreira</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Tipo de Documento <span class="required">*</span></label>
-                        <div class="radio-group">
-                            <label><input type="radio" name="tipo" value="atestado"> 🏥 Atestado</label>
-                            <label><input type="radio" name="tipo" value="declaracao"> 📝 Declaração</label>
-                            <label><input type="radio" name="tipo" value="justificativa"> 📋 Justificativa</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Nome da Pessoa <span class="required">*</span></label>
-                        <select id="nomePessoa" class="select-colaborador" required>
-                            <option value="">🔍 Selecione um colaborador</option>
-                        </select>
-                        <small style="color: var(--netflix-light); display: block; margin-top: 5px;">Lista carregada dos funcionários cadastrados</small>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Data de Referência <span class="required">*</span></label>
-                        <input type="date" id="dataReferencia" required>
-                        <small style="color: var(--netflix-light); display: block; margin-top: 5px;">Selecione qualquer data (não precisa ser hoje)</small>
-                    </div>
-                </div>
-
+<!-- MODAL UPLOAD - VERSÃO COMPACTA E GLASS -->
+<div id="modalUpload" class="modal">
+    <div class="modal-content">
+        <h3 id="modalTitle">Novo Documento</h3>
+        <form id="formUpload" enctype="multipart/form-data">
+            <input type="hidden" id="editId" value="">
+            <div class="form-row">
                 <div class="form-group">
-                    <label>Arquivo <span class="required" id="arquivoRequired">*</span></label>
-                    <div class="file-input-wrapper">
-                        <input type="file" id="arquivoUpload" accept=".pdf,.jpg,.jpeg,.png">
-                        <small>Formatos aceitos: PDF, JPG, JPEG, PNG (máx. 10MB)</small>
+                    <label>Unidade <span class="required">*</span></label>
+                    <select id="unidadeSelect" required>
+                        <option value="">Selecione</option>
+                        <option value="CEIC El Shadday">CEIC El Shadday</option>
+                        <option value="CEIM Prof. Egberto Malta Moreira">CEIM Prof. Egberto Malta Moreira</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tipo</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="tipo" value="atestado"> 🏥 Atestado</label>
+                        <label><input type="radio" name="tipo" value="declaracao"> 📝 Declaração</label>
+                        <label><input type="radio" name="tipo" value="justificativa"> 📋 Justificativa</label>
                     </div>
                 </div>
-
-                <div class="modal-buttons">
-                    <button type="button" class="btn-modal btn-secondary" onclick="fecharModalUpload()">Cancelar</button>
-                    <button type="submit" class="btn-modal btn-primary" id="btnSubmit">Salvar Documento</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="modalExclusao" class="modal-confirmacao">
-        <div class="modal-confirmacao-content">
-            <h3>⚠️ Confirmar Exclusão</h3>
-            <p id="modalExclusaoMensagem">Tem certeza que deseja excluir este documento?</p>
-            <p style="font-size: 0.8rem; color: #E50914; margin-top: -10px;">Esta ação não pode ser desfeita.</p>
-            <div class="modal-confirmacao-buttons">
-                <button class="btn-cancelar-modal" onclick="fecharModalExclusao()">Cancelar</button>
-                <button class="btn-confirmar" id="btnConfirmarExclusao">Excluir</button>
             </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Colaborador <span class="required">*</span></label>
+                    <select id="nomePessoa" class="select-colaborador" required>
+                        <option value="">🔍 Selecione</option>
+                    </select>
+                    <small>Lista carregada dos funcionários</small>
+                </div>
+                <div class="form-group">
+                    <label>Data de Ref. <span class="required">*</span></label>
+                    <input type="date" id="dataReferencia" required>
+                    <small>Qualquer data</small>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Arquivo <span class="required" id="arquivoRequired">*</span></label>
+                <div class="file-input-wrapper">
+                    <input type="file" id="arquivoUpload" accept=".pdf,.jpg,.jpeg,.png">
+                    <small>PDF, JPG, PNG (máx. 10MB)</small>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="btn-secondary" onclick="fecharModalUpload()">Cancelar</button>
+                <button type="submit" class="btn-primary" id="btnSubmit">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL EXCLUSÃO -->
+<div id="modalExclusao" class="modal-confirmacao">
+    <div class="modal-confirmacao-content">
+        <h3>⚠️ Confirmar Exclusão</h3>
+        <p id="modalExclusaoMensagem">Tem certeza que deseja excluir este documento?</p>
+        <p style="font-size: 0.7rem; color: #E50914;">Esta ação não pode ser desfeita.</p>
+        <div class="modal-confirmacao-buttons">
+            <button class="btn-cancelar-modal" onclick="fecharModalExclusao()">Cancelar</button>
+            <button class="btn-confirmar" id="btnConfirmarExclusao">Excluir</button>
         </div>
     </div>
+</div>
 
-    <script>
-        let documentos = [];
-        let documentosFiltrados = [];
-        let funcionarios = [];
-        let editando = false;
-        let editandoId = null;
-        let documentoParaExcluir = null;
+<script>
+    let documentos = [];
+    let documentosFiltrados = [];
+    let funcionarios = [];
+    let editando = false;
+    let editandoId = null;
+    let documentoParaExcluir = null;
 
-        const mesesMap = {
-            '1': 'Janeiro', '01': 'Janeiro',
-            '2': 'Fevereiro', '02': 'Fevereiro',
-            '3': 'Março', '03': 'Março',
-            '4': 'Abril', '04': 'Abril',
-            '5': 'Maio', '05': 'Maio',
-            '6': 'Junho', '06': 'Junho',
-            '7': 'Julho', '07': 'Julho',
-            '8': 'Agosto', '08': 'Agosto',
-            '9': 'Setembro', '09': 'Setembro',
-            '10': 'Outubro', '10': 'Outubro',
-            '11': 'Novembro', '11': 'Novembro',
-            '12': 'Dezembro', '12': 'Dezembro'
-        };
+    const mesesMap = {
+        '1': 'Janeiro', '01': 'Janeiro',
+        '2': 'Fevereiro', '02': 'Fevereiro',
+        '3': 'Março', '03': 'Março',
+        '4': 'Abril', '04': 'Abril',
+        '5': 'Maio', '05': 'Maio',
+        '6': 'Junho', '06': 'Junho',
+        '7': 'Julho', '07': 'Julho',
+        '8': 'Agosto', '08': 'Agosto',
+        '9': 'Setembro', '09': 'Setembro',
+        '10': 'Outubro', '10': 'Outubro',
+        '11': 'Novembro', '11': 'Novembro',
+        '12': 'Dezembro', '12': 'Dezembro'
+    };
 
-        const mesesOrdem = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    const mesesOrdem = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
-        function getNomeMes(mes) {
-            if (!mes) return '?';
-            const mesStr = String(mes).trim();
-            return mesesMap[mesStr] || mesStr;
-        }
+    function getNomeMes(mes) { if (!mes) return '?'; const mesStr = String(mes).trim(); return mesesMap[mesStr] || mesStr; }
+    function converterParaBrasilia(dataUTC) { if (!dataUTC) return null; let data = typeof dataUTC === 'string' ? new Date(dataUTC) : new Date(dataUTC); if (isNaN(data.getTime())) return null; return new Date(data.getTime() + (3 * 60 * 60 * 1000)); }
+    function formatarDataBrasilia(dataUTC) { const dataBrasilia = converterParaBrasilia(dataUTC); if (!dataBrasilia) return '-'; const dia = String(dataBrasilia.getDate()).padStart(2, '0'); const mes = String(dataBrasilia.getMonth() + 1).padStart(2, '0'); const ano = dataBrasilia.getFullYear(); return `${dia}/${mes}/${ano}`; }
+    function getDataHoraAtualBrasilia() { const agora = new Date(); const offsetBrasilia = -3; const utc = agora.getTime() + (agora.getTimezoneOffset() * 60000); return new Date(utc + (offsetBrasilia * 3600000)); }
+    function getDataPadraoFormulario() { const dataBrasilia = getDataHoraAtualBrasilia(); const ano = dataBrasilia.getFullYear(); const mes = String(dataBrasilia.getMonth() + 1).padStart(2, '0'); const dia = String(dataBrasilia.getDate()).padStart(2, '0'); return `${ano}-${mes}-${dia}`; }
 
-        function converterParaBrasilia(dataUTC) {
-            if (!dataUTC) return null;
-            let data = typeof dataUTC === 'string' ? new Date(dataUTC) : new Date(dataUTC);
-            if (isNaN(data.getTime())) return null;
-            return new Date(data.getTime() + (3 * 60 * 60 * 1000));
-        }
+    function carregarAnosDinamicamente() {
+        const filtroAno = document.getElementById('filtroAno');
+        const dataReferencia = document.getElementById('dataReferencia');
+        const dataBrasilia = getDataHoraAtualBrasilia();
+        const anoAtual = dataBrasilia.getFullYear();
+        const anoInicio = 2020;
+        const anoFim = anoAtual + 5;
+        if (filtroAno) { filtroAno.innerHTML = '<option value="">Todos os anos</option>'; for (let ano = anoInicio; ano <= anoFim; ano++) { filtroAno.innerHTML += `<option value="${ano}">${ano}</option>`; } }
+        if (dataReferencia) { dataReferencia.value = getDataPadraoFormulario(); dataReferencia.removeAttribute('max'); dataReferencia.removeAttribute('min'); }
+    }
 
-        function formatarDataBrasilia(dataUTC) {
-            const dataBrasilia = converterParaBrasilia(dataUTC);
-            if (!dataBrasilia) return '-';
-            const dia = String(dataBrasilia.getDate()).padStart(2, '0');
-            const mes = String(dataBrasilia.getMonth() + 1).padStart(2, '0');
-            const ano = dataBrasilia.getFullYear();
-            return `${dia}/${mes}/${ano}`;
-        }
-
-        function getDataHoraAtualBrasilia() {
-            const agora = new Date();
-            const offsetBrasilia = -3;
-            const utc = agora.getTime() + (agora.getTimezoneOffset() * 60000);
-            return new Date(utc + (offsetBrasilia * 3600000));
-        }
-
-        function getDataPadraoFormulario() {
-            const dataBrasilia = getDataHoraAtualBrasilia();
-            const ano = dataBrasilia.getFullYear();
-            const mes = String(dataBrasilia.getMonth() + 1).padStart(2, '0');
-            const dia = String(dataBrasilia.getDate()).padStart(2, '0');
-            return `${ano}-${mes}-${dia}`;
-        }
-
-        function carregarAnosDinamicamente() {
-            const filtroAno = document.getElementById('filtroAno');
-            const dataReferencia = document.getElementById('dataReferencia');
-            const dataBrasilia = getDataHoraAtualBrasilia();
-            const anoAtual = dataBrasilia.getFullYear();
-            const anoInicio = 2020;
-            const anoFim = anoAtual + 5;
-            
-            if (filtroAno) {
-                filtroAno.innerHTML = '<option value="">Todos os anos</option>';
-                for (let ano = anoInicio; ano <= anoFim; ano++) {
-                    filtroAno.innerHTML += `<option value="${ano}">${ano}</option>`;
-                }
-            }
-            if (dataReferencia) {
-                dataReferencia.value = getDataPadraoFormulario();
-                dataReferencia.removeAttribute('max');
-                dataReferencia.removeAttribute('min');
-            }
-        }
-
-        function mostrarNotificacao(mensagem, tipo = 'success') {
-            const notificacao = document.createElement('div');
-            notificacao.className = `notificacao-flutuante ${tipo}`;
-            notificacao.innerHTML = `<div class="notificacao-conteudo"><span>${mensagem}</span></div>`;
-            document.body.appendChild(notificacao);
-            setTimeout(() => notificacao.remove(), 3000);
-        }
-
-        function atualizarContadorTotal() {
-            const contador = document.getElementById('contadorTotal');
-            const total = documentosFiltrados.length;
-            contador.textContent = `${total} ${total === 1 ? 'documento' : 'documentos'}`;
-            const semDocsDiv = document.getElementById('semDocumentos');
-            if (total === 0) {
-                semDocsDiv.style.display = 'block';
-            } else {
-                semDocsDiv.style.display = 'none';
-            }
-        }
-
-        function popularFiltroNomeSelect() {
-            const selectFiltroNome = document.getElementById('filtroNome');
-            selectFiltroNome.innerHTML = '<option value="">👤 Todos os colaboradores</option>';
-            funcionarios.forEach(func => {
-                const option = document.createElement('option');
-                option.value = func.nome;
-                option.textContent = func.nome;
-                selectFiltroNome.appendChild(option);
-            });
-        }
-
-        function popularSelectNomePessoa() {
-            const selectNomePessoa = document.getElementById('nomePessoa');
-            selectNomePessoa.innerHTML = '<option value="">🔍 Selecione um colaborador</option>';
-            funcionarios.forEach(func => {
-                const option = document.createElement('option');
-                option.value = func.nome;
-                option.textContent = func.nome;
-                selectNomePessoa.appendChild(option);
-            });
-        }
-
-        function carregarFuncionariosParaSelect() {
-            fetch('/api/funcionarios/listar')
-                .then(response => {
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.sucesso && data.funcionarios && data.funcionarios.length > 0) {
-                        funcionarios = data.funcionarios.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
-                        popularFiltroNomeSelect();
-                        popularSelectNomePessoa();
-                        console.log(`✅ ${funcionarios.length} colaborador(es) carregado(s) do MongoDB`);
-                    } else {
-                        console.log('⚠️ Nenhum colaborador encontrado');
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro ao carregar funcionários:', error);
-                });
-        }
-
-        function carregarDocumentos() {
-            fetch('/documentos/api/listar')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.sucesso) {
-                        documentos = data.documentos;
-                        aplicarFiltros();
-                    } else {
-                        mostrarNotificacao('Erro ao carregar documentos', 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    mostrarNotificacao('Erro ao carregar documentos', 'error');
-                });
-        }
-
-        function aplicarFiltros() {
-            const filtroNome = document.getElementById('filtroNome').value;
-            const filtroTipo = document.getElementById('filtroTipo').value;
-            const filtroUnidade = document.getElementById('filtroUnidade').value;
-            const filtroMes = document.getElementById('filtroMes').value;
-            const filtroAno = document.getElementById('filtroAno').value;
-
-            documentosFiltrados = documentos.filter(doc => {
-                if (filtroNome && doc.nome_pessoa !== filtroNome) return false;
-                if (filtroTipo && doc.tipo !== filtroTipo) return false;
-                if (filtroUnidade && doc.unidade !== filtroUnidade) return false;
-                if (filtroMes) {
-                    const mesDoc = String(doc.mes);
-                    const mesFiltro = String(filtroMes);
-                    if (mesDoc !== mesFiltro && mesDoc.padStart(2, '0') !== mesFiltro.padStart(2, '0')) return false;
-                }
-                if (filtroAno && String(doc.ano) !== String(filtroAno)) return false;
-                return true;
-            });
-
-            atualizarContadorTotal();
-            agruparEExibirDocumentos();
-        }
-
-        function agruparEExibirDocumentos() {
-            const grupos = {};
-            
-            documentosFiltrados.forEach(doc => {
-                const mesNome = getNomeMes(doc.mes);
-                const chave = `${mesNome}/${doc.ano}`;
-                
-                if (!grupos[chave]) {
-                    grupos[chave] = {
-                        mes: mesNome,
-                        ano: doc.ano,
-                        atestados: [],
-                        declaracoes: [],
-                        justificativas: []
-                    };
-                }
-                
-                if (doc.tipo === 'atestado') {
-                    grupos[chave].atestados.push(doc);
-                } else if (doc.tipo === 'declaracao') {
-                    grupos[chave].declaracoes.push(doc);
-                } else if (doc.tipo === 'justificativa') {
-                    grupos[chave].justificativas.push(doc);
-                }
-            });
-
-            const gruposOrdenados = Object.values(grupos).sort((a, b) => {
-                if (a.ano !== b.ano) return b.ano - a.ano;
-                return mesesOrdem.indexOf(b.mes) - mesesOrdem.indexOf(a.mes);
-            });
-
-            const container = document.getElementById('documentosAgrupados');
-            if (gruposOrdenados.length === 0) {
-                container.innerHTML = '';
-                return;
-            }
-
-            container.innerHTML = gruposOrdenados.map(grupo => {
-                const atestadosOrdenados = grupo.atestados.sort((a, b) => a.nome_pessoa.localeCompare(b.nome_pessoa));
-                const declaracoesOrdenadas = grupo.declaracoes.sort((a, b) => a.nome_pessoa.localeCompare(b.nome_pessoa));
-                const justificativasOrdenadas = grupo.justificativas.sort((a, b) => a.nome_pessoa.localeCompare(b.nome_pessoa));
-                
-                let html = `
-                    <div class="grupo-mes">
-                        <div class="grupo-header" onclick="toggleGrupo(this)">
-                            <div class="grupo-titulo">
-                                <span>📁</span>
-                                <span>${grupo.mes} ${grupo.ano}</span>
-                                <span class="grupo-contador">${atestadosOrdenados.length + declaracoesOrdenadas.length + justificativasOrdenadas.length} documentos</span>
-                            </div>
-                            <div class="grupo-icone">▼</div>
-                        </div>
-                        <div class="grupo-conteudo">
-                `;
-                
-                if (atestadosOrdenados.length > 0) {
-                    html += `
-                        <div style="margin-bottom: 30px;">
-                            <div style="background: var(--accent-green); padding: 8px 16px; border-radius: 20px; margin-bottom: 15px; display: inline-block;">
-                                🏥 Atestados (${atestadosOrdenados.length})
-                            </div>
-                            <table class="tabela-documentos-grupo">
-                                <thead>
-                                    <tr><th>Nome</th><th>Unidade</th><th>Tipo</th><th>Data de Referência</th><th>Ações</th></tr>
-                                </thead>
-                                <tbody>
-                                    ${atestadosOrdenados.map(doc => `
-                                        <tr>
-                                            <td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td>
-                                            <td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td>
-                                            <td><span class="badge-tipo badge-atestado">Atestado</span></td>
-                                            <td>${doc.data_referencia_formatada || doc.data_referencia || '-'}</td>
-                                            <td>
-                                                <button class="btn-acao btn-visualizar" onclick="visualizarDocumento('${doc._id}')">👁️</button>
-                                                <button class="btn-acao btn-download" onclick="baixarDocumento('${doc._id}')">⬇️</button>
-                                                <button class="btn-acao btn-editar" onclick="editarDocumento('${doc._id}')">✏️</button>
-                                                <button class="btn-acao btn-excluir" onclick="abrirModalExclusao('${doc._id}', '${escapeHtml(doc.nome_pessoa)}')">🗑️</button>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    `;
-                }
-                
-                if (declaracoesOrdenadas.length > 0) {
-                    html += `
-                        <div style="margin-bottom: 30px;">
-                            <div style="background: var(--accent-cyan); padding: 8px 16px; border-radius: 20px; margin-bottom: 15px; display: inline-block;">
-                                📝 Declarações (${declaracoesOrdenadas.length})
-                            </div>
-                            <table class="tabela-documentos-grupo">
-                                <thead>
-                                    <tr><th>Nome</th><th>Unidade</th><th>Tipo</th><th>Data de Referência</th><th>Ações</th></tr>
-                                </thead>
-                                <tbody>
-                                    ${declaracoesOrdenadas.map(doc => `
-                                        <tr>
-                                            <td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td>
-                                            <td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td>
-                                            <td><span class="badge-tipo badge-declaracao">Declaração</span></td>
-                                            <td>${doc.data_referencia_formatada || doc.data_referencia || '-'}</td>
-                                            <td>
-                                                <button class="btn-acao btn-visualizar" onclick="visualizarDocumento('${doc._id}')">👁️</button>
-                                                <button class="btn-acao btn-download" onclick="baixarDocumento('${doc._id}')">⬇️</button>
-                                                <button class="btn-acao btn-editar" onclick="editarDocumento('${doc._id}')">✏️</button>
-                                                <button class="btn-acao btn-excluir" onclick="abrirModalExclusao('${doc._id}', '${escapeHtml(doc.nome_pessoa)}')">🗑️</button>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </td>
-                        </div>
-                    `;
-                }
-                
-                if (justificativasOrdenadas.length > 0) {
-                    html += `
-                        <div>
-                            <div style="background: var(--accent-pink); padding: 8px 16px; border-radius: 20px; margin-bottom: 15px; display: inline-block;">
-                                📋 Justificativas (${justificativasOrdenadas.length})
-                            </div>
-                            <table class="tabela-documentos-grupo">
-                                <thead>
-                                    <tr><th>Nome</th><th>Unidade</th><th>Tipo</th><th>Data de Referência</th><th>Ações</th></tr>
-                                </thead>
-                                <tbody>
-                                    ${justificativasOrdenadas.map(doc => `
-                                        <tr>
-                                            <td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td>
-                                            <td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td>
-                                            <td><span class="badge-tipo badge-justificativa">Justificativa</span></td>
-                                            <td>${doc.data_referencia_formatada || doc.data_referencia || '-'}</td>
-                                            <td>
-                                                <button class="btn-acao btn-visualizar" onclick="visualizarDocumento('${doc._id}')">👁️</button>
-                                                <button class="btn-acao btn-download" onclick="baixarDocumento('${doc._id}')">⬇️</button>
-                                                <button class="btn-acao btn-editar" onclick="editarDocumento('${doc._id}')">✏️</button>
-                                                <button class="btn-acao btn-excluir" onclick="abrirModalExclusao('${doc._id}', '${escapeHtml(doc.nome_pessoa)}')">🗑️</button>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    `;
-                }
-                
-                html += `</div></div>`;
-                return html;
-            }).join('');
-        }
-
-        function toggleGrupo(element) {
-            element.classList.toggle('collapsed');
-        }
-
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function baixarDocumento(id) {
-            window.open(`/documentos/api/download/${id}`, '_blank');
-        }
-
-        function visualizarDocumento(id) {
-            window.open(`/documentos/api/visualizar/${id}`, '_blank');
-        }
-
-        function abrirModalExclusao(id, nome) {
-            documentoParaExcluir = id;
-            const modal = document.getElementById('modalExclusao');
-            document.getElementById('modalExclusaoMensagem').textContent = `Tem certeza que deseja excluir o documento "${nome}"?`;
-            modal.classList.add('active');
-        }
-
-        function fecharModalExclusao() {
-            document.getElementById('modalExclusao').classList.remove('active');
-            documentoParaExcluir = null;
-        }
-
-        function confirmarExclusao() {
-            if (documentoParaExcluir) {
-                excluirDocumento(documentoParaExcluir);
-                fecharModalExclusao();
-            }
-        }
-
-        function excluirDocumento(id) {
-            fetch(`/documentos/api/excluir/${id}`, { method: 'DELETE' })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.sucesso) {
-                        mostrarNotificacao('Documento excluído com sucesso!', 'success');
-                        carregarDocumentos();
-                    } else {
-                        mostrarNotificacao(data.erro || 'Erro ao excluir', 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    mostrarNotificacao('Erro ao excluir documento', 'error');
-                });
-        }
-
-        function editarDocumento(id) {
-            const doc = documentos.find(d => d._id === id);
-            if (doc) {
-                editando = true;
-                editandoId = id;
-                document.getElementById('modalTitle').textContent = 'Editar Documento';
-                document.getElementById('btnSubmit').textContent = 'Atualizar';
-                document.getElementById('arquivoRequired').textContent = '(opcional)';
-                document.getElementById('arquivoUpload').required = false;
-                document.getElementById('editId').value = id;
-                document.getElementById('unidadeSelect').value = doc.unidade || '';
-                document.querySelector(`input[name="tipo"][value="${doc.tipo}"]`).checked = true;
-                
-                const selectNomePessoa = document.getElementById('nomePessoa');
-                for (let i = 0; i < selectNomePessoa.options.length; i++) {
-                    if (selectNomePessoa.options[i].value === doc.nome_pessoa) {
-                        selectNomePessoa.selectedIndex = i;
-                        break;
-                    }
-                }
-                
-                if (doc.data_referencia) {
-                    document.getElementById('dataReferencia').value = doc.data_referencia;
-                }
-                abrirModalUpload();
-            }
-        }
-
-        function abrirModalUpload() {
-            document.getElementById('modalUpload').classList.add('active');
-        }
-
-        function fecharModalUpload() {
-            document.getElementById('modalUpload').classList.remove('active');
-            resetForm();
-        }
-
-        function resetForm() {
-            editando = false;
-            editandoId = null;
-            document.getElementById('modalTitle').textContent = 'Novo Documento';
-            document.getElementById('btnSubmit').textContent = 'Salvar Documento';
-            document.getElementById('arquivoRequired').textContent = '*';
-            document.getElementById('arquivoUpload').required = true;
-            document.getElementById('formUpload').reset();
-            document.getElementById('editId').value = '';
-            document.getElementById('dataReferencia').value = getDataPadraoFormulario();
-            const selectNomePessoa = document.getElementById('nomePessoa');
-            if (selectNomePessoa.options.length > 0) {
-                selectNomePessoa.selectedIndex = 0;
-            }
-        }
-
-        // ===== FUNÇÃO DE COMPRESSÃO DE IMAGEM =====
-        async function comprimirImagem(file, maxSizeKB = 500) {
-            if (!file.type.startsWith('image/')) return file;
-            if (file.size < 1 * 1024 * 1024) return file;
-            
-            console.log(`🖼️ Comprimindo imagem: ${file.name} (${(file.size / 1024).toFixed(0)}KB)`);
-            
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.onload = function() {
-                        let width = img.width;
-                        let height = img.height;
-                        const maxWidth = 1024;
-                        const maxHeight = 1024;
-                        
-                        if (width > maxWidth || height > maxHeight) {
-                            if (width > height) {
-                                height = (height * maxWidth) / width;
-                                width = maxWidth;
-                            } else {
-                                width = (width * maxHeight) / height;
-                                height = maxHeight;
-                            }
-                        }
-                        
-                        const canvas = document.createElement('canvas');
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        
-                        let qualidade = 0.7;
-                        function tentarCompressao() {
-                            canvas.toBlob(blob => {
-                                if (blob.size / 1024 > maxSizeKB && qualidade > 0.3) {
-                                    qualidade -= 0.1;
-                                    tentarCompressao();
-                                } else {
-                                    const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
-                                        type: 'image/jpeg',
-                                        lastModified: Date.now()
-                                    });
-                                    console.log(`   ✅ Imagem comprimida: ${(file.size / 1024).toFixed(0)}KB → ${(compressedFile.size / 1024).toFixed(0)}KB`);
-                                    resolve(compressedFile);
-                                }
-                            }, 'image/jpeg', qualidade);
-                        }
-                        tentarCompressao();
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        // ===== FUNÇÃO DE COMPRESSÃO DE PDF =====
-        async function comprimirPDF(file, tamanhoMaximoMB = 2) {
-            if (file.type !== 'application/pdf') return file;
-            if (file.size <= tamanhoMaximoMB * 1024 * 1024) return file;
-            
-            mostrarNotificacao(`🔄 Comprimindo PDF de ${(file.size / 1024 / 1024).toFixed(2)}MB... Aguarde`, 'warning');
-            
-            try {
-                if (typeof window.PDFLib === 'undefined') {
-                    console.warn('PDF-Lib não carregado');
-                    return file;
-                }
-                
-                const arrayBuffer = await file.arrayBuffer();
-                const { PDFDocument } = window.PDFLib;
-                const pdfDoc = await PDFDocument.load(arrayBuffer);
-                
-                const pageCount = pdfDoc.getPageCount();
-                console.log(`📄 PDF tem ${pageCount} página(s)`);
-                
-                const novoPdf = await PDFDocument.create();
-                
-                for (let i = 0; i < pageCount; i++) {
-                    const [copiedPage] = await novoPdf.copyPages(pdfDoc, [i]);
-                    novoPdf.addPage(copiedPage);
-                }
-                
-                const compressedBytes = await novoPdf.save({
-                    useObjectStreams: true,
-                    addDefaultPage: false,
-                    objectsPerTick: 50
-                });
-                
-                const compressedFile = new File([compressedBytes], file.name, {
-                    type: 'application/pdf',
-                    lastModified: Date.now()
-                });
-                
-                console.log(`   ✅ PDF comprimido: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
-                mostrarNotificacao(`✅ PDF comprimido!`, 'success');
-                
-                return compressedFile;
-            } catch (error) {
-                console.error('Erro ao comprimir PDF:', error);
-                return file;
-            }
-        }
-
-        // ===== SUBMIT DO FORMULÁRIO COM COMPRESSÃO DE PDF E IMAGEM =====
-        document.getElementById('formUpload').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const tipo = document.querySelector('input[name="tipo"]:checked');
-            const unidade = document.getElementById('unidadeSelect').value;
-            const nomePessoa = document.getElementById('nomePessoa').value.trim();
-            const dataReferencia = document.getElementById('dataReferencia').value;
-            let arquivo = document.getElementById('arquivoUpload').files[0];
-            const editId = document.getElementById('editId').value;
-
-            if (!tipo) { mostrarNotificacao('Selecione o tipo de documento', 'warning'); return; }
-            if (!unidade) { mostrarNotificacao('Selecione a unidade', 'warning'); return; }
-            if (!nomePessoa) { mostrarNotificacao('Selecione o nome do colaborador', 'warning'); return; }
-            if (!dataReferencia) { mostrarNotificacao('Data de referência é obrigatória', 'warning'); return; }
-            if (!editando && !arquivo) { mostrarNotificacao('Selecione um arquivo', 'warning'); return; }
-
-            // COMPRIMIR PDF SE FOR GRANDE (> 2MB)
-            if (arquivo && arquivo.type === 'application/pdf' && arquivo.size > 2 * 1024 * 1024) {
-                mostrarNotificacao('🔄 Comprimindo PDF...', 'warning');
-                arquivo = await comprimirPDF(arquivo, 2);
-            }
-            
-            // COMPRIMIR IMAGEM SE FOR GRANDE (> 1.5MB)
-            if (arquivo && arquivo.type.startsWith('image/') && arquivo.size > 1.5 * 1024 * 1024) {
-                mostrarNotificacao('🔄 Comprimindo imagem...', 'warning');
-                arquivo = await comprimirImagem(arquivo, 500);
-            }
-            
-            // Verificar tamanho final (máximo 15MB)
-            if (arquivo && arquivo.size > 15 * 1024 * 1024) {
-                mostrarNotificacao(`❌ Arquivo muito grande (${(arquivo.size / 1024 / 1024).toFixed(1)}MB). Máximo 15MB.`, 'error');
-                return;
-            }
-
-            const dataObj = new Date(dataReferencia);
-            if (isNaN(dataObj.getTime())) {
-                mostrarNotificacao('Data de referência inválida', 'warning');
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('tipo', tipo.value);
-            formData.append('unidade', unidade);
-            formData.append('nome_pessoa', nomePessoa);
-            formData.append('data_referencia', dataReferencia);
-            if (arquivo) formData.append('arquivo', arquivo);
-            if (editando) formData.append('documento_id', editId);
-
-            const [anoRef, mesRef] = dataReferencia.split('-');
-            formData.append('mes', mesRef);
-            formData.append('ano', anoRef);
-
-            const url = editando ? '/documentos/api/atualizar' : '/documentos/api/upload';
-
-            try {
-                const response = await fetch(url, { method: 'POST', body: formData });
-                const data = await response.json();
-                if (data.sucesso) {
-                    mostrarNotificacao(editando ? 'Documento atualizado com sucesso!' : 'Documento enviado com sucesso!', 'success');
-                    fecharModalUpload();
-                    carregarDocumentos();
-                } else {
-                    mostrarNotificacao(data.erro || 'Erro ao salvar', 'error');
-                }
-            } catch (error) {
-                console.error('Erro:', error);
-                mostrarNotificacao('Erro de conexão', 'error');
-            }
-        });
-
-        document.getElementById('modalUpload').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('modalUpload')) {
-                fecharModalUpload();
-            }
-        });
-
-        document.getElementById('btnConfirmarExclusao').addEventListener('click', confirmarExclusao);
-
-        // Inicialização
-        carregarAnosDinamicamente();
-        carregarFuncionariosParaSelect();
-        carregarDocumentos();
-    </script>
+    function mostrarNotificacao(mensagem, tipo = 'success') { const notificacao = document.createElement('div'); notificacao.className = `notificacao-flutuante ${tipo}`; notificacao.innerHTML = `<span>${mensagem}</span>`; document.body.appendChild(notificacao); setTimeout(() => notificacao.remove(), 3000); }
+    function atualizarContadorTotal() { const contador = document.getElementById('contadorTotal'); const total = documentosFiltrados.length; contador.textContent = `${total} ${total === 1 ? 'documento' : 'documentos'}`; const semDocsDiv = document.getElementById('semDocumentos'); if (total === 0) { semDocsDiv.style.display = 'block'; } else { semDocsDiv.style.display = 'none'; } }
+    function popularFiltroNomeSelect() { const selectFiltroNome = document.getElementById('filtroNome'); selectFiltroNome.innerHTML = '<option value="">👤 Todos os colaboradores</option>'; funcionarios.forEach(func => { const option = document.createElement('option'); option.value = func.nome; option.textContent = func.nome; selectFiltroNome.appendChild(option); }); }
+    function popularSelectNomePessoa() { const selectNomePessoa = document.getElementById('nomePessoa'); selectNomePessoa.innerHTML = '<option value="">🔍 Selecione um colaborador</option>'; funcionarios.forEach(func => { const option = document.createElement('option'); option.value = func.nome; option.textContent = func.nome; selectNomePessoa.appendChild(option); }); }
+    
+    function carregarFuncionariosParaSelect() { fetch('/api/funcionarios/listar').then(response => { if (!response.ok) throw new Error(`HTTP ${response.status}`); return response.json(); }).then(data => { if (data.sucesso && data.funcionarios && data.funcionarios.length > 0) { funcionarios = data.funcionarios.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')); popularFiltroNomeSelect(); popularSelectNomePessoa(); console.log(`✅ ${funcionarios.length} colaborador(es) carregado(s)`); } else { console.log('⚠️ Nenhum colaborador encontrado'); } }).catch(error => { console.error('Erro ao carregar funcionários:', error); }); }
+    
+    function carregarDocumentos() { fetch('/documentos/api/listar').then(response => response.json()).then(data => { if (data.sucesso) { documentos = data.documentos; aplicarFiltros(); } else { mostrarNotificacao('Erro ao carregar documentos', 'error'); } }).catch(error => { console.error('Erro:', error); mostrarNotificacao('Erro ao carregar documentos', 'error'); }); }
+    
+    function aplicarFiltros() { const filtroNome = document.getElementById('filtroNome').value; const filtroTipo = document.getElementById('filtroTipo').value; const filtroUnidade = document.getElementById('filtroUnidade').value; const filtroMes = document.getElementById('filtroMes').value; const filtroAno = document.getElementById('filtroAno').value; documentosFiltrados = documentos.filter(doc => { if (filtroNome && doc.nome_pessoa !== filtroNome) return false; if (filtroTipo && doc.tipo !== filtroTipo) return false; if (filtroUnidade && doc.unidade !== filtroUnidade) return false; if (filtroMes) { const mesDoc = String(doc.mes); const mesFiltro = String(filtroMes); if (mesDoc !== mesFiltro && mesDoc.padStart(2, '0') !== mesFiltro.padStart(2, '0')) return false; } if (filtroAno && String(doc.ano) !== String(filtroAno)) return false; return true; }); atualizarContadorTotal(); agruparEExibirDocumentos(); }
+    
+    function agruparEExibirDocumentos() { const grupos = {}; documentosFiltrados.forEach(doc => { const mesNome = getNomeMes(doc.mes); const chave = `${mesNome}/${doc.ano}`; if (!grupos[chave]) { grupos[chave] = { mes: mesNome, ano: doc.ano, atestados: [], declaracoes: [], justificativas: [] }; } if (doc.tipo === 'atestado') { grupos[chave].atestados.push(doc); } else if (doc.tipo === 'declaracao') { grupos[chave].declaracoes.push(doc); } else if (doc.tipo === 'justificativa') { grupos[chave].justificativas.push(doc); } }); const gruposOrdenados = Object.values(grupos).sort((a, b) => { if (a.ano !== b.ano) return b.ano - a.ano; return mesesOrdem.indexOf(b.mes) - mesesOrdem.indexOf(a.mes); }); const container = document.getElementById('documentosAgrupados'); if (gruposOrdenados.length === 0) { container.innerHTML = ''; return; } container.innerHTML = gruposOrdenados.map(grupo => { const atestadosOrdenados = grupo.atestados.sort((a, b) => a.nome_pessoa.localeCompare(b.nome_pessoa)); const declaracoesOrdenadas = grupo.declaracoes.sort((a, b) => a.nome_pessoa.localeCompare(b.nome_pessoa)); const justificativasOrdenadas = grupo.justificativas.sort((a, b) => a.nome_pessoa.localeCompare(b.nome_pessoa)); let html = `<div class="grupo-mes"><div class="grupo-header" onclick="toggleGrupo(this)"><div class="grupo-titulo"><span>📁</span><span>${grupo.mes} ${grupo.ano}</span><span class="grupo-contador">${atestadosOrdenados.length + declaracoesOrdenadas.length + justificativasOrdenadas.length}</span></div><div class="grupo-icone">▼</div></div><div class="grupo-conteudo">`; if (atestadosOrdenados.length > 0) { html += `<div style="margin-bottom: 24px;"><div style="background: var(--accent-green); padding: 5px 14px; border-radius: 20px; display: inline-block; margin-bottom: 12px; font-size: 0.75rem;">🏥 Atestados (${atestadosOrdenados.length})</div><table class="tabela-documentos-grupo"><thead><tr><th>Nome</th><th>Unidade</th><th>Tipo</th><th>Data</th><th>Ações</th></tr></thead><tbody>${atestadosOrdenados.map(doc => `<tr><td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td><td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td><td><span class="badge-tipo badge-atestado">Atestado</span></td><td>${doc.data_referencia_formatada || doc.data_referencia || '-'}</td><td><button class="btn-acao btn-visualizar" onclick="visualizarDocumento('${doc._id}')">👁️</button><button class="btn-acao btn-download" onclick="baixarDocumento('${doc._id}')">⬇️</button><button class="btn-acao btn-editar" onclick="editarDocumento('${doc._id}')">✏️</button><button class="btn-acao btn-excluir" onclick="abrirModalExclusao('${doc._id}', '${escapeHtml(doc.nome_pessoa)}')">🗑️</button></td></tr>`).join('')}</tbody></table></div>`; } if (declaracoesOrdenadas.length > 0) { html += `<div style="margin-bottom: 24px;"><div style="background: var(--accent-cyan); padding: 5px 14px; border-radius: 20px; display: inline-block; margin-bottom: 12px; font-size: 0.75rem;">📝 Declarações (${declaracoesOrdenadas.length})</div><table class="tabela-documentos-grupo"><thead><tr><th>Nome</th><th>Unidade</th><th>Tipo</th><th>Data</th><th>Ações</th></tr></thead><tbody>${declaracoesOrdenadas.map(doc => `<tr><td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td><td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td><td><span class="badge-tipo badge-declaracao">Declaração</span></td><td>${doc.data_referencia_formatada || doc.data_referencia || '-'}</td><td><button class="btn-acao btn-visualizar" onclick="visualizarDocumento('${doc._id}')">👁️</button><button class="btn-acao btn-download" onclick="baixarDocumento('${doc._id}')">⬇️</button><button class="btn-acao btn-editar" onclick="editarDocumento('${doc._id}')">✏️</button><button class="btn-acao btn-excluir" onclick="abrirModalExclusao('${doc._id}', '${escapeHtml(doc.nome_pessoa)}')">🗑️</button></td></tr>`).join('')}</tbody></table></div>`; } if (justificativasOrdenadas.length > 0) { html += `<div><div style="background: var(--accent-pink); padding: 5px 14px; border-radius: 20px; display: inline-block; margin-bottom: 12px; font-size: 0.75rem;">📋 Justificativas (${justificativasOrdenadas.length})</div><table class="tabela-documentos-grupo"><thead><tr><th>Nome</th><th>Unidade</th><th>Tipo</th><th>Data</th><th>Ações</th></tr></thead><tbody>${justificativasOrdenadas.map(doc => `<tr><td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td><td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td><td><span class="badge-tipo badge-justificativa">Justificativa</span></td><td>${doc.data_referencia_formatada || doc.data_referencia || '-'}</td><td><button class="btn-acao btn-visualizar" onclick="visualizarDocumento('${doc._id}')">👁️</button><button class="btn-acao btn-download" onclick="baixarDocumento('${doc._id}')">⬇️</button><button class="btn-acao btn-editar" onclick="editarDocumento('${doc._id}')">✏️</button><button class="btn-acao btn-excluir" onclick="abrirModalExclusao('${doc._id}', '${escapeHtml(doc.nome_pessoa)}')">🗑️</button></td></tr>`).join('')}</tbody><tr></div>`; } html += `</div></div>`; return html; }).join(''); }
+    
+    function toggleGrupo(element) { element.classList.toggle('collapsed'); }
+    function escapeHtml(text) { if (!text) return ''; const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+    function baixarDocumento(id) { window.open(`/documentos/api/download/${id}`, '_blank'); }
+    function visualizarDocumento(id) { window.open(`/documentos/api/visualizar/${id}`, '_blank'); }
+    function abrirModalExclusao(id, nome) { documentoParaExcluir = id; const modal = document.getElementById('modalExclusao'); document.getElementById('modalExclusaoMensagem').textContent = `Excluir "${nome}"?`; modal.classList.add('active'); }
+    function fecharModalExclusao() { document.getElementById('modalExclusao').classList.remove('active'); documentoParaExcluir = null; }
+    function confirmarExclusao() { if (documentoParaExcluir) { excluirDocumento(documentoParaExcluir); fecharModalExclusao(); } }
+    function excluirDocumento(id) { fetch(`/documentos/api/excluir/${id}`, { method: 'DELETE' }).then(response => response.json()).then(data => { if (data.sucesso) { mostrarNotificacao('Documento excluído!', 'success'); carregarDocumentos(); } else { mostrarNotificacao(data.erro || 'Erro ao excluir', 'error'); } }).catch(error => { console.error('Erro:', error); mostrarNotificacao('Erro ao excluir', 'error'); }); }
+    
+    function editarDocumento(id) { const doc = documentos.find(d => d._id === id); if (doc) { editando = true; editandoId = id; document.getElementById('modalTitle').textContent = 'Editar Documento'; document.getElementById('btnSubmit').textContent = 'Atualizar'; document.getElementById('arquivoRequired').textContent = '(opcional)'; document.getElementById('arquivoUpload').required = false; document.getElementById('editId').value = id; document.getElementById('unidadeSelect').value = doc.unidade || ''; document.querySelector(`input[name="tipo"][value="${doc.tipo}"]`).checked = true; const selectNomePessoa = document.getElementById('nomePessoa'); for (let i = 0; i < selectNomePessoa.options.length; i++) { if (selectNomePessoa.options[i].value === doc.nome_pessoa) { selectNomePessoa.selectedIndex = i; break; } } if (doc.data_referencia) { document.getElementById('dataReferencia').value = doc.data_referencia; } abrirModalUpload(); } }
+    
+    function abrirModalUpload() { document.getElementById('modalUpload').classList.add('active'); }
+    function fecharModalUpload() { document.getElementById('modalUpload').classList.remove('active'); resetForm(); }
+    function resetForm() { editando = false; editandoId = null; document.getElementById('modalTitle').textContent = 'Novo Documento'; document.getElementById('btnSubmit').textContent = 'Salvar'; document.getElementById('arquivoRequired').textContent = '*'; document.getElementById('arquivoUpload').required = true; document.getElementById('formUpload').reset(); document.getElementById('editId').value = ''; document.getElementById('dataReferencia').value = getDataPadraoFormulario(); const selectNomePessoa = document.getElementById('nomePessoa'); if (selectNomePessoa.options.length > 0) { selectNomePessoa.selectedIndex = 0; } }
+    
+    async function comprimirImagem(file, maxSizeKB = 500) { if (!file.type.startsWith('image/')) return file; if (file.size < 1 * 1024 * 1024) return file; return new Promise((resolve) => { const reader = new FileReader(); reader.onload = function(e) { const img = new Image(); img.onload = function() { let width = img.width; let height = img.height; const maxWidth = 1024; const maxHeight = 1024; if (width > maxWidth || height > maxHeight) { if (width > height) { height = (height * maxWidth) / width; width = maxWidth; } else { width = (width * maxHeight) / height; height = maxHeight; } } const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height); let qualidade = 0.7; function tentarCompressao() { canvas.toBlob(blob => { if (blob.size / 1024 > maxSizeKB && qualidade > 0.3) { qualidade -= 0.1; tentarCompressao(); } else { const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), { type: 'image/jpeg', lastModified: Date.now() }); resolve(compressedFile); } }, 'image/jpeg', qualidade); } tentarCompressao(); }; img.src = e.target.result; }; reader.readAsDataURL(file); }); }
+    
+    document.getElementById('formUpload').addEventListener('submit', async (e) => { e.preventDefault(); const tipo = document.querySelector('input[name="tipo"]:checked'); const unidade = document.getElementById('unidadeSelect').value; const nomePessoa = document.getElementById('nomePessoa').value.trim(); const dataReferencia = document.getElementById('dataReferencia').value; let arquivo = document.getElementById('arquivoUpload').files[0]; const editId = document.getElementById('editId').value; if (!tipo) { mostrarNotificacao('Selecione o tipo', 'warning'); return; } if (!unidade) { mostrarNotificacao('Selecione a unidade', 'warning'); return; } if (!nomePessoa) { mostrarNotificacao('Selecione o colaborador', 'warning'); return; } if (!dataReferencia) { mostrarNotificacao('Data é obrigatória', 'warning'); return; } if (!editando && !arquivo) { mostrarNotificacao('Selecione um arquivo', 'warning'); return; } if (arquivo && arquivo.type.startsWith('image/') && arquivo.size > 1.5 * 1024 * 1024) { mostrarNotificacao('🔄 Comprimindo...', 'warning'); arquivo = await comprimirImagem(arquivo, 500); } if (arquivo && arquivo.size > 15 * 1024 * 1024) { mostrarNotificacao(`❌ Arquivo muito grande (${(arquivo.size / 1024 / 1024).toFixed(1)}MB)`, 'error'); return; } const formData = new FormData(); formData.append('tipo', tipo.value); formData.append('unidade', unidade); formData.append('nome_pessoa', nomePessoa); formData.append('data_referencia', dataReferencia); if (arquivo) formData.append('arquivo', arquivo); if (editando) formData.append('documento_id', editId); const [anoRef, mesRef] = dataReferencia.split('-'); formData.append('mes', mesRef); formData.append('ano', anoRef); const url = editando ? '/documentos/api/atualizar' : '/documentos/api/upload'; try { const response = await fetch(url, { method: 'POST', body: formData }); const data = await response.json(); if (data.sucesso) { mostrarNotificacao(editando ? 'Atualizado!' : 'Enviado!', 'success'); fecharModalUpload(); carregarDocumentos(); } else { mostrarNotificacao(data.erro || 'Erro ao salvar', 'error'); } } catch (error) { console.error('Erro:', error); mostrarNotificacao('Erro de conexão', 'error'); } });
+    
+    document.getElementById('modalUpload').addEventListener('click', (e) => { if (e.target === document.getElementById('modalUpload')) { fecharModalUpload(); } });
+    document.getElementById('btnConfirmarExclusao').addEventListener('click', confirmarExclusao);
+    
+    carregarAnosDinamicamente();
+    carregarFuncionariosParaSelect();
+    carregarDocumentos();
+</script>
 </body>
 </html>
