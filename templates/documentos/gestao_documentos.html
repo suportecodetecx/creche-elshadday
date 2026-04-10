@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestão de Documentos - Creche El Shadday</title>
@@ -1405,11 +1406,12 @@ document.getElementById('formUpload').addEventListener('submit', async (e) => {
         arquivo = await comprimirImagem(arquivo, 500);
     }
     
-    // Verificar tamanho final (máximo 10MB - compatível com o servidor)
-    if (arquivo && arquivo.size > 10 * 1024 * 1024) {
-        mostrarNotificacao(`❌ Arquivo muito grande (${(arquivo.size / 1024 / 1024).toFixed(1)}MB). Máximo 10MB.`, 'error');
-        return;
-    }
+    
+   // Verificar tamanho final (máximo 15MB)
+if (arquivo && arquivo.size > 15 * 1024 * 1024) {
+    mostrarNotificacao(`❌ Arquivo muito grande (${(arquivo.size / 1024 / 1024).toFixed(1)}MB). Máximo 15MB.`, 'error');
+    return;
+}
 
     const dataObj = new Date(dataReferencia);
     if (isNaN(dataObj.getTime())) {
