@@ -458,6 +458,21 @@
                     <option value="Professora">Professora</option>
                     <option value="Serviços Gerais">Serviços Gerais</option>
                 </select>
+                <select id="filtroMes" class="filtro-input" onchange="filtrar()">
+                    <option value="">Todos os meses</option>
+                    <option value="1">Janeiro</option>
+                    <option value="2">Fevereiro</option>
+                    <option value="3">Março</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Maio</option>
+                    <option value="6">Junho</option>
+                    <option value="7">Julho</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Setembro</option>
+                    <option value="10">Outubro</option>
+                    <option value="11">Novembro</option>
+                    <option value="12">Dezembro</option>
+                </select>
             </div>
         </div>
 
@@ -546,6 +561,13 @@
         }
     };
 
+    // Nomes dos meses
+    const mesesNomes = {
+        '1': 'Janeiro', '2': 'Fevereiro', '3': 'Março', '4': 'Abril',
+        '5': 'Maio', '6': 'Junho', '7': 'Julho', '8': 'Agosto',
+        '9': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro'
+    };
+
     // Opções de parentesco
     const opcoesParentesco = ['Filho(a)', 'Cônjuge', 'Pai', 'Mãe', 'Irmão(ã)', 'Avô/Avó', 'Outros'];
 
@@ -614,6 +636,7 @@
         const filtroNome = document.getElementById('filtroNome').value.toLowerCase();
         const filtroUnidade = document.getElementById('filtroUnidade').value;
         const filtroFuncao = document.getElementById('filtroFuncao').value;
+        const filtroMes = document.getElementById('filtroMes').value;
 
         let filtrados = funcionarios.filter(func => {
             const matchNome = func.nome ? func.nome.toLowerCase().includes(filtroNome) : false;
@@ -642,7 +665,8 @@
     function exibirTabela(filtrados) {
         const tbody = document.getElementById('listaFuncionarios');
         if (filtrados.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px;">Nenhum funcionário encontrado</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px;">Nenhum funcionário encontrado</td>' +
+                '</tr>';
             return;
         }
 
@@ -828,6 +852,7 @@
         const filtroNome = document.getElementById('filtroNome').value.toLowerCase();
         const filtroUnidade = document.getElementById('filtroUnidade').value;
         const filtroFuncao = document.getElementById('filtroFuncao').value;
+        const filtroMes = document.getElementById('filtroMes').value;
 
         let filtrados = funcionarios.filter(func => {
             const matchNome = func.nome ? func.nome.toLowerCase().includes(filtroNome) : false;
@@ -866,6 +891,7 @@
 
         const dataAtual = new Date().toLocaleDateString('pt-BR');
         const horaAtual = new Date().toLocaleTimeString('pt-BR');
+        const mesTexto = filtroMes && mesesNomes[filtroMes] ? ` - ${mesesNomes[filtroMes]}` : '';
         
         const unidadeInfo = filtroUnidade ? UNIDADES_INFO[filtroUnidade] || UNIDADES_INFO["CEIC El Shadday"] : UNIDADES_INFO["CEIC El Shadday"];
 
@@ -911,12 +937,13 @@
             <body>
                 <div class="header">
                     <h1>CRECHE EL SHADDAY</h1>
-                    <h2>${icone} ${titulo} ${icone}</h2>
+                    <h2>${icone} ${titulo}${mesTexto} ${icone}</h2>
                     <div class="data-hora">Gerado em: ${dataAtual} às ${horaAtual}</div>
                 </div>
                 <div class="info">
                     <strong>📌 Unidade:</strong> ${unidadeInfo.nome}<br>
                     <strong>CNPJ:</strong> ${unidadeInfo.cnpj}<br>
+                    <strong>Mês de referência:</strong> ${mesTexto.substring(3) || 'Todos os meses'}<br>
                     <strong>Total de funcionários:</strong> ${filtrados.length}
                 </div>
                 <table>
