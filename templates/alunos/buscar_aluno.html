@@ -367,15 +367,6 @@
             box-shadow: 0 8px 25px rgba(229, 9, 20, 0.3);
         }
 
-        /* Botão PDF nos resultados */
-        .pdf-button-container {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
         /* Grid de Resultados - Um card por aluno */
         .results-container {
             display: flex;
@@ -718,11 +709,6 @@
                 width: 100%;
                 justify-content: center;
             }
-
-            .pdf-button-container {
-                justify-content: center;
-                flex-direction: column;
-            }
         }
 
         /* Animações */
@@ -793,7 +779,12 @@
                         <p class="logo-subtitle">Sistema de Gestão</p>
                     </div>
                 </div>
-                
+                <div class="header-buttons">
+                    <a href="/" class="btn-nav btn-home">← Início</a>
+                    <a href="/alunos/cadastro" class="btn-nav">+ Novo Cadastro</a>
+                    <button class="btn-pdf" onclick="gerarPDFListaAtual()">📄 Gerar PDF da Lista</button>
+                    <button class="btn-pdf btn-pdf-transporte" onclick="gerarPDFAlunosTransporte()">🚍 PDF Alunos com Transporte</button>
+                </div>
             </div>
         </header>
 
@@ -1063,13 +1054,7 @@
         }
 
         function exibirResultados(alunos) {
-            let html = `
-                <div class="pdf-button-container">
-                    <button class="btn-pdf" onclick="gerarPDFListaAtual()">📄 Gerar PDF da Lista Atual</button>
-                    <button class="btn-pdf btn-pdf-transporte" onclick="gerarPDFAlunosTransporte()">🚍 PDF Apenas Alunos com Transporte</button>
-                </div>
-                <div class="results-container">
-            `;
+            let html = `<div class="results-container">`;
             
             alunos.forEach(aluno => {
                 const dadosPessoais = aluno.dados_pessoais || {};
