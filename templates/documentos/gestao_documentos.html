@@ -1,6 +1,3 @@
-Aqui está o código **COMPLETO** com seu CSS e HTML originais + a função de compressão adicionada:
-
-```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -203,6 +200,18 @@ Aqui está o código **COMPLETO** com seu CSS e HTML originais + a função de c
         .filtro-input:focus {
             outline: none;
             border-color: var(--netflix-red);
+        }
+
+        .select-colaborador {
+            background-color: var(--netflix-gray);
+            color: var(--white);
+            cursor: pointer;
+        }
+
+        .select-colaborador option {
+            background-color: var(--netflix-gray);
+            color: var(--white);
+            padding: 12px;
         }
 
         .grupo-mes {
@@ -746,19 +755,21 @@ Aqui está o código **COMPLETO** com seu CSS e HTML originais + a função de c
                 </div>
 
                 <div class="filtros-container">
-                    <input type="text" id="filtroNome" class="filtro-input" placeholder="Filtrar por nome..." onkeyup="carregarDocumentos()">
-                    <select id="filtroTipo" class="filtro-input" onchange="carregarDocumentos()">
-                        <option value="">Todos os tipos</option>
-                        <option value="atestado">Atestados</option>
-                        <option value="declaracao">Declarações</option>
-                        <option value="justificativa">Justificativas</option>
+                    <select id="filtroNome" class="filtro-input" onchange="aplicarFiltros()">
+                        <option value="">👤 Todos os colaboradores</option>
                     </select>
-                    <select id="filtroUnidade" class="filtro-input" onchange="carregarDocumentos()">
+                    <select id="filtroTipo" class="filtro-input" onchange="aplicarFiltros()">
+                        <option value="">Todos os tipos</option>
+                        <option value="atestado">🏥 Atestados</option>
+                        <option value="declaracao">📝 Declarações</option>
+                        <option value="justificativa">📋 Justificativas</option>
+                    </select>
+                    <select id="filtroUnidade" class="filtro-input" onchange="aplicarFiltros()">
                         <option value="">Todas as unidades</option>
                         <option value="CEIC El Shadday">CEIC El Shadday</option>
                         <option value="CEIM Prof. Egberto Malta Moreira">CEIM Prof. Egberto Malta Moreira</option>
                     </select>
-                    <select id="filtroMes" class="filtro-input" onchange="carregarDocumentos()">
+                    <select id="filtroMes" class="filtro-input" onchange="aplicarFiltros()">
                         <option value="">Todos os meses</option>
                         <option value="1">Janeiro</option>
                         <option value="2">Fevereiro</option>
@@ -773,7 +784,7 @@ Aqui está o código **COMPLETO** com seu CSS e HTML originais + a função de c
                         <option value="11">Novembro</option>
                         <option value="12">Dezembro</option>
                     </select>
-                    <select id="filtroAno" class="filtro-input" onchange="carregarDocumentos()">
+                    <select id="filtroAno" class="filtro-input" onchange="aplicarFiltros()">
                         <option value="">Todos os anos</option>
                     </select>
                 </div>
@@ -786,8 +797,8 @@ Aqui está o código **COMPLETO** com seu CSS e HTML originais + a função de c
                 <div id="documentosAgrupados"></div>
 
                 <div id="semDocumentos" style="display: none; text-align: center; padding: 60px; color: var(--netflix-light);">
-                    <p>Nenhum documento encontrado</p>
-                    <p style="font-size: 0.85rem; margin-top: 8px;">Clique em "+ Novo Documento" para começar</p>
+                    <p>📭 Nenhum documento encontrado</p>
+                    <p style="font-size: 0.85rem; margin-top: 8px;">Tente ajustar os filtros ou clique em "+ Novo Documento"</p>
                 </div>
             </div>
         </main>
@@ -822,7 +833,10 @@ Aqui está o código **COMPLETO** com seu CSS e HTML originais + a função de c
                 <div class="form-row">
                     <div class="form-group">
                         <label>Nome da Pessoa/Empresa <span class="required">*</span></label>
-                        <input type="text" id="nomePessoa" placeholder="Ex: Joaquina Silva" required>
+                        <select id="nomePessoa" class="select-colaborador" required>
+                            <option value="">🔍 Selecione um colaborador</option>
+                        </select>
+                        <small style="color: var(--netflix-light); display: block; margin-top: 5px;">Lista carregada dos funcionários cadastrados</small>
                     </div>
 
                     <div class="form-group">
@@ -862,6 +876,8 @@ Aqui está o código **COMPLETO** com seu CSS e HTML originais + a função de c
 
     <script>
         let documentos = [];
+        let documentosFiltrados = [];
+        let funcionarios = [];
         let editando = false;
         let editandoId = null;
         let documentoParaExcluir = null;
@@ -880,6 +896,8 @@ Aqui está o código **COMPLETO** com seu CSS e HTML originais + a função de c
             '11': 'Novembro', '11': 'Novembro',
             '12': 'Dezembro', '12': 'Dezembro'
         };
+
+        const mesesOrdem = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
         function getNomeMes(mes) {
             if (!mes) return '?';
@@ -949,7 +967,7 @@ Aqui está o código **COMPLETO** com seu CSS e HTML originais + a função de c
 
         function atualizarContadorTotal() {
             const contador = document.getElementById('contadorTotal');
-            const total = documentos.length;
+            const total = documentosFiltrados.length;
             contador.textContent = `${total} ${total === 1 ? 'documento' : 'documentos'}`;
             const semDocsDiv = document.getElementById('semDocumentos');
             if (total === 0) {
@@ -959,27 +977,56 @@ Aqui está o código **COMPLETO** com seu CSS e HTML originais + a função de c
             }
         }
 
+        function popularFiltroNomeSelect() {
+            const selectFiltroNome = document.getElementById('filtroNome');
+            selectFiltroNome.innerHTML = '<option value="">👤 Todos os colaboradores</option>';
+            funcionarios.forEach(func => {
+                const option = document.createElement('option');
+                option.value = func.nome;
+                option.textContent = func.nome;
+                selectFiltroNome.appendChild(option);
+            });
+        }
+
+        function popularSelectNomePessoa() {
+            const selectNomePessoa = document.getElementById('nomePessoa');
+            selectNomePessoa.innerHTML = '<option value="">🔍 Selecione um colaborador</option>';
+            funcionarios.forEach(func => {
+                const option = document.createElement('option');
+                option.value = func.nome;
+                option.textContent = func.nome;
+                selectNomePessoa.appendChild(option);
+            });
+        }
+
+        function carregarFuncionariosParaSelect() {
+            fetch('/api/funcionarios/listar')
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.sucesso && data.funcionarios && data.funcionarios.length > 0) {
+                        funcionarios = data.funcionarios.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+                        popularFiltroNomeSelect();
+                        popularSelectNomePessoa();
+                        console.log(`✅ ${funcionarios.length} colaborador(es) carregado(s) do MongoDB`);
+                    } else {
+                        console.log('⚠️ Nenhum colaborador encontrado');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar funcionários:', error);
+                });
+        }
+
         function carregarDocumentos() {
-            const filtroNome = document.getElementById('filtroNome').value.toLowerCase();
-            const filtroTipo = document.getElementById('filtroTipo').value;
-            const filtroUnidade = document.getElementById('filtroUnidade').value;
-            const filtroMesNumero = document.getElementById('filtroMes').value;
-            const filtroAno = document.getElementById('filtroAno').value;
-
-            const params = new URLSearchParams();
-            if (filtroNome) params.append('nome', filtroNome);
-            if (filtroTipo) params.append('tipo', filtroTipo);
-            if (filtroUnidade) params.append('unidade', filtroUnidade);
-            if (filtroMesNumero) params.append('mes', filtroMesNumero);
-            if (filtroAno) params.append('ano', filtroAno);
-
-            fetch(`/documentos/api/listar?${params.toString()}`)
+            fetch('/documentos/api/listar')
                 .then(response => response.json())
                 .then(data => {
                     if (data.sucesso) {
                         documentos = data.documentos;
-                        atualizarContadorTotal();
-                        agruparEExibirDocumentos();
+                        aplicarFiltros();
                     } else {
                         mostrarNotificacao('Erro ao carregar documentos', 'error');
                     }
@@ -990,10 +1037,34 @@ Aqui está o código **COMPLETO** com seu CSS e HTML originais + a função de c
                 });
         }
 
+        function aplicarFiltros() {
+            const filtroNome = document.getElementById('filtroNome').value;
+            const filtroTipo = document.getElementById('filtroTipo').value;
+            const filtroUnidade = document.getElementById('filtroUnidade').value;
+            const filtroMes = document.getElementById('filtroMes').value;
+            const filtroAno = document.getElementById('filtroAno').value;
+
+            documentosFiltrados = documentos.filter(doc => {
+                if (filtroNome && doc.nome_pessoa !== filtroNome) return false;
+                if (filtroTipo && doc.tipo !== filtroTipo) return false;
+                if (filtroUnidade && doc.unidade !== filtroUnidade) return false;
+                if (filtroMes) {
+                    const mesDoc = String(doc.mes);
+                    const mesFiltro = String(filtroMes);
+                    if (mesDoc !== mesFiltro && mesDoc.padStart(2, '0') !== mesFiltro.padStart(2, '0')) return false;
+                }
+                if (filtroAno && String(doc.ano) !== String(filtroAno)) return false;
+                return true;
+            });
+
+            atualizarContadorTotal();
+            agruparEExibirDocumentos();
+        }
+
         function agruparEExibirDocumentos() {
             const grupos = {};
             
-            documentos.forEach(doc => {
+            documentosFiltrados.forEach(doc => {
                 const mesNome = getNomeMes(doc.mes);
                 const chave = `${mesNome}/${doc.ano}`;
                 
@@ -1018,7 +1089,6 @@ Aqui está o código **COMPLETO** com seu CSS e HTML originais + a função de c
 
             const gruposOrdenados = Object.values(grupos).sort((a, b) => {
                 if (a.ano !== b.ano) return b.ano - a.ano;
-                const mesesOrdem = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
                 return mesesOrdem.indexOf(b.mes) - mesesOrdem.indexOf(a.mes);
             });
 
@@ -1072,7 +1142,7 @@ Aqui está o código **COMPLETO** com seu CSS e HTML originais + a função de c
                                         </tr>
                                     `).join('')}
                                 </tbody>
-                            </table>
+                            <td>
                         </div>
                     `;
                 }
@@ -1120,7 +1190,7 @@ Aqui está o código **COMPLETO** com seu CSS e HTML originais + a função de c
                                 </thead>
                                 <tbody>
                                     ${justificativasOrdenadas.map(doc => `
-                                        <td>
+                                        <tr>
                                             <td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td>
                                             <td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td>
                                             <td><span class="badge-tipo badge-justificativa">Justificativa</span></td>
@@ -1166,14 +1236,12 @@ Aqui está o código **COMPLETO** com seu CSS e HTML originais + a função de c
         function abrirModalExclusao(id, nome) {
             documentoParaExcluir = id;
             const modal = document.getElementById('modalExclusao');
-            const mensagem = document.getElementById('modalExclusaoMensagem');
-            mensagem.textContent = `Tem certeza que deseja excluir o documento "${nome}"?`;
+            document.getElementById('modalExclusaoMensagem').textContent = `Tem certeza que deseja excluir o documento "${nome}"?`;
             modal.classList.add('active');
         }
 
         function fecharModalExclusao() {
-            const modal = document.getElementById('modalExclusao');
-            modal.classList.remove('active');
+            document.getElementById('modalExclusao').classList.remove('active');
             documentoParaExcluir = null;
         }
 
@@ -1213,7 +1281,15 @@ Aqui está o código **COMPLETO** com seu CSS e HTML originais + a função de c
                 document.getElementById('editId').value = id;
                 document.getElementById('unidadeSelect').value = doc.unidade || '';
                 document.querySelector(`input[name="tipo"][value="${doc.tipo}"]`).checked = true;
-                document.getElementById('nomePessoa').value = doc.nome_pessoa || '';
+                
+                const selectNomePessoa = document.getElementById('nomePessoa');
+                for (let i = 0; i < selectNomePessoa.options.length; i++) {
+                    if (selectNomePessoa.options[i].value === doc.nome_pessoa) {
+                        selectNomePessoa.selectedIndex = i;
+                        break;
+                    }
+                }
+                
                 if (doc.data_referencia) {
                     document.getElementById('dataReferencia').value = doc.data_referencia;
                 }
@@ -1240,15 +1316,15 @@ Aqui está o código **COMPLETO** com seu CSS e HTML originais + a função de c
             document.getElementById('formUpload').reset();
             document.getElementById('editId').value = '';
             document.getElementById('dataReferencia').value = getDataPadraoFormulario();
-            document.getElementById('dataReferencia').removeAttribute('max');
-            document.getElementById('dataReferencia').removeAttribute('min');
+            const selectNomePessoa = document.getElementById('nomePessoa');
+            if (selectNomePessoa.options.length > 0) {
+                selectNomePessoa.selectedIndex = 0;
+            }
         }
 
         // ===== FUNÇÃO DE COMPRESSÃO DE IMAGEM =====
         async function comprimirImagem(file, maxSizeKB = 500) {
             if (!file.type.startsWith('image/')) return file;
-            
-            // Se for menor que 1MB, não comprime
             if (file.size < 1 * 1024 * 1024) return file;
             
             console.log(`🖼️ Comprimindo imagem: ${file.name} (${(file.size / 1024).toFixed(0)}KB)`);
@@ -1303,9 +1379,8 @@ Aqui está o código **COMPLETO** com seu CSS e HTML originais + a função de c
             });
         }
 
-        // ===== MODIFICAR APENAS O SUBMIT DO FORMULÁRIO =====
-        const formUpload = document.getElementById('formUpload');
-        const novoSubmit = async (e) => {
+        // ===== SUBMIT DO FORMULÁRIO COM COMPRESSÃO =====
+        document.getElementById('formUpload').addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const tipo = document.querySelector('input[name="tipo"]:checked');
@@ -1317,7 +1392,7 @@ Aqui está o código **COMPLETO** com seu CSS e HTML originais + a função de c
 
             if (!tipo) { mostrarNotificacao('Selecione o tipo de documento', 'warning'); return; }
             if (!unidade) { mostrarNotificacao('Selecione a unidade', 'warning'); return; }
-            if (!nomePessoa) { mostrarNotificacao('Nome é obrigatório', 'warning'); return; }
+            if (!nomePessoa) { mostrarNotificacao('Selecione o nome do colaborador', 'warning'); return; }
             if (!dataReferencia) { mostrarNotificacao('Data de referência é obrigatória', 'warning'); return; }
             if (!editando && !arquivo) { mostrarNotificacao('Selecione um arquivo', 'warning'); return; }
 
@@ -1367,12 +1442,7 @@ Aqui está o código **COMPLETO** com seu CSS e HTML originais + a função de c
                 console.error('Erro:', error);
                 mostrarNotificacao('Erro de conexão', 'error');
             }
-        };
-
-        // Substituir o event listener original
-        formUpload.removeEventListener('submit', formUpload._listener);
-        formUpload.addEventListener('submit', novoSubmit);
-        formUpload._listener = novoSubmit;
+        });
 
         document.getElementById('modalUpload').addEventListener('click', (e) => {
             if (e.target === document.getElementById('modalUpload')) {
@@ -1382,9 +1452,10 @@ Aqui está o código **COMPLETO** com seu CSS e HTML originais + a função de c
 
         document.getElementById('btnConfirmarExclusao').addEventListener('click', confirmarExclusao);
 
+        // Inicialização
         carregarAnosDinamicamente();
+        carregarFuncionariosParaSelect();
         carregarDocumentos();
     </script>
 </body>
 </html>
-```
