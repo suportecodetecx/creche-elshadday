@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Benefícios - Creche El Shadday</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/processo-de-trabalho.png') }}">
+    <style>
+        :root {
+            --netflix-red: #E50914;
+            --netflix-red-dark: #B81D24;
+            --netflix-black: #0f0f0f;
+            --netflix-dark: #1a1a1a;
+            --netflix-gray: #2a2a2a;
+            --netflix-light: #808080;
+            --accent-blue: #0080FF;
+            --accent-green: #4ECDC4;
+            --accent-purple: #A06CD5;
+            --accent-yellow: #FFD166;
+            --accent-orange: #FF6B35;
+            --white: #FFFFFF;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--netflix-black);
+            min-height: 100vh;
+            color: var(--white);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--netflix-dark);
+            border-radius: 32px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .header-moderno {
+            padding: 24px 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            background: var(--netflix-dark);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+        }
+
+        .logo-animated {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--netflix-red), var(--netflix-red-dark));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.4rem;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+        }
+
+        .logo-text h2 { color: white; font-size: 1.6rem; margin: 0; }
+        .logo-text p { color: var(--netflix-light); font-size: 0.8rem; margin: 2px 0 0; }
+
+        .btn-nav {
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            background: rgba(255,255,255,0.05);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-nav:hover { background: rgba(255,255,255,0.1); border-color: var(--netflix-red); }
+
+        main { padding: 40px; }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-weight: 600;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .tab-btn.active { background: var(--netflix-red); border-color: var(--netflix-red); }
+        .tab-btn:hover:not(.active) { background: rgba(255,255,255,0.1); }
+
+        .form-card {
+            background: var(--netflix-dark);
+            border-radius: 24px;
+            padding: 28px 32px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .header-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--netflix-red);
+        }
+        .card-header h2 { font-size: 1.2rem; font-weight: 600; color: white; flex: 1; margin: 0; }
+
+        .filtros-grid {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .filtro-input {
+            flex: 1;
+            min-width: 180px;
+            padding: 12px 16px;
+            background: var(--netflix-gray);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            color: white;
+            font-family: inherit;
+        }
+        .filtro-input:focus {
+            outline: none;
+            border-color: var(--netflix-red);
+        }
+
+        .btn-pdf {
+            background: var(--netflix-red);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn-pdf:hover { transform: translateY(-2px); filter: brightness(1.05); }
+
+        .btn-limpar-checkboxes {
+            background: var(--accent-yellow);
+            color: #1a1a1a;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn-limpar-checkboxes:hover { transform: translateY(-2px); filter: brightness(1.05); }
+
+        .tabela-container { overflow-x: auto; }
+        .tabela-funcionarios { width: 100%; border-collapse: collapse; }
+        .tabela-funcionarios th, .tabela-funcionarios td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .tabela-funcionarios th { 
+            color: var(--netflix-red); 
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .tabela-funcionarios td { font-size: 0.9rem; }
+
+        .beneficio-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--netflix-red);
+            cursor: pointer;
+        }
+
+        .acoes-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .btn-editar, .btn-excluir {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            width: 100%;
+            text-align: center;
+        }
+        .btn-editar { background: var(--accent-blue); color: white; }
+        .btn-editar:hover { background: #0066CC; transform: translateY(-1px); }
+        .btn-excluir { background: var(--netflix-red); color: white; }
+        .btn-excluir:hover { background: var(--netflix-red-dark); transform: translateY(-1px); }
+
+        .contador {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: var(--netflix-red);
+        }
+
+        .btn-dep {
+            background: rgba(78, 205, 196, 0.2);
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .btn-dep:hover { background: var(--accent-green); color: #1a1a1a; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(8px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: var(--netflix-dark);
+            border-radius: 24px;
+            padding: 32px;
+            width: 90%;
+            max-width: 650px;
+            max-height: 85vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .modal-content h3 { font-size: 1.4rem; margin-bottom: 20px; color: var(--netflix-red); }
+
+        .dependente-item {
+            background: var(--netflix-gray);
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 12px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .dependente-item input, .dependente-item select {
+            flex: 1;
+            padding: 10px 12px;
+            background: var(--netflix-dark);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: white;
+            font-family: inherit;
+        }
+        .dependente-item select option { background: var(--netflix-dark); color: white; }
+        .btn-remover-dep {
+            background: var(--netflix-red);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .btn-add-dep {
+            background: rgba(255,255,255,0.05);
+            border: 1px dashed rgba(255,255,255,0.2);
+            padding: 12px;
+            border-radius: 14px;
+            width: 100%;
+            color: white;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.2s;
+        }
+        .btn-add-dep:hover { background: rgba(255,255,255,0.1); }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .btn-modal-cancel {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+        .btn-modal-save {
+            background: var(--accent-green);
+            color: #1a1a1a;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .notificacao-flutuante {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: var(--netflix-dark);
+            border-radius: 12px;
+            padding: 14px 20px;
+            border-left: 4px solid var(--accent-green);
+            z-index: 99999;
+            animation: slideIn 0.3s ease;
+            font-size: 0.9rem;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* RODAPÉ PROFISSIONAL */
+        .footer {
+            background: var(--netflix-dark);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding: 20px 40px;
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--netflix-light);
+            line-height: 1.5;
+        }
+        .footer p { margin: 3px 0; }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            main { padding: 20px; }
+            .form-card { padding: 20px; }
+            .tabs { flex-direction: column; }
+            .tab-btn { justify-content: center; }
+            .filtros-grid { flex-direction: column; }
+            .dependente-item { flex-direction: column; }
+            .tabela-funcionarios { font-size: 12px; }
+            .tabela-funcionarios th, .tabela-funcionarios td { padding: 8px 6px; }
+            .footer { padding: 15px 20px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header class="header-moderno">
+        <div class="header-content">
+            <div class="logo-wrapper" onclick="window.location.href='/'">
+                <div class="logo-animated"><span>CS</span></div>
+                <div class="logo-text">
+                    <h2>Creche El Shadday</h2>
+                    <p>Gestão de Benefícios</p>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <a href="/funcionarios/cadastro" class="btn-nav">👥 Cadastro</a>
+                <a href="/" class="btn-nav">← Início</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="mudarTab('todos')">📋 Todos</button>
+            <button class="tab-btn" onclick="mudarTab('odontologico')">🦷 Odontológico</button>
+            <button class="tab-btn" onclick="mudarTab('plano_saude')">🏥 Plano de Saúde</button>
+            <button class="tab-btn" onclick="mudarTab('vale_transporte')">🚍 Vale Transporte</button>
+        </div>
+
+        <!-- Filtros -->
+        <div class="form-card">
+            <div class="card-header">
+                <div class="header-icon">🔍</div>
+                <h2>Filtrar Funcionários</h2>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-limpar-checkboxes" onclick="limparTodosCheckboxes()">🧹 Limpar Checkboxes</button>
+                    <button class="btn-pdf" id="btnGerarPDF" onclick="gerarPDF()">📄 Gerar PDF</button>
+                </div>
+            </div>
+            <div class="filtros-grid">
+                <input type="text" id="filtroNome" class="filtro-input" placeholder="Nome do funcionário..." onkeyup="filtrar()">
+                <select id="filtroUnidade" class="filtro-input" onchange="filtrar()">
+                    <option value="">Todas as unidades</option>
+                    <option value="CEIC El Shadday">CEIC El Shadday</option>
+                    <option value="CEIM Prof. Egberto Malta Moreira">CEIM Prof. Egberto Malta Moreira</option>
+                </select>
+                <select id="filtroFuncao" class="filtro-input" onchange="filtrar()">
+                    <option value="">Todas as funções</option>
+                    <option value="Agente Escolar">Agente Escolar</option>
+                    <option value="Ajudante de Cozinha">Ajudante de Cozinha</option>
+                    <option value="Auxiliar Administrativo">Auxiliar Administrativo</option>
+                    <option value="Auxiliar de Desenvolvimento Infantil">Auxiliar de Desenvolvimento Infantil</option>
+                    <option value="Cozinheira">Cozinheira</option>
+                    <option value="Diretora Geral">Diretora Geral</option>
+                    <option value="Diretora Pedagógica">Diretora Pedagógica</option>
+                    <option value="Lactarista">Lactarista</option>
+                    <option value="Professora">Professora</option>
+                    <option value="Serviços Gerais">Serviços Gerais</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Lista de Funcionários -->
+        <div class="form-card">
+            <div class="card-header">
+                <h2 id="tituloLista">Todos os Funcionários</h2>
+                <span class="contador" id="contador">0 funcionários</span>
+            </div>
+            <div class="tabela-container">
+                <table class="tabela-funcionarios">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>CPF</th>
+                            <th>Unidade</th>
+                            <th>Função</th>
+                            <th style="text-align:center">🦷</th>
+                            <th style="text-align:center">🏥</th>
+                            <th style="text-align:center">🚍</th>
+                            <th style="text-align:center">👨‍👩‍👧</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaFuncionarios"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Rodapé Profissional -->
+    <div class="footer">
+        <p><strong>Creche El Shadday</strong></p>
+        <p>© 2026 - Todos os direitos reservados</p>
+    </div>
+</div>
+
+<!-- Modal de Dependentes -->
+<div id="modalDependentes" class="modal">
+    <div class="modal-content">
+        <h3 id="modalDependentesTitulo">👨‍👩‍👧 Dependentes</h3>
+        <div id="listaDependentes"></div>
+        <button class="btn-add-dep" onclick="adicionarDependente()">+ Adicionar Dependente</button>
+        <div class="modal-buttons">
+            <button class="btn-modal-cancel" onclick="fecharModalDependentes()">Cancelar</button>
+            <button class="btn-modal-save" onclick="salvarDependentes()">Salvar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Exclusão -->
+<div id="modalExclusao" class="modal">
+    <div class="modal-content">
+        <h3>⚠️ Confirmar Exclusão</h3>
+        <p id="msgExclusao">Tem certeza que deseja excluir este funcionário?</p>
+        <p style="font-size: 0.8rem; color: var(--netflix-red);">Esta ação não pode ser desfeita.</p>
+        <div class="modal-buttons">
+            <button class="btn-modal-cancel" onclick="fecharModalExclusao()">Cancelar</button>
+            <button class="btn-modal-save" style="background: var(--netflix-red); color: white;" onclick="confirmarExclusao()">Excluir</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let funcionarios = [];
+    let rgmParaExcluir = null;
+    let rgmDependentesAtual = null;
+    let dependentesTemp = [];
+    let tabAtual = 'todos';
+
+    // Configurações das unidades (para o PDF)
+    const UNIDADES_INFO = {
+        "CEIC El Shadday": {
+            "nome": "CEIC El Shadday",
+            "cnpj": "03.067.526/0001-87",
+            "endereco": "Rua Francisco Vilani Bicudo, 470 - Vila Nova Aparecida - Mogi das Cruzes/SP - CEP: 08830-340",
+            "telefone": "(11) 4739-3549",
+            "email": "c.elshadday@se-pmmc.com.br"
+        },
+        "CEIM Prof. Egberto Malta Moreira": {
+            "nome": "CEIM Prof. Egberto Malta Moreira",
+            "cnpj": "03.067.526/0002-68",
+            "endereco": "Rua Ten. Agenor Bertini, 202 - Vila Rei - Mogi das Cruzes/SP - CEP: 08717-875",
+            "telefone": "(11) 4726-6241",
+            "email": "ceim.moreira@se-pmmc.com.br"
+        }
+    };
+
+    // Opções de parentesco
+    const opcoesParentesco = ['Filho(a)', 'Cônjuge', 'Pai', 'Mãe', 'Irmão(ã)', 'Avô/Avó', 'Outros'];
+
+    // Carregar funcionários
+    document.addEventListener('DOMContentLoaded', function() {
+        carregarFuncionarios();
+    });
+
+    function carregarFuncionarios() {
+        fetch('/api/funcionarios/beneficios/listar')
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso) {
+                    funcionarios = data.funcionarios.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+                    filtrar();
+                } else {
+                    mostrarNotificacao('Erro ao carregar funcionários', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                mostrarNotificacao('Erro de conexão', 'error');
+            });
+    }
+
+    function limparTodosCheckboxes() {
+        Promise.all(funcionarios.map(func => {
+            const promises = [];
+            if (func.beneficio_odonto) {
+                promises.push(atualizarBeneficioAPI(func.rgm, 'beneficio_odonto', false));
+            }
+            if (func.beneficio_plano_saude) {
+                promises.push(atualizarBeneficioAPI(func.rgm, 'beneficio_plano_saude', false));
+            }
+            if (func.beneficio_vale_transporte) {
+                promises.push(atualizarBeneficioAPI(func.rgm, 'beneficio_vale_transporte', false));
+            }
+            return Promise.all(promises);
+        })).then(() => {
+            mostrarNotificacao('✅ Todos os checkboxes foram desmarcados!', 'success');
+            carregarFuncionarios();
+        }).catch(error => {
+            console.error('Erro ao limpar checkboxes:', error);
+            mostrarNotificacao('Erro ao limpar checkboxes', 'error');
+        });
+    }
+
+    function atualizarBeneficioAPI(rgm, campo, valor) {
+        return fetch('/api/funcionarios/beneficios/atualizar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rgm: rgm, campo: campo, valor: valor })
+        });
+    }
+
+    function formatarCPF(cpf) {
+        if (!cpf) return '—';
+        const numeros = cpf.replace(/\D/g, '');
+        if (numeros.length === 11) {
+            return numeros.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        }
+        return cpf;
+    }
+
+    function filtrar() {
+        const filtroNome = document.getElementById('filtroNome').value.toLowerCase();
+        const filtroUnidade = document.getElementById('filtroUnidade').value;
+        const filtroFuncao = document.getElementById('filtroFuncao').value;
+
+        let filtrados = funcionarios.filter(func => {
+            const matchNome = func.nome ? func.nome.toLowerCase().includes(filtroNome) : false;
+            const matchUnidade = !filtroUnidade || func.unidade === filtroUnidade;
+            const matchFuncao = !filtroFuncao || func.funcao === filtroFuncao;
+            return matchNome && matchUnidade && matchFuncao;
+        });
+
+        if (tabAtual === 'odontologico') {
+            filtrados = filtrados.filter(f => f.beneficio_odonto === true);
+            document.getElementById('tituloLista').innerHTML = '🦷 Odontológico';
+        } else if (tabAtual === 'plano_saude') {
+            filtrados = filtrados.filter(f => f.beneficio_plano_saude === true);
+            document.getElementById('tituloLista').innerHTML = '🏥 Plano de Saúde Plena';
+        } else if (tabAtual === 'vale_transporte') {
+            filtrados = filtrados.filter(f => f.beneficio_vale_transporte === true);
+            document.getElementById('tituloLista').innerHTML = '🚍 Vale Transporte';
+        } else {
+            document.getElementById('tituloLista').innerHTML = 'Todos os Funcionários';
+        }
+
+        exibirTabela(filtrados);
+        document.getElementById('contador').textContent = `${filtrados.length} funcionário${filtrados.length !== 1 ? 's' : ''}`;
+    }
+
+    function exibirTabela(filtrados) {
+        const tbody = document.getElementById('listaFuncionarios');
+        if (filtrados.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px;">Nenhum funcionário encontrado</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = filtrados.map(func => `
+            <tr>
+                <td><strong>${escapeHtml(func.nome || '')}</strong></td>
+                <td>${formatarCPF(func.cpf)}</td>
+                <td>${escapeHtml(func.unidade || '')}</td>
+                <td>${escapeHtml(func.funcao || '')}</td>
+                <td style="text-align:center">
+                    <input type="checkbox" class="beneficio-checkbox" 
+                        ${func.beneficio_odonto ? 'checked' : ''} 
+                        onchange="atualizarBeneficio('${func.rgm}', 'beneficio_odonto', this.checked)">
+                </td>
+                <td style="text-align:center">
+                    <input type="checkbox" class="beneficio-checkbox" 
+                        ${func.beneficio_plano_saude ? 'checked' : ''} 
+                        onchange="atualizarBeneficio('${func.rgm}', 'beneficio_plano_saude', this.checked)">
+                </td>
+                <td style="text-align:center">
+                    <input type="checkbox" class="beneficio-checkbox" 
+                        ${func.beneficio_vale_transporte ? 'checked' : ''} 
+                        onchange="atualizarBeneficio('${func.rgm}', 'beneficio_vale_transporte', this.checked)">
+                </td>
+                <td style="text-align:center">
+                    <button class="btn-dep" onclick="abrirDependentes('${func.rgm}', '${escapeHtml(func.nome || '')}')">
+                        👨‍👩‍👧 ${(func.dependentes && func.dependentes.length) || 0}
+                    </button>
+                </td>
+                <td class="acoes-container">
+                    <button class="btn-editar" onclick="window.location.href='/funcionarios/cadastro?editar=${func.rgm}'">✏️ Editar</button>
+                    <button class="btn-excluir" onclick="abrirModalExclusao('${func.rgm}', '${escapeHtml(func.nome || '')}')">🗑️ Excluir</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function mudarTab(tab) {
+        tabAtual = tab;
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        if (tab === 'todos') document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
+        if (tab === 'odontologico') document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+        if (tab === 'plano_saude') document.querySelector('.tab-btn:nth-child(3)').classList.add('active');
+        if (tab === 'vale_transporte') document.querySelector('.tab-btn:nth-child(4)').classList.add('active');
+        filtrar();
+    }
+
+    function atualizarBeneficio(rgm, campo, valor) {
+        fetch('/api/funcionarios/beneficios/atualizar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rgm: rgm, campo: campo, valor: valor })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.sucesso) {
+                const func = funcionarios.find(f => f.rgm === rgm);
+                if (func) func[campo] = valor;
+                filtrar();
+            } else {
+                mostrarNotificacao('Erro ao atualizar benefício', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            mostrarNotificacao('Erro de conexão', 'error');
+        });
+    }
+
+    function abrirDependentes(rgm, nome) {
+        rgmDependentesAtual = rgm;
+        const func = funcionarios.find(f => f.rgm === rgm);
+        if (func) {
+            dependentesTemp = JSON.parse(JSON.stringify(func.dependentes || []));
+            document.getElementById('modalDependentesTitulo').innerHTML = `👨‍👩‍👧 Dependentes de ${nome}`;
+            renderizarDependentes();
+            document.getElementById('modalDependentes').classList.add('active');
+        }
+    }
+
+    function renderizarDependentes() {
+        const container = document.getElementById('listaDependentes');
+        if (dependentesTemp.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: #808080; padding: 20px;">Nenhum dependente cadastrado</p>';
+            return;
+        }
+
+        container.innerHTML = dependentesTemp.map((dep, index) => `
+            <div class="dependente-item">
+                <input type="text" placeholder="Nome" value="${escapeHtml(dep.nome || '')}" 
+                    onchange="atualizarDependenteTemp(${index}, 'nome', this.value)">
+                <select onchange="atualizarDependenteTemp(${index}, 'parentesco', this.value)">
+                    <option value="">Parentesco</option>
+                    ${opcoesParentesco.map(p => `<option value="${p}" ${dep.parentesco === p ? 'selected' : ''}>${p}</option>`).join('')}
+                </select>
+                <button class="btn-remover-dep" onclick="removerDependenteTemp(${index})">✖</button>
+            </div>
+        `).join('');
+    }
+
+    function adicionarDependente() {
+        dependentesTemp.push({ nome: '', parentesco: '' });
+        renderizarDependentes();
+    }
+
+    function atualizarDependenteTemp(index, campo, valor) {
+        if (dependentesTemp[index]) {
+            dependentesTemp[index][campo] = valor;
+        }
+    }
+
+    function removerDependenteTemp(index) {
+        dependentesTemp.splice(index, 1);
+        renderizarDependentes();
+    }
+
+    function salvarDependentes() {
+        fetch('/api/funcionarios/dependentes/atualizar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rgm: rgmDependentesAtual, dependentes: dependentesTemp })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.sucesso) {
+                const func = funcionarios.find(f => f.rgm === rgmDependentesAtual);
+                if (func) func.dependentes = dependentesTemp;
+                mostrarNotificacao('✅ Dependentes salvos!', 'success');
+                fecharModalDependentes();
+                filtrar();
+            } else {
+                mostrarNotificacao('Erro ao salvar dependentes', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            mostrarNotificacao('Erro de conexão', 'error');
+        });
+    }
+
+    function fecharModalDependentes() {
+        document.getElementById('modalDependentes').classList.remove('active');
+        rgmDependentesAtual = null;
+        dependentesTemp = [];
+    }
+
+    function abrirModalExclusao(rgm, nome) {
+        rgmParaExcluir = rgm;
+        document.getElementById('msgExclusao').innerHTML = `Tem certeza que deseja excluir o funcionário "${nome}"?`;
+        document.getElementById('modalExclusao').classList.add('active');
+    }
+
+    function fecharModalExclusao() {
+        document.getElementById('modalExclusao').classList.remove('active');
+        rgmParaExcluir = null;
+    }
+
+    function confirmarExclusao() {
+        if (rgmParaExcluir) {
+            fetch('/api/funcionarios/excluir', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rgm: rgmParaExcluir })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso) {
+                    mostrarNotificacao('✅ Funcionário excluído!', 'success');
+                    carregarFuncionarios();
+                    fecharModalExclusao();
+                } else {
+                    mostrarNotificacao(data.erro || 'Erro ao excluir', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                mostrarNotificacao('Erro de conexão', 'error');
+            });
+        }
+    }
+
+    function gerarPDF() {
+        const filtroNome = document.getElementById('filtroNome').value.toLowerCase();
+        const filtroUnidade = document.getElementById('filtroUnidade').value;
+        const filtroFuncao = document.getElementById('filtroFuncao').value;
+
+        let filtrados = funcionarios.filter(func => {
+            const matchNome = func.nome ? func.nome.toLowerCase().includes(filtroNome) : false;
+            const matchUnidade = !filtroUnidade || func.unidade === filtroUnidade;
+            const matchFuncao = !filtroFuncao || func.funcao === filtroFuncao;
+            return matchNome && matchUnidade && matchFuncao;
+        });
+
+        let titulo = '', corTema = '#E50914', icone = '📋';
+        
+        if (tabAtual === 'odontologico') {
+            filtrados = filtrados.filter(f => f.beneficio_odonto === true);
+            titulo = 'BENEFÍCIO ODONTOLÓGICO';
+            corTema = '#4ECDC4';
+            icone = '🦷';
+        } else if (tabAtual === 'plano_saude') {
+            filtrados = filtrados.filter(f => f.beneficio_plano_saude === true);
+            titulo = 'PLANO DE SAÚDE PLENA';
+            corTema = '#0080FF';
+            icone = '🏥';
+        } else if (tabAtual === 'vale_transporte') {
+            filtrados = filtrados.filter(f => f.beneficio_vale_transporte === true);
+            titulo = 'VALE TRANSPORTE';
+            corTema = '#FFD166';
+            icone = '🚍';
+        } else {
+            titulo = 'LISTA DE FUNCIONÁRIOS';
+            corTema = '#E50914';
+            icone = '📋';
+        }
+
+        if (filtrados.length === 0) {
+            mostrarNotificacao('⚠️ Nenhum funcionário para gerar PDF', 'warning');
+            return;
+        }
+
+        const dataAtual = new Date().toLocaleDateString('pt-BR');
+        const horaAtual = new Date().toLocaleTimeString('pt-BR');
+        
+        const unidadeInfo = filtroUnidade ? UNIDADES_INFO[filtroUnidade] || UNIDADES_INFO["CEIC El Shadday"] : UNIDADES_INFO["CEIC El Shadday"];
+
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>${titulo} - Creche El Shadday</title>
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body {
+                        font-family: 'Inter', Arial, Helvetica, sans-serif;
+                        padding: 40px;
+                        background: white;
+                        color: #333;
+                    }
+                    .header {
+                        text-align: center;
+                        margin-bottom: 30px;
+                        padding-bottom: 20px;
+                        border-bottom: 3px solid ${corTema};
+                    }
+                    .header h1 { color: ${corTema}; font-size: 24px; }
+                    .header h2 { color: #555; font-size: 16px; font-weight: 500; margin-top: 5px; }
+                    .data-hora { color: #999; font-size: 11px; margin-top: 10px; }
+                    .info {
+                        background: #f8f9fa;
+                        padding: 15px;
+                        border-radius: 8px;
+                        margin-bottom: 20px;
+                        border-left: 4px solid ${corTema};
+                    }
+                    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+                    th { background: ${corTema}; color: white; padding: 10px; text-align: left; font-size: 12px; }
+                    td { padding: 10px; border-bottom: 1px solid #ddd; font-size: 11px; }
+                    .footer-pdf { margin-top: 30px; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #ddd; padding-top: 20px; }
+                    .total { background: ${corTema}; color: white; padding: 8px 20px; border-radius: 20px; display: inline-block; margin-top: 20px; font-weight: bold; }
+                    @media print { body { padding: 20px; } .no-print { display: none; } }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>CRECHE EL SHADDAY</h1>
+                    <h2>${icone} ${titulo} ${icone}</h2>
+                    <div class="data-hora">Gerado em: ${dataAtual} às ${horaAtual}</div>
+                </div>
+                <div class="info">
+                    <strong>📌 Unidade:</strong> ${unidadeInfo.nome}<br>
+                    <strong>CNPJ:</strong> ${unidadeInfo.cnpj}<br>
+                    <strong>Total de funcionários:</strong> ${filtrados.length}
+                </div>
+                <table>
+                    <thead>
+                        <tr><th>Nº</th><th>Nome</th><th>CPF</th><th>Função</th><th>Unidade</th>${tabAtual === 'plano_saude' ? '<th>Dependentes</th>' : ''}</tr>
+                    </thead>
+                    <tbody>
+                        ${filtrados.map((f, i) => `<tr>
+                            <td>${i+1}</td>
+                            <td>${escapeHtml(f.nome || '')}</td>
+                            <td>${formatarCPF(f.cpf)}</td>
+                            <td>${escapeHtml(f.funcao || '')}</td>
+                            <td>${escapeHtml(f.unidade || '')}</td>
+                            ${tabAtual === 'plano_saude' ? `<td>${(f.dependentes && f.dependentes.length) ? f.dependentes.map(d => `${d.nome} (${d.parentesco || '—'})`).join(', ') : '—'}</td>` : ''}
+                        </tr>`).join('')}
+                    </tbody>
+                </table>
+                <div style="text-align: center;"><div class="total">📊 Total: ${filtrados.length}</div></div>
+                <div class="footer-pdf">
+                    <p>${unidadeInfo.nome} - CNPJ: ${unidadeInfo.cnpj}</p>
+                    <p>${unidadeInfo.endereco}</p>
+                    <p>Telefone: ${unidadeInfo.telefone} | E-mail: ${unidadeInfo.email}</p>
+                    <p>Documento gerado eletronicamente - Creche El Shadday</p>
+                </div>
+                <div class="no-print" style="text-align:center; margin-top:20px; padding:15px; position:fixed; bottom:0; left:0; right:0; background:white; box-shadow:0 -2px 10px rgba(0,0,0,0.1);">
+                    <button onclick="window.print()" style="padding:10px 30px; background:${corTema}; color:white; border:none; border-radius:8px; cursor:pointer; margin-right:10px;">🖨️ Imprimir</button>
+                    <button onclick="window.close()" style="padding:10px 25px; background:#333; color:white; border:none; border-radius:8px; cursor:pointer;">✖ Fechar</button>
+                </div>
+                <script>setTimeout(() => window.print(), 500);<\/script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function mostrarNotificacao(mensagem, tipo = 'success') {
+        const n = document.createElement('div');
+        n.className = 'notificacao-flutuante';
+        n.innerHTML = mensagem;
+        document.body.appendChild(n);
+        setTimeout(() => n.remove(), 3000);
+    }
+</script>
+</body>
+</html>

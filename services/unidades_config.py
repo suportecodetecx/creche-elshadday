@@ -12,7 +12,7 @@ UNIDADES = {
         "cnpj": "03.067.526/0001-87",
         "telefone": "(11) 4739-3549",  # Ajustar
         "INEP": "35195340", 
-        
+        "e-mail":"c.elshadday@se-pmmc.com.br",
     },
     
     "CEIM Prof. Egberto Malta Moreira": {
@@ -25,7 +25,7 @@ UNIDADES = {
         "cnpj": "03.067.526/0002-68",
         "telefone": "(11) 4726-6241",  # Ajustar
        "INEP": "35006743 ",
-        
+        "e-mail":"ceim.moreira@se-pmmc.com.br",
     }
 }
 

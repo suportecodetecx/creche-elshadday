@@ -98,6 +98,18 @@ def buscar_alunos():
         return jsonify({'erro': str(e)}), 500
 
 
+# ==================== ROTA PARA BENEFÍCIOS ====================
+
+@app.route('/beneficios')
+def beneficios():
+    """Página de gestão de benefícios (Odontológico e Plano de Saúde)"""
+    try:
+        return render_template('beneficios.html')
+    except Exception as e:
+        logger.error(f"Erro ao renderizar beneficios: {e}")
+        return jsonify({'erro': str(e)}), 500
+
+
 # ==================== ROTA PARA CADASTRO DE ALUNO ====================
 
 @app.route('/alunos/cadastro')
