@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro de Aluno - Creche El Shadday</title>
@@ -1640,7 +1641,17 @@ async function processarUploadsArquivos() {
         statusSpan.className = 'status uploading';
         statusSpan.innerHTML = '⏫';
         currentFileSpan.textContent = `${item.nome} (${i+1} de ${totalArquivos})`;
-        
+            // COMPRIMIR PDF SE FOR GRANDE
+    if (item.file && item.file.type === 'application/pdf' && item.file.size > 2 * 1024 * 1024) {
+        console.log(`📄 Comprimindo PDF: ${item.nome}`);
+        item.file = await comprimirPDF(item.file, 2);
+    }
+    
+    // COMPRIMIR IMAGEM SE FOR GRANDE
+    if (item.file && item.file.type.startsWith('image/') && item.file.size > 1.5 * 1024 * 1024) {
+        console.log(`🖼️ Comprimindo imagem: ${item.nome}`);
+        item.file = await comprimirImagem(item.file, 500);
+    }
         try {
             const resultado = await uploadArquivoParaGridFS(item.file, item.campo);
             
@@ -1741,6 +1752,110 @@ function salvarCadastroTradicional() {
     });
 }
 
+// ===== FUNÇÃO DE COMPRESSÃO DE IMAGEM =====
+async function comprimirImagem(file, maxSizeKB = 500) {
+    if (!file.type.startsWith('image/')) return file;
+    if (file.size < 1 * 1024 * 1024) return file;
+    
+    console.log(`🖼️ Comprimindo imagem: ${file.name} (${(file.size / 1024).toFixed(0)}KB)`);
+    
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                let width = img.width;
+                let height = img.height;
+                const maxWidth = 1024;
+                const maxHeight = 1024;
+                
+                if (width > maxWidth || height > maxHeight) {
+                    if (width > height) {
+                        height = (height * maxWidth) / width;
+                        width = maxWidth;
+                    } else {
+                        width = (width * maxHeight) / height;
+                        height = maxHeight;
+                    }
+                }
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                let qualidade = 0.7;
+                function tentarCompressao() {
+                    canvas.toBlob(blob => {
+                        if (blob.size / 1024 > maxSizeKB && qualidade > 0.3) {
+                            qualidade -= 0.1;
+                            tentarCompressao();
+                        } else {
+                            const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
+                                type: 'image/jpeg',
+                                lastModified: Date.now()
+                            });
+                            console.log(`   ✅ Imagem comprimida: ${(file.size / 1024).toFixed(0)}KB → ${(compressedFile.size / 1024).toFixed(0)}KB`);
+                            resolve(compressedFile);
+                        }
+                    }, 'image/jpeg', qualidade);
+                }
+                tentarCompressao();
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// ===== FUNÇÃO DE COMPRESSÃO DE PDF =====
+async function comprimirPDF(file, tamanhoMaximoMB = 2) {
+    if (file.type !== 'application/pdf') return file;
+    if (file.size <= tamanhoMaximoMB * 1024 * 1024) return file;
+    
+    mostrarNotificacao(`🔄 Comprimindo PDF de ${(file.size / 1024 / 1024).toFixed(2)}MB... Aguarde`, 'warning');
+    
+    try {
+        if (typeof window.PDFLib === 'undefined') {
+            console.warn('PDF-Lib não carregado');
+            return file;
+        }
+        
+        const arrayBuffer = await file.arrayBuffer();
+        const { PDFDocument } = window.PDFLib;
+        const pdfDoc = await PDFDocument.load(arrayBuffer);
+        
+        const pageCount = pdfDoc.getPageCount();
+        console.log(`📄 PDF tem ${pageCount} página(s)`);
+        
+        const novoPdf = await PDFDocument.create();
+        
+        for (let i = 0; i < pageCount; i++) {
+            const [copiedPage] = await novoPdf.copyPages(pdfDoc, [i]);
+            novoPdf.addPage(copiedPage);
+        }
+        
+        const compressedBytes = await novoPdf.save({
+            useObjectStreams: true,
+            addDefaultPage: false,
+            objectsPerTick: 50
+        });
+        
+        const compressedFile = new File([compressedBytes], file.name, {
+            type: 'application/pdf',
+            lastModified: Date.now()
+        });
+        
+        console.log(`   ✅ PDF comprimido: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
+        mostrarNotificacao(`✅ PDF comprimido!`, 'success');
+        
+        return compressedFile;
+    } catch (error) {
+        console.error('Erro ao comprimir PDF:', error);
+        return file;
+    }
+}
 // ===== FUNÇÃO CORRIGIDA PARA CARREGAR FOTOS VIA GRIDFS NA EDIÇÃO =====
 function carregarFotosExistentes(aluno) {
     console.log('📸 Carregando fotos e documentos existentes via GridFS...');
@@ -2134,7 +2249,6 @@ if (aluno.transporte && aluno.transporte.nome) {
 // CARREGAR FOTOS E DOCUMENTOS
 carregarFotosExistentes(aluno);
     
-    carregarFotosExistentes(aluno);
     
     console.log('✅ Formulário preenchido com sucesso!');
     mostrarNotificacao('✅ Dados carregados para edição', 'success');

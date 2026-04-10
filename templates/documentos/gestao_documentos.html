@@ -1382,69 +1382,70 @@
         }
 
         // ===== SUBMIT DO FORMULÁRIO COM COMPRESSÃO =====
-        document.getElementById('formUpload').addEventListener('submit', async (e) => {
-            e.preventDefault();
+       // ===== SUBMIT DO FORMULÁRIO (APENAS COMPRESSÃO DE IMAGEM) =====
+document.getElementById('formUpload').addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-            const tipo = document.querySelector('input[name="tipo"]:checked');
-            const unidade = document.getElementById('unidadeSelect').value;
-            const nomePessoa = document.getElementById('nomePessoa').value.trim();
-            const dataReferencia = document.getElementById('dataReferencia').value;
-            let arquivo = document.getElementById('arquivoUpload').files[0];
-            const editId = document.getElementById('editId').value;
+    const tipo = document.querySelector('input[name="tipo"]:checked');
+    const unidade = document.getElementById('unidadeSelect').value;
+    const nomePessoa = document.getElementById('nomePessoa').value.trim();
+    const dataReferencia = document.getElementById('dataReferencia').value;
+    let arquivo = document.getElementById('arquivoUpload').files[0];
+    const editId = document.getElementById('editId').value;
 
-            if (!tipo) { mostrarNotificacao('Selecione o tipo de documento', 'warning'); return; }
-            if (!unidade) { mostrarNotificacao('Selecione a unidade', 'warning'); return; }
-            if (!nomePessoa) { mostrarNotificacao('Selecione o nome do colaborador', 'warning'); return; }
-            if (!dataReferencia) { mostrarNotificacao('Data de referência é obrigatória', 'warning'); return; }
-            if (!editando && !arquivo) { mostrarNotificacao('Selecione um arquivo', 'warning'); return; }
+    if (!tipo) { mostrarNotificacao('Selecione o tipo de documento', 'warning'); return; }
+    if (!unidade) { mostrarNotificacao('Selecione a unidade', 'warning'); return; }
+    if (!nomePessoa) { mostrarNotificacao('Selecione o nome do colaborador', 'warning'); return; }
+    if (!dataReferencia) { mostrarNotificacao('Data de referência é obrigatória', 'warning'); return; }
+    if (!editando && !arquivo) { mostrarNotificacao('Selecione um arquivo', 'warning'); return; }
 
-            // COMPRIMIR SE FOR IMAGEM GRANDE
-            if (arquivo && arquivo.type.startsWith('image/') && arquivo.size > 1.5 * 1024 * 1024) {
-                mostrarNotificacao('🔄 Comprimindo imagem...', 'warning');
-                arquivo = await comprimirImagem(arquivo, 500);
-            }
-            
-            // Verificar tamanho final (máximo 4MB)
-            if (arquivo && arquivo.size > 4 * 1024 * 1024) {
-                mostrarNotificacao(`❌ Arquivo muito grande (${(arquivo.size / 1024 / 1024).toFixed(1)}MB). Máximo 4MB.`, 'error');
-                return;
-            }
+    // COMPRIMIR APENAS IMAGENS GRANDES
+    if (arquivo && arquivo.type.startsWith('image/') && arquivo.size > 1.5 * 1024 * 1024) {
+        mostrarNotificacao('🔄 Comprimindo imagem...', 'warning');
+        arquivo = await comprimirImagem(arquivo, 500);
+    }
+    
+    // Verificar tamanho final (máximo 10MB - compatível com o servidor)
+    if (arquivo && arquivo.size > 10 * 1024 * 1024) {
+        mostrarNotificacao(`❌ Arquivo muito grande (${(arquivo.size / 1024 / 1024).toFixed(1)}MB). Máximo 10MB.`, 'error');
+        return;
+    }
 
-            const dataObj = new Date(dataReferencia);
-            if (isNaN(dataObj.getTime())) {
-                mostrarNotificacao('Data de referência inválida', 'warning');
-                return;
-            }
+    const dataObj = new Date(dataReferencia);
+    if (isNaN(dataObj.getTime())) {
+        mostrarNotificacao('Data de referência inválida', 'warning');
+        return;
+    }
 
-            const formData = new FormData();
-            formData.append('tipo', tipo.value);
-            formData.append('unidade', unidade);
-            formData.append('nome_pessoa', nomePessoa);
-            formData.append('data_referencia', dataReferencia);
-            if (arquivo) formData.append('arquivo', arquivo);
-            if (editando) formData.append('documento_id', editId);
+    const formData = new FormData();
+    formData.append('tipo', tipo.value);
+    formData.append('unidade', unidade);
+    formData.append('nome_pessoa', nomePessoa);
+    formData.append('data_referencia', dataReferencia);
+    if (arquivo) formData.append('arquivo', arquivo);
+    if (editando) formData.append('documento_id', editId);
 
-            const [anoRef, mesRef] = dataReferencia.split('-');
-            formData.append('mes', mesRef);
-            formData.append('ano', anoRef);
+    const [anoRef, mesRef] = dataReferencia.split('-');
+    formData.append('mes', mesRef);
+    formData.append('ano', anoRef);
 
-            const url = editando ? '/documentos/api/atualizar' : '/documentos/api/upload';
+    const url = editando ? '/documentos/api/atualizar' : '/documentos/api/upload';
 
-            try {
-                const response = await fetch(url, { method: 'POST', body: formData });
-                const data = await response.json();
-                if (data.sucesso) {
-                    mostrarNotificacao(editando ? 'Documento atualizado com sucesso!' : 'Documento enviado com sucesso!', 'success');
-                    fecharModalUpload();
-                    carregarDocumentos();
-                } else {
-                    mostrarNotificacao(data.erro || 'Erro ao salvar', 'error');
-                }
-            } catch (error) {
-                console.error('Erro:', error);
-                mostrarNotificacao('Erro de conexão', 'error');
-            }
-        });
+    try {
+        const response = await fetch(url, { method: 'POST', body: formData });
+        const data = await response.json();
+        if (data.sucesso) {
+            mostrarNotificacao(editando ? 'Documento atualizado com sucesso!' : 'Documento enviado com sucesso!', 'success');
+            fecharModalUpload();
+            carregarDocumentos();
+        } else {
+            mostrarNotificacao(data.erro || 'Erro ao salvar', 'error');
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        mostrarNotificacao('Erro de conexão', 'error');
+    }
+});
 
         document.getElementById('modalUpload').addEventListener('click', (e) => {
             if (e.target === document.getElementById('modalUpload')) {
