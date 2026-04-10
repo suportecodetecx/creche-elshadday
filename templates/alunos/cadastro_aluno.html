@@ -1434,7 +1434,7 @@ function coletarDadosFormulario() {
     return alunoData;
 }
 
-// ===== FUNÇÃO: Processar uploads de arquivos COM BARRA DE PROGRESSO =====
+// ===== FUNÇÃO: Processar uploads de arquivos COM BARRA DE PROGRESSO E RETRY =====
 async function processarUploadsArquivos() {
     console.log('\n📸 INICIANDO UPLOAD DOS ARQUIVOS...');
     
@@ -1459,7 +1459,9 @@ async function processarUploadsArquivos() {
     const isEditing = typeof alunoParaEditar !== 'undefined' && alunoParaEditar && alunoParaEditar !== 'null';
     const arquivosExistentes = isEditing ? (alunoParaEditar.arquivos_ids || {}) : {};
     
-    const todosArquivos = [];
+    // Array para armazenar itens com erro e permitir reupload
+    let todosArquivos = [];
+    let itensComErro = [];
     
     const fotos = [
         { id: 'aluno_foto_img', campo: 'foto_aluno', nome: '📸 Foto do Aluno', obrigatorio: !isEditing, tipo: 'foto' },
@@ -1488,6 +1490,101 @@ async function processarUploadsArquivos() {
         { id: 'transporte_cnh', campo: 'transporte_cnh', nome: '📄 CNH - Transporte', obrigatorio: (transporteAtivo && !isEditing), tipo: 'doc' }
     ];
     
+    // Função para adicionar item à lista
+    function adicionarItem(item) {
+        const div = document.createElement('div');
+        div.className = 'progress-file-item';
+        div.id = `progress-item-${item.campo}`;
+        div.setAttribute('data-campo', item.campo);
+        div.setAttribute('data-tipo', item.tipo);
+        div.setAttribute('data-id', item.id);
+        div.setAttribute('data-nome', item.nome);
+        div.innerHTML = `
+            <span class="status pending" id="status-${item.campo}">⏳</span>
+            <span class="filename">${item.nome}</span>
+            <span class="filesize">${formatarTamanho(item.size || 0)}</span>
+            <button class="btn-retry" style="display:none; background:var(--netflix-red); border:none; color:white; border-radius:20px; padding:4px 12px; cursor:pointer; margin-left:10px;">↻ Reenviar</button>
+        `;
+        
+        // Adicionar evento de clique no botão retry
+        const retryBtn = div.querySelector('.btn-retry');
+        if (retryBtn) {
+            retryBtn.onclick = async (e) => {
+                e.stopPropagation();
+                await reenviarArquivo(item, div, arquivosIds);
+            };
+        }
+        
+        // Também permitir clicar na linha inteira para reenviar
+        div.style.cursor = 'pointer';
+        div.onclick = async (e) => {
+            if (e.target.classList.contains('btn-retry')) return;
+            const statusSpan = div.querySelector('.status');
+            if (statusSpan && statusSpan.classList.contains('error')) {
+                await reenviarArquivo(item, div, arquivosIds);
+            }
+        };
+        
+        progressFilesList.appendChild(div);
+        return div;
+    }
+    
+    // Função para reenviar um arquivo específico
+    async function reenviarArquivo(item, div, arquivosIds) {
+        console.log(`🔄 Reenviando: ${item.nome}`);
+        
+        const statusSpan = div.querySelector('.status');
+        const retryBtn = div.querySelector('.btn-retry');
+        
+        statusSpan.className = 'status uploading';
+        statusSpan.innerHTML = '⏫';
+        if (retryBtn) retryBtn.style.display = 'none';
+        
+        currentFileSpan.textContent = `Reenviando: ${item.nome}...`;
+        
+        try {
+            let file = null;
+            
+            if (item.tipo === 'foto') {
+                const imgElement = document.getElementById(item.id);
+                if (imgElement && imgElement.classList.contains('active') && imgElement.src && imgElement.src.startsWith('data:')) {
+                    file = await dataURLToFile(imgElement.src, `${item.campo}_${Date.now()}.jpg`);
+                }
+            } else if (item.tipo === 'doc') {
+                const inputElement = document.getElementById(item.id);
+                if (inputElement && inputElement.files && inputElement.files.length > 0) {
+                    file = inputElement.files[0];
+                }
+            }
+            
+            if (!file) {
+                throw new Error('Arquivo não encontrado');
+            }
+            
+            const resultado = await uploadArquivoParaGridFS(file, item.campo);
+            
+            if (resultado.sucesso) {
+                arquivosIds[item.campo] = resultado.file_id;
+                statusSpan.className = 'status success';
+                statusSpan.innerHTML = '✅';
+                if (retryBtn) retryBtn.style.display = 'none';
+                mostrarNotificacao(`✅ ${item.nome} reenviado com sucesso!`, 'success');
+                console.log(`   ✅ ${item.campo} reenviado! ID: ${resultado.file_id}`);
+            } else {
+                throw new Error(resultado.erro || 'Erro no upload');
+            }
+        } catch (error) {
+            console.error(`   ❌ Erro ao reenviar ${item.campo}:`, error);
+            statusSpan.className = 'status error';
+            statusSpan.innerHTML = '❌';
+            if (retryBtn) retryBtn.style.display = 'inline-block';
+            mostrarNotificacao(`❌ Erro ao reenviar ${item.nome}: ${error.message}`, 'error');
+        } finally {
+            currentFileSpan.textContent = 'Pronto para continuar';
+        }
+    }
+    
+    // Coletar todos os arquivos
     for (const foto of fotos) {
         const imgElement = document.getElementById(foto.id);
         const fotoExistente = arquivosExistentes[foto.campo];
@@ -1526,21 +1623,19 @@ async function processarUploadsArquivos() {
     progressTotalSpan.textContent = totalArquivos;
     progressCountSpan.textContent = '0';
     
-    todosArquivos.forEach((item) => {
-        const div = document.createElement('div');
-        div.className = 'progress-file-item';
-        div.id = `progress-item-${item.campo}`;
-        div.innerHTML = `
-            <span class="status pending" id="status-${item.campo}">⏳</span>
-            <span class="filename">${item.nome}</span>
-            <span class="filesize">${formatarTamanho(item.size)}</span>
-        `;
-        progressFilesList.appendChild(div);
-    });
+    // Adicionar todos os itens à lista
+    const itemsDiv = {};
+    for (const item of todosArquivos) {
+        const div = adicionarItem(item);
+        itemsDiv[item.campo] = div;
+    }
     
+    // Processar uploads
     for (let i = 0; i < totalArquivos; i++) {
         const item = todosArquivos[i];
-        const statusSpan = document.getElementById(`status-${item.campo}`);
+        const div = itemsDiv[item.campo];
+        const statusSpan = div.querySelector('.status');
+        const retryBtn = div.querySelector('.btn-retry');
         
         statusSpan.className = 'status uploading';
         statusSpan.innerHTML = '⏫';
@@ -1558,15 +1653,18 @@ async function processarUploadsArquivos() {
                 uploadsFalha++;
                 statusSpan.className = 'status error';
                 statusSpan.innerHTML = '❌';
+                if (retryBtn) retryBtn.style.display = 'inline-block';
                 if (item.obrigatorio) {
-                    throw new Error(`Falha no upload obrigatório: ${item.nome}`);
+                    // Não para o processo, apenas marca como erro
+                    console.warn(`⚠️ Falha no upload obrigatório: ${item.nome}`);
                 }
             }
         } catch (error) {
             uploadsFalha++;
             statusSpan.className = 'status error';
             statusSpan.innerHTML = '❌';
-            throw error;
+            if (retryBtn) retryBtn.style.display = 'inline-block';
+            console.error(`❌ Erro no upload de ${item.campo}:`, error);
         }
         
         const progresso = ((i + 1) / totalArquivos) * 100;
@@ -1575,15 +1673,38 @@ async function processarUploadsArquivos() {
         progressCountSpan.textContent = i + 1;
     }
     
-    if (uploadsFalha === 0) {
+    // Se houver erros, mostrar mensagem e manter overlay com opção de reenviar
+    if (uploadsFalha > 0) {
         progressBar.style.width = '100%';
         progressPercent.textContent = '100%';
-        currentFileSpan.textContent = '✅ Todos os arquivos enviados!';
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        currentFileSpan.innerHTML = `⚠️ ${uploadsFalha} arquivo(s) com erro. Clique no ❌ para reenviar.`;
+        
+        // Adicionar botão para continuar mesmo com erros (apenas para documentos não obrigatórios)
+        const continueBtn = document.createElement('button');
+        continueBtn.textContent = '✅ Continuar mesmo assim (pular erros)';
+        continueBtn.style.cssText = 'background: var(--accent-green); color: #1a1a1a; border: none; padding: 10px 20px; border-radius: 30px; margin-top: 15px; cursor: pointer; font-weight: bold;';
+        continueBtn.onclick = () => {
+            overlay.classList.remove('active');
+        };
+        
+        const existingBtn = document.querySelector('.progress-card .continue-btn');
+        if (!existingBtn) {
+            document.querySelector('.progress-card').appendChild(continueBtn);
+            continueBtn.classList.add('continue-btn');
+        }
+        
+        // Aguardar o usuário clicar para continuar ou reenviar
+        return new Promise((resolve) => {
+            const checkInterval = setInterval(() => {
+                if (!overlay.classList.contains('active')) {
+                    clearInterval(checkInterval);
+                    resolve(arquivosIds);
+                }
+            }, 500);
+        });
     }
     
     overlay.classList.remove('active');
-    
     return arquivosIds;
 }
 
