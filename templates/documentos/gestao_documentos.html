@@ -977,75 +977,15 @@
             }
         }
 
-        // ==================== FUNÇÃO PARA COMPRIMIR IMAGEM ====================
-        async function comprimirImagem(file, maxSizeKB = 500) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.onload = function() {
-                        let width = img.width;
-                        let height = img.height;
-                        const maxWidth = 1024;
-                        const maxHeight = 1024;
-                        
-                        if (width > maxWidth || height > maxHeight) {
-                            if (width > height) {
-                                height = (height * maxWidth) / width;
-                                width = maxWidth;
-                            } else {
-                                width = (width * maxHeight) / height;
-                                height = maxHeight;
-                            }
-                        }
-                        
-                        const canvas = document.createElement('canvas');
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        
-                        let qualidade = 0.7;
-                        function tentarCompressao() {
-                            canvas.toBlob(blob => {
-                                if (blob.size / 1024 > maxSizeKB && qualidade > 0.3) {
-                                    qualidade -= 0.1;
-                                    tentarCompressao();
-                                } else {
-                                    const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
-                                        type: 'image/jpeg',
-                                        lastModified: Date.now()
-                                    });
-                                    console.log(`✅ Imagem comprimida: ${(file.size / 1024).toFixed(0)}KB → ${(compressedFile.size / 1024).toFixed(0)}KB`);
-                                    resolve(compressedFile);
-                                }
-                            }, 'image/jpeg', qualidade);
-                        }
-                        tentarCompressao();
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
+        function popularFiltroNomeSelect() {
+            const selectFiltroNome = document.getElementById('filtroNome');
+            selectFiltroNome.innerHTML = '<option value="">👤 Todos os colaboradores</option>';
+            funcionarios.forEach(func => {
+                const option = document.createElement('option');
+                option.value = func.nome;
+                option.textContent = func.nome;
+                selectFiltroNome.appendChild(option);
             });
-        }
-
-        // ==================== FUNÇÃO PARA VALIDAR E COMPRIMIR ARQUIVO ====================
-        async function processarArquivo(file) {
-            if (!file) return null;
-            
-            // Verificar tamanho máximo (3MB)
-            if (file.size > 3 * 1024 * 1024) {
-                mostrarNotificacao(`⚠️ Arquivo muito grande (${(file.size / 1024 / 1024).toFixed(1)}MB). Comprimindo...`, 'warning');
-                
-                if (file.type.startsWith('image/')) {
-                    return await comprimirImagem(file, 500);
-                } else if (file.type === 'application/pdf') {
-                    mostrarNotificacao('⚠️ PDF muito grande! Recomendamos reduzir o tamanho do arquivo.', 'warning');
-                    return file;
-                }
-            }
-            
-            return file;
         }
 
         function aplicarFiltros() {
@@ -1070,17 +1010,6 @@
 
             atualizarContadorTotal();
             agruparEExibirDocumentos();
-        }
-
-        function popularFiltroNomeSelect() {
-            const selectFiltroNome = document.getElementById('filtroNome');
-            selectFiltroNome.innerHTML = '<option value="">👤 Todos os colaboradores</option>';
-            funcionarios.forEach(func => {
-                const option = document.createElement('option');
-                option.value = func.nome;
-                option.textContent = func.nome;
-                selectFiltroNome.appendChild(option);
-            });
         }
 
         function carregarFuncionariosParaSelect() {
@@ -1298,6 +1227,21 @@
             if (selectColaborador.options.length > 0) selectColaborador.selectedIndex = 0;
         }
 
+        // ===== FUNÇÃO DE UPLOAD USANDO O MESMO ENDPOINT DO CADASTRO =====
+        async function uploadDocumentoGridFS(file, campo) {
+            const formData = new FormData();
+            formData.append('arquivo', file);
+            formData.append('campo', campo);
+            
+            const response = await fetch('/api/upload-arquivo', {
+                method: 'POST',
+                body: formData
+            });
+            
+            return await response.json();
+        }
+
+        // ===== SUBMIT CORRIGIDO USANDO O MESMO MÉTODO DO CADASTRO =====
         document.getElementById('formUpload').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -1305,7 +1249,7 @@
             const unidade = document.getElementById('unidadeSelect').value;
             const nomePessoa = document.getElementById('nomePessoa').value.trim();
             const dataReferencia = document.getElementById('dataReferencia').value;
-            let arquivo = document.getElementById('arquivoUpload').files[0];
+            const arquivo = document.getElementById('arquivoUpload').files[0];
             const editId = document.getElementById('editId').value;
 
             if (!tipo) { mostrarNotificacao('Selecione o tipo de documento', 'warning'); return; }
@@ -1314,39 +1258,76 @@
             if (!dataReferencia) { mostrarNotificacao('Data de referência é obrigatória', 'warning'); return; }
             if (!editando && !arquivo) { mostrarNotificacao('Selecione um arquivo', 'warning'); return; }
 
-            // COMPRIMIR ARQUIVO ANTES DO UPLOAD
-            if (arquivo && arquivo.size > 1.5 * 1024 * 1024) {
-                mostrarNotificacao('🔄 Comprimindo arquivo...', 'warning');
-                arquivo = await processarArquivo(arquivo);
+            // Verificar tamanho do arquivo (máximo 4MB para segurança)
+            if (arquivo && arquivo.size > 4 * 1024 * 1024) {
+                mostrarNotificacao(`⚠️ Arquivo muito grande (${(arquivo.size / 1024 / 1024).toFixed(1)}MB). Máximo 4MB.`, 'warning');
+                return;
             }
 
-            const formData = new FormData();
-            formData.append('tipo', tipo.value);
-            formData.append('unidade', unidade);
-            formData.append('nome_pessoa', nomePessoa);
-            formData.append('data_referencia', dataReferencia);
-            if (arquivo) formData.append('arquivo', arquivo);
-            if (editando) formData.append('documento_id', editId);
-
-            const [anoRef, mesRef] = dataReferencia.split('-');
-            formData.append('mes', mesRef);
-            formData.append('ano', anoRef);
-
-            const url = editando ? '/documentos/api/atualizar' : '/documentos/api/upload';
+            mostrarNotificacao('🔄 Enviando documento...', 'warning');
 
             try {
-                const response = await fetch(url, { method: 'POST', body: formData });
-                const data = await response.json();
-                if (data.sucesso) {
-                    mostrarNotificacao(editando ? 'Documento atualizado com sucesso!' : 'Documento enviado com sucesso!', 'success');
-                    fecharModalUpload();
-                    carregarDocumentos();
+                let fileId = null;
+                
+                // Se tem arquivo novo, faz upload usando o mesmo endpoint do cadastro
+                if (arquivo) {
+                    const uploadResult = await uploadDocumentoGridFS(arquivo, `documento_${tipo.value}_${Date.now()}`);
+                    if (uploadResult.sucesso) {
+                        fileId = uploadResult.file_id;
+                        console.log(`✅ Arquivo enviado com sucesso! ID: ${fileId}`);
+                    } else {
+                        throw new Error(uploadResult.erro || 'Erro no upload do arquivo');
+                    }
+                }
+
+                // Preparar dados do documento
+                const docData = {
+                    tipo: tipo.value,
+                    unidade: unidade,
+                    nome_pessoa: nomePessoa,
+                    data_referencia: dataReferencia,
+                    mes: dataReferencia.split('-')[1],
+                    ano: dataReferencia.split('-')[0]
+                };
+                
+                if (fileId) {
+                    docData.file_id = fileId;
+                    docData.usando_gridfs = true;
+                }
+                
+                if (editando) {
+                    docData.documento_id = editandoId;
+                    const response = await fetch('/documentos/api/atualizar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(docData)
+                    });
+                    const data = await response.json();
+                    if (data.sucesso) {
+                        mostrarNotificacao('Documento atualizado com sucesso!', 'success');
+                        fecharModalUpload();
+                        carregarDocumentos();
+                    } else {
+                        throw new Error(data.erro || 'Erro ao atualizar');
+                    }
                 } else {
-                    mostrarNotificacao(data.erro || 'Erro ao salvar', 'error');
+                    const response = await fetch('/documentos/api/cadastrar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(docData)
+                    });
+                    const data = await response.json();
+                    if (data.sucesso) {
+                        mostrarNotificacao('Documento enviado com sucesso!', 'success');
+                        fecharModalUpload();
+                        carregarDocumentos();
+                    } else {
+                        throw new Error(data.erro || 'Erro ao cadastrar');
+                    }
                 }
             } catch (error) {
                 console.error('Erro:', error);
-                mostrarNotificacao('Erro de conexão', 'error');
+                mostrarNotificacao('❌ ' + error.message, 'error');
             }
         });
 
