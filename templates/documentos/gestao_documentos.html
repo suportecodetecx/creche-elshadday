@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
+        /* ===== SEU CSS ORIGINAL - SEM ALTERAÇÕES ===== */
         :root {
             --netflix-red: #E50914;
             --netflix-red-dark: #B81D24;
@@ -202,6 +203,7 @@
             border-color: var(--netflix-red);
         }
 
+        /* Estilo para o select de colaborador */
         .select-colaborador {
             background-color: var(--netflix-gray);
             color: var(--white);
@@ -832,7 +834,7 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Nome da Pessoa/Empresa <span class="required">*</span></label>
+                        <label>Nome da Pessoa <span class="required">*</span></label>
                         <select id="nomePessoa" class="select-colaborador" required>
                             <option value="">🔍 Selecione um colaborador</option>
                         </select>
@@ -1142,7 +1144,7 @@
                                         </tr>
                                     `).join('')}
                                 </tbody>
-                            <td>
+                            </table>
                         </div>
                     `;
                 }
