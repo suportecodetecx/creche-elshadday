@@ -755,7 +755,9 @@
                 </div>
 
                 <div class="filtros-container">
-                    <input type="text" id="filtroNome" class="filtro-input" placeholder="🔍 Filtrar por nome do colaborador..." onkeyup="aplicarFiltros()">
+                    <select id="filtroNome" class="filtro-input" onchange="aplicarFiltros()">
+                        <option value="">👤 Todos os colaboradores</option>
+                    </select>
                     <select id="filtroTipo" class="filtro-input" onchange="aplicarFiltros()">
                         <option value="">Todos os tipos</option>
                         <option value="atestado">🏥 Atestados</option>
@@ -903,11 +905,6 @@
             return mesesMap[mesStr] || mesStr;
         }
 
-        function getNumeroMes(nomeMes) {
-            const index = mesesOrdem.indexOf(nomeMes);
-            return index !== -1 ? index + 1 : null;
-        }
-
         function converterParaBrasilia(dataUTC) {
             if (!dataUTC) return null;
             let data = typeof dataUTC === 'string' ? new Date(dataUTC) : new Date(dataUTC);
@@ -980,44 +977,94 @@
             }
         }
 
-        // Função para aplicar filtros localmente (mais rápido e evita chamadas repetidas à API)
+        // ==================== FUNÇÃO PARA COMPRIMIR IMAGEM ====================
+        async function comprimirImagem(file, maxSizeKB = 500) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        let width = img.width;
+                        let height = img.height;
+                        const maxWidth = 1024;
+                        const maxHeight = 1024;
+                        
+                        if (width > maxWidth || height > maxHeight) {
+                            if (width > height) {
+                                height = (height * maxWidth) / width;
+                                width = maxWidth;
+                            } else {
+                                width = (width * maxHeight) / height;
+                                height = maxHeight;
+                            }
+                        }
+                        
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        let qualidade = 0.7;
+                        function tentarCompressao() {
+                            canvas.toBlob(blob => {
+                                if (blob.size / 1024 > maxSizeKB && qualidade > 0.3) {
+                                    qualidade -= 0.1;
+                                    tentarCompressao();
+                                } else {
+                                    const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
+                                        type: 'image/jpeg',
+                                        lastModified: Date.now()
+                                    });
+                                    console.log(`✅ Imagem comprimida: ${(file.size / 1024).toFixed(0)}KB → ${(compressedFile.size / 1024).toFixed(0)}KB`);
+                                    resolve(compressedFile);
+                                }
+                            }, 'image/jpeg', qualidade);
+                        }
+                        tentarCompressao();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // ==================== FUNÇÃO PARA VALIDAR E COMPRIMIR ARQUIVO ====================
+        async function processarArquivo(file) {
+            if (!file) return null;
+            
+            // Verificar tamanho máximo (3MB)
+            if (file.size > 3 * 1024 * 1024) {
+                mostrarNotificacao(`⚠️ Arquivo muito grande (${(file.size / 1024 / 1024).toFixed(1)}MB). Comprimindo...`, 'warning');
+                
+                if (file.type.startsWith('image/')) {
+                    return await comprimirImagem(file, 500);
+                } else if (file.type === 'application/pdf') {
+                    mostrarNotificacao('⚠️ PDF muito grande! Recomendamos reduzir o tamanho do arquivo.', 'warning');
+                    return file;
+                }
+            }
+            
+            return file;
+        }
+
         function aplicarFiltros() {
-            const filtroNome = document.getElementById('filtroNome').value.toLowerCase().trim();
+            const filtroNome = document.getElementById('filtroNome').value;
             const filtroTipo = document.getElementById('filtroTipo').value;
             const filtroUnidade = document.getElementById('filtroUnidade').value;
             const filtroMes = document.getElementById('filtroMes').value;
             const filtroAno = document.getElementById('filtroAno').value;
 
             documentosFiltrados = documentos.filter(doc => {
-                // Filtro por nome (busca no nome_pessoa)
-                if (filtroNome && !doc.nome_pessoa.toLowerCase().includes(filtroNome)) {
-                    return false;
-                }
-                
-                // Filtro por tipo
-                if (filtroTipo && doc.tipo !== filtroTipo) {
-                    return false;
-                }
-                
-                // Filtro por unidade
-                if (filtroUnidade && doc.unidade !== filtroUnidade) {
-                    return false;
-                }
-                
-                // Filtro por mês (CORRIGIDO - usando o campo mes do documento)
+                if (filtroNome && doc.nome_pessoa !== filtroNome) return false;
+                if (filtroTipo && doc.tipo !== filtroTipo) return false;
+                if (filtroUnidade && doc.unidade !== filtroUnidade) return false;
                 if (filtroMes) {
                     const mesDoc = String(doc.mes);
                     const mesFiltro = String(filtroMes);
-                    if (mesDoc !== mesFiltro && mesDoc.padStart(2, '0') !== mesFiltro.padStart(2, '0')) {
-                        return false;
-                    }
+                    if (mesDoc !== mesFiltro && mesDoc.padStart(2, '0') !== mesFiltro.padStart(2, '0')) return false;
                 }
-                
-                // Filtro por ano
-                if (filtroAno && String(doc.ano) !== String(filtroAno)) {
-                    return false;
-                }
-                
+                if (filtroAno && String(doc.ano) !== String(filtroAno)) return false;
                 return true;
             });
 
@@ -1025,33 +1072,37 @@
             agruparEExibirDocumentos();
         }
 
+        function popularFiltroNomeSelect() {
+            const selectFiltroNome = document.getElementById('filtroNome');
+            selectFiltroNome.innerHTML = '<option value="">👤 Todos os colaboradores</option>';
+            funcionarios.forEach(func => {
+                const option = document.createElement('option');
+                option.value = func.nome;
+                option.textContent = func.nome;
+                selectFiltroNome.appendChild(option);
+            });
+        }
+
         function carregarFuncionariosParaSelect() {
             fetch('/api/funcionarios/listar')
                 .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
                     return response.json();
                 })
                 .then(data => {
                     if (data.sucesso && data.funcionarios && data.funcionarios.length > 0) {
-                        funcionarios = data.funcionarios.sort((a, b) => 
-                            a.nome.localeCompare(b.nome, 'pt-BR')
-                        );
+                        funcionarios = data.funcionarios.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
                         
-                        const select = document.getElementById('nomePessoa');
-                        select.innerHTML = '<option value="">🔍 Selecione um colaborador</option>';
-                        
+                        const selectForm = document.getElementById('nomePessoa');
+                        selectForm.innerHTML = '<option value="">🔍 Selecione um colaborador</option>';
                         funcionarios.forEach(func => {
                             const option = document.createElement('option');
                             option.value = func.nome;
                             option.textContent = func.nome;
-                            option.setAttribute('data-rgm', func.rgm);
-                            option.setAttribute('data-funcao', func.funcao || '');
-                            option.setAttribute('data-unidade', func.unidade || '');
-                            select.appendChild(option);
+                            selectForm.appendChild(option);
                         });
                         
+                        popularFiltroNomeSelect();
                         console.log(`✅ ${funcionarios.length} colaborador(es) carregado(s) do MongoDB`);
                     } else {
                         const select = document.getElementById('nomePessoa');
@@ -1073,7 +1124,6 @@
                 .then(data => {
                     if (data.sucesso) {
                         documentos = data.documentos;
-                        // Aplicar filtros após carregar
                         aplicarFiltros();
                     } else {
                         mostrarNotificacao('Erro ao carregar documentos', 'error');
@@ -1093,22 +1143,12 @@
                 const chave = `${mesNome}/${doc.ano}`;
                 
                 if (!grupos[chave]) {
-                    grupos[chave] = {
-                        mes: mesNome,
-                        ano: doc.ano,
-                        atestados: [],
-                        declaracoes: [],
-                        justificativas: []
-                    };
+                    grupos[chave] = { mes: mesNome, ano: doc.ano, atestados: [], declaracoes: [], justificativas: [] };
                 }
                 
-                if (doc.tipo === 'atestado') {
-                    grupos[chave].atestados.push(doc);
-                } else if (doc.tipo === 'declaracao') {
-                    grupos[chave].declaracoes.push(doc);
-                } else if (doc.tipo === 'justificativa') {
-                    grupos[chave].justificativas.push(doc);
-                }
+                if (doc.tipo === 'atestado') grupos[chave].atestados.push(doc);
+                else if (doc.tipo === 'declaracao') grupos[chave].declaracoes.push(doc);
+                else if (doc.tipo === 'justificativa') grupos[chave].justificativas.push(doc);
             });
 
             const gruposOrdenados = Object.values(grupos).sort((a, b) => {
@@ -1123,114 +1163,30 @@
             }
 
             container.innerHTML = gruposOrdenados.map(grupo => {
-                const atestadosOrdenados = grupo.atestados.sort((a, b) => a.nome_pessoa.localeCompare(b.nome_pessoa));
-                const declaracoesOrdenadas = grupo.declaracoes.sort((a, b) => a.nome_pessoa.localeCompare(b.nome_pessoa));
-                const justificativasOrdenadas = grupo.justificativas.sort((a, b) => a.nome_pessoa.localeCompare(b.nome_pessoa));
+                let html = `<div class="grupo-mes"><div class="grupo-header" onclick="toggleGrupo(this)"><div class="grupo-titulo"><span>📁</span><span>${grupo.mes} ${grupo.ano}</span><span class="grupo-contador">${grupo.atestados.length + grupo.declaracoes.length + grupo.justificativas.length} documentos</span></div><div class="grupo-icone">▼</div></div><div class="grupo-conteudo">`;
                 
-                let html = `
-                    <div class="grupo-mes">
-                        <div class="grupo-header" onclick="toggleGrupo(this)">
-                            <div class="grupo-titulo">
-                                <span>📁</span>
-                                <span>${grupo.mes} ${grupo.ano}</span>
-                                <span class="grupo-contador">${atestadosOrdenados.length + declaracoesOrdenadas.length + justificativasOrdenadas.length} documentos</span>
-                            </div>
-                            <div class="grupo-icone">▼</div>
-                        </div>
-                        <div class="grupo-conteudo">
-                `;
-                
-                if (atestadosOrdenados.length > 0) {
-                    html += `
-                        <div style="margin-bottom: 30px;">
-                            <div style="background: var(--accent-green); padding: 8px 16px; border-radius: 20px; margin-bottom: 15px; display: inline-block;">
-                                🏥 Atestados (${atestadosOrdenados.length})
-                            </div>
-                            <table class="tabela-documentos-grupo">
-                                <thead>
-                                    <tr><th>Nome</th><th>Unidade</th><th>Tipo</th><th>Data de Referência</th><th>Ações</th></tr>
-                                </thead>
-                                <tbody>
-                                    ${atestadosOrdenados.map(doc => `
-                                        <tr>
-                                            <td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td>
-                                            <td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td>
-                                            <td><span class="badge-tipo badge-atestado">Atestado</span></td>
-                                            <td>${doc.data_referencia_formatada || doc.data_referencia || '-'}</td>
-                                            <td>
-                                                <button class="btn-acao btn-visualizar" onclick="visualizarDocumento('${doc._id}')">👁️</button>
-                                                <button class="btn-acao btn-download" onclick="baixarDocumento('${doc._id}')">⬇️</button>
-                                                <button class="btn-acao btn-editar" onclick="editarDocumento('${doc._id}')">✏️</button>
-                                                <button class="btn-acao btn-excluir" onclick="abrirModalExclusao('${doc._id}', '${escapeHtml(doc.nome_pessoa)}')">🗑️</button>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    `;
+                if (grupo.atestados.length > 0) {
+                    html += `<div style="margin-bottom:30px;"><div style="background:var(--accent-green);padding:8px 16px;border-radius:20px;margin-bottom:15px;display:inline-block;">🏥 Atestados (${grupo.atestados.length})</div><table class="tabela-documentos-grupo"><thead><tr><th>Nome</th><th>Unidade</th><th>Tipo</th><th>Data de Referência</th><th>Ações</th></tr></thead><tbody>`;
+                    grupo.atestados.forEach(doc => {
+                        html += `<tr><td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td><td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td><td><span class="badge-tipo badge-atestado">Atestado</span></td><td>${doc.data_referencia_formatada || doc.data_referencia || '-'}</td><td><button class="btn-acao btn-visualizar" onclick="visualizarDocumento('${doc._id}')">👁️</button><button class="btn-acao btn-download" onclick="baixarDocumento('${doc._id}')">⬇️</button><button class="btn-acao btn-editar" onclick="editarDocumento('${doc._id}')">✏️</button><button class="btn-acao btn-excluir" onclick="abrirModalExclusao('${doc._id}', '${escapeHtml(doc.nome_pessoa)}')">🗑️</button></td></tr>`;
+                    });
+                    html += `</tbody></table></div>`;
                 }
                 
-                if (declaracoesOrdenadas.length > 0) {
-                    html += `
-                        <div style="margin-bottom: 30px;">
-                            <div style="background: var(--accent-cyan); padding: 8px 16px; border-radius: 20px; margin-bottom: 15px; display: inline-block;">
-                                📝 Declarações (${declaracoesOrdenadas.length})
-                            </div>
-                            <table class="tabela-documentos-grupo">
-                                <thead>
-                                    <tr><th>Nome</th><th>Unidade</th><th>Tipo</th><th>Data de Referência</th><th>Ações</th></tr>
-                                </thead>
-                                <tbody>
-                                    ${declaracoesOrdenadas.map(doc => `
-                                        <tr>
-                                            <td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td>
-                                            <td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td>
-                                            <td><span class="badge-tipo badge-declaracao">Declaração</span></td>
-                                            <td>${doc.data_referencia_formatada || doc.data_referencia || '-'}</td>
-                                            <td>
-                                                <button class="btn-acao btn-visualizar" onclick="visualizarDocumento('${doc._id}')">👁️</button>
-                                                <button class="btn-acao btn-download" onclick="baixarDocumento('${doc._id}')">⬇️</button>
-                                                <button class="btn-acao btn-editar" onclick="editarDocumento('${doc._id}')">✏️</button>
-                                                <button class="btn-acao btn-excluir" onclick="abrirModalExclusao('${doc._id}', '${escapeHtml(doc.nome_pessoa)}')">🗑️</button>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    `;
+                if (grupo.declaracoes.length > 0) {
+                    html += `<div style="margin-bottom:30px;"><div style="background:var(--accent-cyan);padding:8px 16px;border-radius:20px;margin-bottom:15px;display:inline-block;">📝 Declarações (${grupo.declaracoes.length})</div><table class="tabela-documentos-grupo"><thead><tr><th>Nome</th><th>Unidade</th><th>Tipo</th><th>Data de Referência</th><th>Ações</th></tr></thead><tbody>`;
+                    grupo.declaracoes.forEach(doc => {
+                        html += `<tr><td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td><td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td><td><span class="badge-tipo badge-declaracao">Declaração</span></td><td>${doc.data_referencia_formatada || doc.data_referencia || '-'}</td><td><button class="btn-acao btn-visualizar" onclick="visualizarDocumento('${doc._id}')">👁️</button><button class="btn-acao btn-download" onclick="baixarDocumento('${doc._id}')">⬇️</button><button class="btn-acao btn-editar" onclick="editarDocumento('${doc._id}')">✏️</button><button class="btn-acao btn-excluir" onclick="abrirModalExclusao('${doc._id}', '${escapeHtml(doc.nome_pessoa)}')">🗑️</button></td></tr>`;
+                    });
+                    html += `</tbody></table></div>`;
                 }
                 
-                if (justificativasOrdenadas.length > 0) {
-                    html += `
-                        <div>
-                            <div style="background: var(--accent-pink); padding: 8px 16px; border-radius: 20px; margin-bottom: 15px; display: inline-block;">
-                                📋 Justificativas (${justificativasOrdenadas.length})
-                            </div>
-                            <table class="tabela-documentos-grupo">
-                                <thead>
-                                    <tr><th>Nome</th><th>Unidade</th><th>Tipo</th><th>Data de Referência</th><th>Ações</th></tr>
-                                </thead>
-                                <tbody>
-                                    ${justificativasOrdenadas.map(doc => `
-                                        <tr>
-                                            <td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td>
-                                            <td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td>
-                                            <td><span class="badge-tipo badge-justificativa">Justificativa</span></td>
-                                            <td>${doc.data_referencia_formatada || doc.data_referencia || '-'}</td>
-                                            <td>
-                                                <button class="btn-acao btn-visualizar" onclick="visualizarDocumento('${doc._id}')">👁️</button>
-                                                <button class="btn-acao btn-download" onclick="baixarDocumento('${doc._id}')">⬇️</button>
-                                                <button class="btn-acao btn-editar" onclick="editarDocumento('${doc._id}')">✏️</button>
-                                                <button class="btn-acao btn-excluir" onclick="abrirModalExclusao('${doc._id}', '${escapeHtml(doc.nome_pessoa)}')">🗑️</button>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    `;
+                if (grupo.justificativas.length > 0) {
+                    html += `<div><div style="background:var(--accent-pink);padding:8px 16px;border-radius:20px;margin-bottom:15px;display:inline-block;">📋 Justificativas (${grupo.justificativas.length})</div><table class="tabela-documentos-grupo"><thead><tr><th>Nome</th><th>Unidade</th><th>Tipo</th><th>Data de Referência</th><th>Ações</th></tr></thead><tbody>`;
+                    grupo.justificativas.forEach(doc => {
+                        html += `<tr><td><div class="documento-info"><span class="documento-nome">${escapeHtml(doc.nome_pessoa)}</span></div></td><td>${doc.unidade ? `<span class="badge-unidade">🏫 ${escapeHtml(doc.unidade)}</span>` : '-'}</td><td><span class="badge-tipo badge-justificativa">Justificativa</span></td><td>${doc.data_referencia_formatada || doc.data_referencia || '-'}</td><td><button class="btn-acao btn-visualizar" onclick="visualizarDocumento('${doc._id}')">👁️</button><button class="btn-acao btn-download" onclick="baixarDocumento('${doc._id}')">⬇️</button><button class="btn-acao btn-editar" onclick="editarDocumento('${doc._id}')">✏️</button><button class="btn-acao btn-excluir" onclick="abrirModalExclusao('${doc._id}', '${escapeHtml(doc.nome_pessoa)}')">🗑️</button></td></tr>`;
+                    });
+                    html += `</tbody></table></div>`;
                 }
                 
                 html += `</div></div>`;
@@ -1260,14 +1216,12 @@
         function abrirModalExclusao(id, nome) {
             documentoParaExcluir = id;
             const modal = document.getElementById('modalExclusao');
-            const mensagem = document.getElementById('modalExclusaoMensagem');
-            mensagem.textContent = `Tem certeza que deseja excluir o documento "${nome}"?`;
+            document.getElementById('modalExclusaoMensagem').textContent = `Tem certeza que deseja excluir o documento "${nome}"?`;
             modal.classList.add('active');
         }
 
         function fecharModalExclusao() {
-            const modal = document.getElementById('modalExclusao');
-            modal.classList.remove('active');
+            document.getElementById('modalExclusao').classList.remove('active');
             documentoParaExcluir = null;
         }
 
@@ -1316,9 +1270,7 @@
                     }
                 }
                 
-                if (doc.data_referencia) {
-                    document.getElementById('dataReferencia').value = doc.data_referencia;
-                }
+                if (doc.data_referencia) document.getElementById('dataReferencia').value = doc.data_referencia;
                 abrirModalUpload();
             }
         }
@@ -1342,12 +1294,8 @@
             document.getElementById('formUpload').reset();
             document.getElementById('editId').value = '';
             document.getElementById('dataReferencia').value = getDataPadraoFormulario();
-            document.getElementById('dataReferencia').removeAttribute('max');
-            document.getElementById('dataReferencia').removeAttribute('min');
             const selectColaborador = document.getElementById('nomePessoa');
-            if (selectColaborador.options.length > 0) {
-                selectColaborador.selectedIndex = 0;
-            }
+            if (selectColaborador.options.length > 0) selectColaborador.selectedIndex = 0;
         }
 
         document.getElementById('formUpload').addEventListener('submit', async (e) => {
@@ -1357,7 +1305,7 @@
             const unidade = document.getElementById('unidadeSelect').value;
             const nomePessoa = document.getElementById('nomePessoa').value.trim();
             const dataReferencia = document.getElementById('dataReferencia').value;
-            const arquivo = document.getElementById('arquivoUpload').files[0];
+            let arquivo = document.getElementById('arquivoUpload').files[0];
             const editId = document.getElementById('editId').value;
 
             if (!tipo) { mostrarNotificacao('Selecione o tipo de documento', 'warning'); return; }
@@ -1366,10 +1314,10 @@
             if (!dataReferencia) { mostrarNotificacao('Data de referência é obrigatória', 'warning'); return; }
             if (!editando && !arquivo) { mostrarNotificacao('Selecione um arquivo', 'warning'); return; }
 
-            const dataObj = new Date(dataReferencia);
-            if (isNaN(dataObj.getTime())) {
-                mostrarNotificacao('Data de referência inválida', 'warning');
-                return;
+            // COMPRIMIR ARQUIVO ANTES DO UPLOAD
+            if (arquivo && arquivo.size > 1.5 * 1024 * 1024) {
+                mostrarNotificacao('🔄 Comprimindo arquivo...', 'warning');
+                arquivo = await processarArquivo(arquivo);
             }
 
             const formData = new FormData();
@@ -1403,9 +1351,7 @@
         });
 
         document.getElementById('modalUpload').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('modalUpload')) {
-                fecharModalUpload();
-            }
+            if (e.target === document.getElementById('modalUpload')) fecharModalUpload();
         });
 
         document.getElementById('btnConfirmarExclusao').addEventListener('click', confirmarExclusao);
