@@ -1274,7 +1274,7 @@
         }
     }
 
-   function gerarPDF() {
+  function gerarPDF() {
     const filtroNome = document.getElementById('filtroNome').value.toLowerCase();
     const filtroUnidade = document.getElementById('filtroUnidade').value;
     const filtroFuncao = document.getElementById('filtroFuncao').value;
@@ -1315,8 +1315,6 @@
         return;
     }
 
-    const dataAtual = new Date().toLocaleDateString('pt-BR');
-    const horaAtual = new Date().toLocaleTimeString('pt-BR');
     const mesTexto = filtroMes && mesesNomes[filtroMes] ? ` - ${mesesNomes[filtroMes]}` : '';
     const anoTexto = filtroAno ? ` - ${filtroAno}` : '';
     
@@ -1357,11 +1355,6 @@
                     color: ${corTema}; 
                     font-size: 16px;
                     margin-bottom: 3px;
-                }
-                .data-hora { 
-                    color: #999; 
-                    font-size: 8px; 
-                    margin-top: 3px; 
                 }
                 .info {
                     background: #f8f9fa;
@@ -1411,7 +1404,6 @@
                     font-weight: bold;
                     font-size: 8px;
                 }
-                /* Mantém o CPF em uma linha */
                 td:nth-child(3) { 
                     white-space: nowrap;
                 }
@@ -1432,7 +1424,6 @@
         <body>
             <div class="header">
                 <h1>CRECHE EL SHADDAY</h1>
-                <div class="data-hora">Gerado em: ${dataAtual} às ${horaAtual}</div>
             </div>
             <div class="info">
                 <p><strong>Unidade:</strong> ${unidadeInfo.nome}</p>
