@@ -804,7 +804,6 @@
             return;
         }
 
-        // Salvar os dados no modal para usar depois
         document.getElementById('modalConfirmacaoAplicacao').setAttribute('data-valor', valor);
         document.getElementById('modalConfirmacaoAplicacao').setAttribute('data-funcionarios', JSON.stringify(funcionariosFiltradosAtuais.map(f => f.rgm)));
         
@@ -1366,6 +1365,8 @@
                     table { width: 100%; border-collapse: collapse; margin-top: 15px; }
                     th { background: ${corTema}; color: white; padding: 10px; text-align: left; font-size: 12px; }
                     td { padding: 10px; border-bottom: 1px solid #ddd; font-size: 11px; }
+                    /* CORREÇÃO: Impede que o CPF quebre em várias linhas */
+                    td:has(strong), td:nth-child(2) { white-space: nowrap; }
                     .footer-pdf { margin-top: 30px; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #ddd; padding-top: 20px; }
                     .total { background: ${corTema}; color: white; padding: 8px 20px; border-radius: 20px; display: inline-block; margin-top: 20px; font-weight: bold; }
                     @media print { body { padding: 20px; } .no-print { display: none; } }
@@ -1396,32 +1397,32 @@
                                 const totalPessoas = calcularTotalPessoas(f.dependentes);
                                 const valorTotal = calcularValorTotalPlanoSaude(f);
                                 return `<tr>
-                                    <td>${i+1}</td>
-                                    <td>${escapeHtml(f.nome || '')}</td>
-                                    <td>${formatarCPF(f.cpf)}</td>
-                                    <td>${escapeHtml(f.funcao || '')}</td>
-                                    <td>${escapeHtml(f.unidade || '')}</td>
-                                    <td>R$ ${(f.valor_plano_saude || 0).toFixed(2).replace('.', ',')}</td>
-                                    <td>${totalPessoas}</td>
-                                    <td><strong>R$ ${valorTotal.toFixed(2).replace('.', ',')}</strong></td>
-                                    <td>${(f.dependentes && f.dependentes.length) ? f.dependentes.map(d => `${d.nome} (${d.parentesco || '—'})`).join(', ') : '—'}</td>
+                                    <td style="text-align: center;">${i+1}</td>
+                                    <td style="white-space: nowrap;">${escapeHtml(f.nome || '')}</td>
+                                    <td style="white-space: nowrap;">${formatarCPF(f.cpf)}</td>
+                                    <td style="white-space: nowrap;">${escapeHtml(f.funcao || '')}</td>
+                                    <td style="white-space: nowrap;">${escapeHtml(f.unidade || '')}</td>
+                                    <td style="white-space: nowrap;">R$ ${(f.valor_plano_saude || 0).toFixed(2).replace('.', ',')}</td>
+                                    <td style="text-align: center;">${totalPessoas}</td>
+                                    <td style="white-space: nowrap;"><strong>R$ ${valorTotal.toFixed(2).replace('.', ',')}</strong></td>
+                                    <td style="white-space: normal;">${(f.dependentes && f.dependentes.length) ? f.dependentes.map(d => `${d.nome} (${d.parentesco || '—'})`).join(', ') : '—'}</td>
                                 </tr>`;
                             } else if (tabAtual === 'vale_transporte') {
                                 return `<tr>
-                                    <td>${i+1}</td>
-                                    <td>${escapeHtml(f.nome || '')}</td>
-                                    <td>${formatarCPF(f.cpf)}</td>
-                                    <td>${escapeHtml(f.funcao || '')}</td>
-                                    <td>${escapeHtml(f.unidade || '')}</td>
-                                    <td>R$ ${(f.valor_vale_transporte || 0).toFixed(2).replace('.', ',')}</td>
+                                    <td style="text-align: center;">${i+1}</td>
+                                    <td style="white-space: nowrap;">${escapeHtml(f.nome || '')}</td>
+                                    <td style="white-space: nowrap;">${formatarCPF(f.cpf)}</td>
+                                    <td style="white-space: nowrap;">${escapeHtml(f.funcao || '')}</td>
+                                    <td style="white-space: nowrap;">${escapeHtml(f.unidade || '')}</td>
+                                    <td style="white-space: nowrap;">R$ ${(f.valor_vale_transporte || 0).toFixed(2).replace('.', ',')}</td>
                                 </tr>`;
                             } else {
                                 return `<tr>
-                                    <td>${i+1}</td>
-                                    <td>${escapeHtml(f.nome || '')}</td>
-                                    <td>${formatarCPF(f.cpf)}</td>
-                                    <td>${escapeHtml(f.funcao || '')}</td>
-                                    <td>${escapeHtml(f.unidade || '')}</td>
+                                    <td style="text-align: center;">${i+1}</td>
+                                    <td style="white-space: nowrap;">${escapeHtml(f.nome || '')}</td>
+                                    <td style="white-space: nowrap;">${formatarCPF(f.cpf)}</td>
+                                    <td style="white-space: nowrap;">${escapeHtml(f.funcao || '')}</td>
+                                    <td style="white-space: nowrap;">${escapeHtml(f.unidade || '')}</td>
                                 </tr>`;
                             }
                         }).join('')}
