@@ -596,7 +596,7 @@
                     </div>
                 </div>
                 <div class="header-buttons">
-                    <a href="/" class="btn-nav">← Início</a>
+                    <a href="/" class="btn-nav">Início</a>
                     <a href="/justificativa" class="btn-nav btn-primary-nav">Justificativa de Saída</a>
                 </div>
             </div>
@@ -606,7 +606,7 @@
             <!-- Formulário de Cadastro/Edição -->
             <div class="form-card">
                 <div class="card-header">
-                    <div class="header-icon">👤</div>
+                    <div class="header-icon">U</div>
                     <h2 id="formTitle">Cadastro de Funcionário</h2>
                     <span class="badge" id="formBadge">Novo</span>
                 </div>
@@ -660,10 +660,10 @@
             <!-- Filtros -->
             <div class="form-card">
                 <div class="card-header">
-                    <div class="header-icon">🔍</div>
+                    <div class="header-icon">F</div>
                     <h2>Filtrar Funcionários</h2>
                     <button class="btn-pdf" onclick="gerarPDFUnidade()">
-                        📄 Gerar PDF da Unidade Selecionada
+                        Gerar PDF da Unidade Selecionada
                     </button>
                 </div>
                 <div class="filtros-container">
@@ -712,7 +712,7 @@
     <!-- Modal de Confirmação de Exclusão -->
     <div id="modalExclusao" class="modal-confirmacao">
         <div class="modal-confirmacao-content">
-            <h3>⚠️ Confirmar Exclusão</h3>
+            <h3>Confirmar Exclusão</h3>
             <p id="modalExclusaoMensagem">Tem certeza que deseja excluir este funcionário?</p>
             <p style="font-size: 0.85rem; color: #E50914;">Esta ação não pode ser desfeita.</p>
             <div class="modal-buttons">
@@ -892,8 +892,8 @@
                         <td>${escapeHtml(func.unidade)}</td>
                         <td>${escapeHtml(func.funcao)}</td>
                         <td class="acoes-container">
-                            <button class="btn-editar" onclick="editarFuncionario('${escapeHtml(func.rgm)}')">✏️ Editar</button>
-                            <button class="btn-excluir" onclick="abrirModalExclusao('${escapeHtml(func.rgm)}', '${escapeHtml(func.nome)}')">🗑️ Excluir</button>
+                            <button class="btn-editar" onclick="editarFuncionario('${escapeHtml(func.rgm)}')">Editar</button>
+                            <button class="btn-excluir" onclick="abrirModalExclusao('${escapeHtml(func.rgm)}', '${escapeHtml(func.nome)}')">Excluir</button>
                         </td>
                     </tr>
                 `).join('');
@@ -907,18 +907,18 @@
             const unidadeSelecionada = document.getElementById('filtroUnidade').value;
             
             if (!unidadeSelecionada) {
-                mostrarNotificacao('❌ Selecione uma unidade no filtro antes de gerar o PDF!', 'warning');
+                mostrarNotificacao('Selecione uma unidade no filtro antes de gerar o PDF!', 'warning');
                 return;
             }
 
             const funcionariosUnidade = funcionarios.filter(func => func.unidade === unidadeSelecionada);
             
             if (funcionariosUnidade.length === 0) {
-                mostrarNotificacao(`⚠️ Nenhum funcionário encontrado na unidade ${unidadeSelecionada}`, 'warning');
+                mostrarNotificacao(`Nenhum funcionário encontrado na unidade ${unidadeSelecionada}`, 'warning');
                 return;
             }
 
-            mostrarNotificacao(`📄 Gerando PDF da unidade ${unidadeSelecionada}...`, 'success');
+            mostrarNotificacao(`Gerando PDF da unidade ${unidadeSelecionada}...`, 'success');
 
             const unidadeInfo = UNIDADES_CONFIG[unidadeSelecionada];
             const dataAtual = new Date().toLocaleDateString('pt-BR');
@@ -992,7 +992,7 @@
                         </div>
                         
                         <div class="unidade-info">
-                            <h3>📌 INFORMAÇÕES DA UNIDADE</h3>
+                            <h3>INFORMAÇÕES DA UNIDADE</h3>
                             <div class="info-grid">
                                 <div class="info-item"><strong>Unidade:</strong> ${unidadeInfo.nome}</div>
                                 <div class="info-item"><strong>INEP:</strong> ${unidadeInfo.INEP}</div>
@@ -1005,7 +1005,7 @@
                             </div>
                         </div>
                         
-                        <div class="titulo-tabela">👥 RELAÇÃO DE FUNCIONÁRIOS</div>
+                        <div class="titulo-tabela">RELAÇÃO DE FUNCIONÁRIOS</div>
                         
                         <table>
                             <thead>
@@ -1030,7 +1030,7 @@
                         </table>
                         
                         <div style="text-align: center;">
-                            <div class="total-funcionarios">📊 Total de Funcionários: ${funcionariosUnidade.length}</div>
+                            <div class="total-funcionarios">Total de Funcionários: ${funcionariosUnidade.length}</div>
                         </div>
                         
                         <div class="assinatura">
@@ -1045,8 +1045,8 @@
                     </div>
                     
                     <div class="no-print" style="text-align: center; margin-top: 20px; padding: 20px; position: fixed; bottom: 20px; left: 0; right: 0; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);">
-                        <button onclick="window.print()" style="padding: 12px 40px; background: #E50914; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold;">🖨️ Imprimir / Salvar como PDF</button>
-                        <button onclick="window.close()" style="padding: 12px 30px; background: #333; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; margin-left: 10px;">✖ Fechar</button>
+                        <button onclick="window.print()" style="padding: 12px 40px; background: #E50914; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold;">Imprimir / Salvar como PDF</button>
+                        <button onclick="window.close()" style="padding: 12px 30px; background: #333; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; margin-left: 10px;">Fechar</button>
                     </div>
                     
                     <script>setTimeout(function() { window.print(); }, 500);<\/script>
@@ -1133,37 +1133,37 @@
             const funcao = document.getElementById('funcao').value;
 
             if (!nome) {
-                mostrarNotificacao('❌ Nome é obrigatório!', 'warning');
+                mostrarNotificacao('Nome é obrigatório!', 'warning');
                 document.getElementById('nome').focus();
                 return;
             }
             
             if (!cpf) {
-                mostrarNotificacao('❌ CPF é obrigatório!', 'warning');
+                mostrarNotificacao('CPF é obrigatório!', 'warning');
                 document.getElementById('cpf').focus();
                 return;
             }
             
             if (!validarCPF(cpf)) {
-                mostrarNotificacao('❌ CPF inválido!', 'warning');
+                mostrarNotificacao('CPF inválido!', 'warning');
                 document.getElementById('cpf').focus();
                 return;
             }
             
             if (!rgm) {
-                mostrarNotificacao('❌ RGM é obrigatório!', 'warning');
+                mostrarNotificacao('RGM é obrigatório!', 'warning');
                 document.getElementById('rgm').focus();
                 return;
             }
             
             if (!unidade) {
-                mostrarNotificacao('❌ Unidade é obrigatória!', 'warning');
+                mostrarNotificacao('Unidade é obrigatória!', 'warning');
                 document.getElementById('unidade').focus();
                 return;
             }
             
             if (!funcao) {
-                mostrarNotificacao('❌ Função é obrigatória!', 'warning');
+                mostrarNotificacao('Função é obrigatória!', 'warning');
                 document.getElementById('funcao').focus();
                 return;
             }
@@ -1187,17 +1187,17 @@
             .then(response => response.json())
             .then(data => {
                 if (data.sucesso) {
-                    const mensagem = modoEdicao ? '✅ Funcionário atualizado com sucesso!' : '✅ Funcionário cadastrado com sucesso!';
+                    const mensagem = modoEdicao ? 'Funcionário atualizado com sucesso!' : 'Funcionário cadastrado com sucesso!';
                     mostrarNotificacao(mensagem, 'success');
                     limparFormulario();
                     carregarFuncionarios();
                 } else {
-                    mostrarNotificacao(data.erro || '❌ Erro ao salvar', 'error');
+                    mostrarNotificacao(data.erro || 'Erro ao salvar', 'error');
                 }
             })
             .catch(error => {
                 console.error('Erro:', error);
-                mostrarNotificacao('❌ Erro de conexão', 'error');
+                mostrarNotificacao('Erro de conexão', 'error');
             });
         }
 

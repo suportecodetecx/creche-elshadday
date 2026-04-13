@@ -3,29 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro de Funcionário - Creche El Shadday</title>
+    <title>Justificativa de Saída - Creche El Shadday</title>
     
     <!-- Fontes modernas -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-   <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/processo-de-trabalho.png') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/processo-de-trabalho.png') }}">
     <style>
-        /* ===== VARIÁVEIS TEMA NETFLIX ===== */
-        :root {
-            --netflix-red: #E50914;
-            --netflix-red-dark: #B81D24;
-            --netflix-black: #0f0f0f;
-            --netflix-dark: #1a1a1a;
-            --netflix-gray: #2a2a2a;
-            --netflix-light: #808080;
-            --accent-blue: #0080FF;
-            --accent-green: #4ECDC4;
-            --accent-purple: #A06CD5;
-            --accent-yellow: #FFD166;
-            --white: #FFFFFF;
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -34,27 +19,25 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: var(--netflix-black);
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
             min-height: 100vh;
-            color: var(--white);
             padding: 20px;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
-            background: var(--netflix-dark);
+            background: #1a1a1a;
             border-radius: 32px;
             overflow: hidden;
-            box-shadow: 0 30px 60px -20px rgba(0,0,0,0.8);
             border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 30px 60px -20px rgba(0,0,0,0.8);
         }
 
-        /* Header Moderno */
         .header-moderno {
             padding: 24px 40px;
             border-bottom: 1px solid rgba(255,255,255,0.05);
-            background: var(--netflix-dark);
+            background: #1a1a1a;
         }
 
         .header-content {
@@ -75,7 +58,7 @@
         .logo-animated {
             width: 50px;
             height: 50px;
-            background: linear-gradient(135deg, var(--netflix-red), var(--netflix-red-dark));
+            background: linear-gradient(135deg, #E50914, #B81D24);
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -87,16 +70,19 @@
             box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
         }
 
+        .logo-wrapper:hover .logo-animated {
+            transform: scale(1.05);
+        }
+
         .logo-text h2 {
             color: white;
             font-size: 1.6rem;
             font-weight: 700;
             margin: 0;
-            letter-spacing: -0.5px;
         }
 
         .logo-text p {
-            color: var(--netflix-light);
+            color: #808080;
             font-size: 0.85rem;
             margin: 2px 0 0;
         }
@@ -115,35 +101,33 @@
             color: white;
             border: 1px solid rgba(255,255,255,0.1);
             cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-block;
             text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
         }
 
         .btn-nav:hover {
             background: rgba(255,255,255,0.1);
-            border-color: var(--netflix-red);
+            border-color: #E50914;
         }
 
         .btn-primary-nav {
-            background: var(--netflix-red);
+            background: #E50914;
             border: none;
         }
 
         .btn-primary-nav:hover {
-            background: var(--netflix-red-dark);
+            background: #B81D24;
         }
 
         main {
             padding: 40px;
         }
 
-        /* Cards do formulário */
         .form-card {
-            background: var(--netflix-dark);
+            background: #1a1a1a;
             border-radius: 24px;
             padding: 32px;
-            margin-bottom: 24px;
             border: 1px solid rgba(255,255,255,0.05);
             transition: all 0.3s ease;
         }
@@ -157,7 +141,6 @@
             align-items: center;
             gap: 12px;
             margin-bottom: 24px;
-            flex-wrap: wrap;
         }
 
         .header-icon {
@@ -169,7 +152,7 @@
             align-items: center;
             justify-content: center;
             font-size: 1.2rem;
-            color: var(--netflix-red);
+            color: #E50914;
         }
 
         .card-header h2 {
@@ -187,73 +170,10 @@
             border-radius: 30px;
             font-size: 0.75rem;
             font-weight: 500;
-            background: var(--netflix-red);
+            background: #E50914;
             color: white;
         }
 
-        /* Contador de funcionários */
-        .contador-funcionarios {
-            display: inline-flex;
-            align-items: center;
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            background: var(--netflix-red);
-            color: white;
-            box-shadow: 0 2px 8px rgba(229, 9, 20, 0.2);
-            transition: all 0.2s ease;
-        }
-
-        /* Botão PDF */
-        .btn-pdf {
-            background: var(--netflix-red);
-            color: white;
-            border: none;
-            margin-left: auto;
-            padding: 10px 24px;
-            border-radius: 30px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 2px 8px rgba(229, 9, 20, 0.2);
-        }
-
-        .btn-pdf:hover {
-            background: var(--netflix-red-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(229, 9, 20, 0.3);
-        }
-
-        /* Filtros */
-        .filtros-container {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .filtro-input {
-            flex: 1;
-            min-width: 200px;
-            padding: 10px 16px;
-            background: var(--netflix-gray);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 14px;
-            font-size: 0.9rem;
-            color: white;
-        }
-
-        .filtro-input:focus {
-            outline: none;
-            border-color: var(--netflix-red);
-        }
-
-        /* Formulário Grid */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -261,7 +181,6 @@
         }
 
         .input-wrapper {
-            position: relative;
             margin-bottom: 4px;
         }
 
@@ -274,51 +193,54 @@
         }
 
         .input-wrapper .required {
-            color: var(--netflix-red);
+            color: #E50914;
             margin-left: 2px;
         }
 
-        .small-text {
-            font-size: 0.7rem;
-            color: var(--netflix-light);
-            margin-top: 4px;
-            display: block;
-        }
-
         .input-moderno,
-        .select-moderno {
+        .select-moderno,
+        .textarea-moderno {
             width: 100%;
             padding: 12px 16px;
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 14px;
             font-size: 0.95rem;
-            transition: all 0.2s ease;
-            background: var(--netflix-gray);
+            background: #2a2a2a;
             color: white;
             font-family: inherit;
+            transition: all 0.3s;
         }
 
         .input-moderno:focus,
-        .select-moderno:focus {
+        .select-moderno:focus,
+        .textarea-moderno:focus {
             outline: none;
-            border-color: var(--netflix-red);
+            border-color: #E50914;
             box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.2);
         }
 
         .select-moderno {
             appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.5)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.5)' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 16px center;
             padding-right: 44px;
         }
 
         .select-moderno option {
-            background: var(--netflix-dark);
+            background: #1a1a1a;
             color: white;
         }
 
-        /* Botões principais */
+        .textarea-moderno {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
         .btn-group {
             display: flex;
             justify-content: flex-end;
@@ -332,20 +254,18 @@
             font-size: 1rem;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s ease;
             border: none;
+            transition: all 0.3s;
         }
 
         .btn-primary {
-            background: var(--netflix-red);
+            background: linear-gradient(135deg, #E50914, #B81D24);
             color: white;
-            box-shadow: 0 2px 8px rgba(229, 9, 20, 0.2);
         }
 
         .btn-primary:hover {
-            background: var(--netflix-red-dark);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(229, 9, 20, 0.3);
+            box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3);
         }
 
         .btn-secondary {
@@ -356,187 +276,31 @@
 
         .btn-secondary:hover {
             background: rgba(255,255,255,0.1);
-            border-color: var(--netflix-red);
+            border-color: #E50914;
         }
 
-        /* Botões de ação na tabela */
-        .acoes-container {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .btn-editar, .btn-excluir {
-            padding: 6px 14px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.75rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            white-space: nowrap;
-            border: none;
-        }
-
-        .btn-editar {
-            background: var(--accent-blue);
-            color: white;
-        }
-
-        .btn-editar:hover {
-            background: #0066CC;
-            transform: translateY(-1px);
-        }
-
-        .btn-excluir {
-            background: var(--netflix-red);
-            color: white;
-        }
-
-        .btn-excluir:hover {
-            background: var(--netflix-red-dark);
-            transform: translateY(-1px);
-        }
-
-        /* Tabela de funcionários */
-        .tabela-container {
-            margin-top: 20px;
-            overflow-x: auto;
-        }
-
-        .tabela-funcionarios {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .tabela-funcionarios th,
-        .tabela-funcionarios td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .tabela-funcionarios th {
-            color: var(--netflix-red);
-            font-weight: 600;
-        }
-
-        .tabela-funcionarios td {
-            color: rgba(255,255,255,0.8);
-        }
-
-        /* Modal de Confirmação */
-        .modal-confirmacao {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(5px);
-            z-index: 10000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-confirmacao.active {
-            display: flex;
-        }
-
-        .modal-confirmacao-content {
-            background: var(--netflix-dark);
-            border-radius: 24px;
-            padding: 30px;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.1);
-            animation: fadeInUp 0.3s ease;
-        }
-
-        .modal-confirmacao-content h3 {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            color: var(--netflix-red);
-        }
-
-        .modal-confirmacao-content p {
-            color: rgba(255,255,255,0.8);
-            margin-bottom: 25px;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-        }
-
-        .modal-buttons button {
-            padding: 10px 25px;
-            border-radius: 30px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: none;
-        }
-
-        .btn-confirmar {
-            background: var(--netflix-red);
-            color: white;
-        }
-
-        .btn-confirmar:hover {
-            background: var(--netflix-red-dark);
-            transform: translateY(-2px);
-        }
-
-        .btn-cancelar-modal {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: white;
-        }
-
-        .btn-cancelar-modal:hover {
-            background: rgba(255,255,255,0.1);
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Notificações */
         .notificacao-flutuante {
             position: fixed;
             top: 30px;
             right: 30px;
             min-width: 300px;
-            background: var(--netflix-dark);
+            background: #1a1a1a;
             border-radius: 12px;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
             z-index: 99999;
             animation: slideIn 0.3s ease forwards;
-            border-left: 4px solid var(--accent-green);
+            border-left: 4px solid #4ECDC4;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
         }
 
         .notificacao-flutuante.error {
-            border-left-color: var(--netflix-red);
+            border-left-color: #E50914;
         }
 
         .notificacao-flutuante.warning {
-            border-left-color: var(--accent-yellow);
+            border-left-color: #FFD166;
         }
 
         .notificacao-conteudo {
-            display: flex;
-            align-items: center;
-            gap: 15px;
             padding: 16px 20px;
         }
 
@@ -544,7 +308,6 @@
             font-size: 0.95rem;
             color: white;
             font-weight: 500;
-            flex: 1;
         }
 
         @keyframes slideIn {
@@ -552,33 +315,14 @@
             to { opacity: 1; transform: translateX(0); }
         }
 
-        /* Responsividade */
         @media (max-width: 768px) {
             body { padding: 10px; }
             main { padding: 20px; }
             .form-card { padding: 20px; }
             .form-grid { grid-template-columns: 1fr; }
             .btn-group { flex-direction: column; }
-            .btn { width: 100%; justify-content: center; }
+            .btn { width: 100%; }
             .header-content { flex-direction: column; text-align: center; }
-            .filtros-container { flex-direction: column; }
-            
-            .acoes-container {
-                flex-direction: column;
-                gap: 5px;
-            }
-            
-            .btn-editar, .btn-excluir {
-                width: 100%;
-                text-align: center;
-                padding: 8px 12px;
-            }
-            
-            .btn-pdf {
-                margin-left: 0;
-                width: 100%;
-                justify-content: center;
-            }
         }
     </style>
 </head>
@@ -587,656 +331,442 @@
         <header class="header-moderno">
             <div class="header-content">
                 <div class="logo-wrapper" onclick="window.location.href='/'">
-                    <div class="logo-animated">
-                        <span>CS</span>
-                    </div>
+                    <div class="logo-animated"><span>CS</span></div>
                     <div class="logo-text">
                         <h2>Creche El Shadday</h2>
-                        <p>Cadastro de Funcionários</p>
+                        <p>Justificativa de Saída</p>
                     </div>
                 </div>
                 <div class="header-buttons">
-                    <a href="/" class="btn-nav">Início</a>
-                    <a href="/justificativa" class="btn-nav btn-primary-nav">Justificativa de Saída</a>
+                    <a href="/" class="btn-nav">← Início</a>
+                    <a href="/funcionarios/cadastro" class="btn-nav btn-primary-nav">Cadastrar Funcionário</a>
                 </div>
             </div>
         </header>
 
         <main>
-            <!-- Formulário de Cadastro/Edição -->
             <div class="form-card">
                 <div class="card-header">
-                    <div class="header-icon">U</div>
-                    <h2 id="formTitle">Cadastro de Funcionário</h2>
-                    <span class="badge" id="formBadge">Novo</span>
+                    <div class="header-icon">📋</div>
+                    <h2>Justificativa de Saída - Ponto</h2>
+                    <span class="badge">Preenchimento</span>
                 </div>
 
                 <div class="form-grid">
                     <div class="input-wrapper">
-                        <label for="nome">Nome Completo <span class="required">*</span></label>
-                        <input type="text" id="nome" class="input-moderno" placeholder="Digite o nome completo">
+                        <label for="dataSaida">Data de Lançamento <span class="required">*</span></label>
+                        <input type="date" id="dataSaida" class="input-moderno">
                     </div>
 
                     <div class="input-wrapper">
-                        <label for="cpf">CPF <span class="required">*</span></label>
-                        <input type="text" id="cpf" class="input-moderno" placeholder="000.000.000-00" maxlength="14" oninput="formatarCPF(this)">
-                        <small class="small-text">Apenas números - Obrigatório</small>
-                    </div>
-
-                    <div class="input-wrapper">
-                        <label for="rgm">RGM <span class="required">*</span></label>
-                        <input type="text" id="rgm" class="input-moderno" placeholder="Registro do funcionário">
-                    </div>
-
-                    <div class="input-wrapper">
-                        <label for="telefone">Telefone</label>
-                        <input type="text" id="telefone" class="input-moderno" placeholder="(11) 91234-5678" maxlength="15" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-                        <small class="small-text">Opcional - Não é obrigatório</small>
-                    </div>
-
-                    <div class="input-wrapper">
-                        <label for="unidade">Unidade <span class="required">*</span></label>
-                        <select id="unidade" class="select-moderno">
-                            <option value="">Selecione</option>
-                            <option value="CEIC El Shadday">CEIC El Shadday</option>
-                            <option value="CEIM Prof. Egberto Malta Moreira">CEIM Prof. Egberto Malta Moreira</option>
+                        <label for="colaborador">Colaborador <span class="required">*</span></label>
+                        <select id="colaborador" class="select-moderno" onchange="preencherDadosFuncionario()">
+                            <option value="">Selecione um funcionário</option>
                         </select>
                     </div>
 
                     <div class="input-wrapper">
-                        <label for="funcao">Função <span class="required">*</span></label>
-                        <select id="funcao" class="select-moderno">
-                            <option value="">Selecione</option>
+                        <label for="cargo">Cargo</label>
+                        <input type="text" id="cargo" class="input-moderno" readonly>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="rgm">RGM</label>
+                        <input type="text" id="rgm" class="input-moderno" readonly>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="unidade">Unidade</label>
+                        <input type="text" id="unidade" class="input-moderno" readonly>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="apontamentoInicio">Apontamento Início</label>
+                        <input type="time" id="apontamentoInicio" class="input-moderno">
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="apontamentoFim">Apontamento Fim</label>
+                        <input type="time" id="apontamentoFim" class="input-moderno">
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="motivo">Motivo <span class="required">*</span></label>
+                        <select id="motivo" class="select-moderno">
+                            <option value="">Selecione o motivo</option>
                         </select>
+                    </div>
+
+                    <div class="input-wrapper full-width">
+                        <label for="observacoes">Observações</label>
+                        <textarea id="observacoes" class="textarea-moderno" rows="3" placeholder="Descreva detalhes adicionais..."></textarea>
                     </div>
                 </div>
 
                 <div class="btn-group">
-                    <button class="btn btn-secondary" onclick="limparFormulario()">Cancelar</button>
-                    <button class="btn btn-primary" id="btnSalvar" onclick="salvarFuncionario()">Salvar Funcionário</button>
-                </div>
-            </div>
-
-            <!-- Filtros -->
-            <div class="form-card">
-                <div class="card-header">
-                    <div class="header-icon">F</div>
-                    <h2>Filtrar Funcionários</h2>
-                    <button class="btn-pdf" onclick="gerarPDFUnidade()">
-                        Gerar PDF da Unidade Selecionada
-                    </button>
-                </div>
-                <div class="filtros-container">
-                    <input type="text" id="filtroNome" class="filtro-input" placeholder="Filtrar por nome..." onkeyup="filtrarFuncionarios()">
-                    <select id="filtroUnidade" class="filtro-input" onchange="filtrarFuncionarios()">
-                        <option value="">Todas as unidades</option>
-                        <option value="CEIC El Shadday">CEIC El Shadday</option>
-                        <option value="CEIM Prof. Egberto Malta Moreira">CEIM Prof. Egberto Malta Moreira</option>
-                    </select>
-                    <select id="filtroFuncao" class="filtro-input" onchange="filtrarFuncionarios()">
-                        <option value="">Todas as funções</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Lista de Funcionários -->
-            <div class="form-card">
-                <div class="card-header">
-                    <h2>Funcionários Cadastrados</h2>
-                    <span class="contador-funcionarios" id="contadorFuncionarios">0 funcionários</span>
-                </div>
-                <div class="tabela-container">
-                    <table class="tabela-funcionarios" id="tabelaFuncionarios">
-                        <thead>
-                            <tr>
-                                <th>Nome</th>
-                                <th>CPF</th>
-                                <th>RGM</th>
-                                <th>Telefone</th>
-                                <th>Unidade</th>
-                                <th>Função</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="listaFuncionarios">
-                            <tr>
-                                <td colspan="7" style="text-align: center;">Carregando...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <button class="btn btn-secondary" onclick="limparFormulario()">Limpar</button>
+                    <button class="btn btn-primary" onclick="gerarJustificativa()">Gerar Justificativa</button>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Modal de Confirmação de Exclusão -->
-    <div id="modalExclusao" class="modal-confirmacao">
-        <div class="modal-confirmacao-content">
-            <h3>Confirmar Exclusão</h3>
-            <p id="modalExclusaoMensagem">Tem certeza que deseja excluir este funcionário?</p>
-            <p style="font-size: 0.85rem; color: #E50914;">Esta ação não pode ser desfeita.</p>
-            <div class="modal-buttons">
-                <button class="btn-cancelar-modal" onclick="fecharModalExclusao()">Cancelar</button>
-                <button class="btn-confirmar" id="btnConfirmarExclusao">Excluir</button>
-            </div>
-        </div>
-    </div>
-
     <script>
         let funcionarios = [];
-        let modoEdicao = false;
-        let rgmEditando = null;
-        let rgmParaExcluir = null;
 
-        // LISTA DE FUNÇÕES EM ORDEM ALFABÉTICA
-        const FUNCOES = [
-            "Agente Escolar",
-            "Ajudante de Cozinha",
-            "Auxiliar Administrativo",
-            "Auxiliar de Desenvolvimento Infantil",
-            "Cozinheira",
-            "Diretora Geral",
-            "Diretora Pedagogica",
-            "Lactarista",
-            "Professora",
-            "Serviços Gerais"
+        const MOTIVOS = [
+            "Acompanhamento de pessoa idosa ou dependente", "Atendimento em cartório", "Atestado médico",
+            "Atestado médico de Filho(a)", "Atividade de campo", "Atraso", "Atraso no transporte público",
+            "Banco de horas", "Comparecimento a audiências", "Comparecimento à Defensoria Pública ou órgãos oficiais",
+            "Compensação de horas", "Condições climáticas adversas", "Consulta médica", "Consulta médica de familiar",
+            "Declaração médica", "Dentista", "Eletroneuromiografia", "Emergência familiar", "Emergência médica",
+            "Exames laboratoriais ou de imagem", "Falecimento de familiar (luto)", "Falha mecânica em transporte próprio",
+            "Falta de marcação de ponto", "Falta injustificada", "Falta justificada", "Folga programada",
+            "Ginecologista / Obstetra", "Greve ou interrupção de transporte", "Internação de familiar", "Internação própria",
+            "Licença maternidade", "Licença paternidade", "Mal-estar no expediente", "Motivo não especificado",
+            "Nascimento de filho (Gala)", "Pré-natal", "Recuperação pós-procedimento", "Regularização de documentos pessoais",
+            "Representação da empresa em evento", "Resolução de pendências bancárias urgentes", "Retirar Exames Médicos",
+            "Reunião escolar do filho", "Saída antecipada", "Serviço externo", "Situação excepcional", "Treinamento externo",
+            "Tratamento médico contínuo", "Vacina", "Visita a cliente/fornecedor"
         ];
 
-        // Configurações das unidades
         const UNIDADES_CONFIG = {
             "CEIC El Shadday": {
                 "nome": "CEIC El Shadday",
-                "endereco": "Rua Francisco Vilani Bicudo, 470",
-                "bairro": "Vila Nova Aparecida",
+                "endereco": "Rua Francisco Vilani Bicudo, 470 - Vila Nova Aparecida",
                 "cidade": "Mogi das Cruzes",
                 "uf": "SP",
-                "cep": "08830-340",
                 "cnpj": "03.067.526/0001-87",
-                "telefone": "(11) 4739-3549",
-                "INEP": "35195340"
+                "telefone": "(11) 4739-3549"
             },
             "CEIM Prof. Egberto Malta Moreira": {
                 "nome": "CEIM Prof. Egberto Malta Moreira",
-                "endereco": "Rua Ten. Agenor Bertini, 202",
-                "bairro": "Vila Rei",
+                "endereco": "Rua Ten. Agenor Bertini, 202 - Vila Rei",
                 "cidade": "Mogi das Cruzes",
                 "uf": "SP",
-                "cep": "08717-875",
                 "cnpj": "03.067.526/0002-68",
-                "telefone": "(11) 4726-6241",
-                "INEP": "35006743"
+                "telefone": "(11) 4726-6241"
             }
         };
 
-        // Função para formatar CPF
-        function formatarCPF(input) {
-            let valor = input.value.replace(/\D/g, '');
-            if (valor.length <= 11) {
-                if (valor.length > 9) {
-                    valor = valor.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-                } else if (valor.length > 6) {
-                    valor = valor.replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3');
-                } else if (valor.length > 3) {
-                    valor = valor.replace(/(\d{3})(\d{3})/, '$1.$2');
-                }
-                input.value = valor;
-            }
+        // Função para obter data local do Brasil (YYYY-MM-DD)
+        function getDataLocalBrasil() {
+            const hoje = new Date();
+            const ano = hoje.getFullYear();
+            const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+            const dia = String(hoje.getDate()).padStart(2, '0');
+            return `${ano}-${mes}-${dia}`;
         }
 
-        // Função para validar CPF
-        function validarCPF(cpf) {
-            cpf = cpf.replace(/\D/g, '');
-            if (cpf.length !== 11) return false;
-            if (/^(\d)\1+$/.test(cpf)) return false;
-            
-            let soma = 0;
-            for (let i = 0; i < 9; i++) {
-                soma += parseInt(cpf.charAt(i)) * (10 - i);
-            }
-            let resto = 11 - (soma % 11);
-            let digito1 = resto >= 10 ? 0 : resto;
-            if (digito1 !== parseInt(cpf.charAt(9))) return false;
-            
-            soma = 0;
-            for (let i = 0; i < 10; i++) {
-                soma += parseInt(cpf.charAt(i)) * (11 - i);
-            }
-            resto = 11 - (soma % 11);
-            let digito2 = resto >= 10 ? 0 : resto;
-            return digito2 === parseInt(cpf.charAt(10));
+        // Função para formatar data para DD/MM/YYYY
+        function formatarDataLocal(dataInput) {
+            if (!dataInput) return '___/___/_____';
+            const [ano, mes, dia] = dataInput.split('-');
+            return `${dia}/${mes}/${ano}`;
         }
 
-        // Carregar funcionários ao iniciar
+        const htmlImpressao = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Justificativa de Saída - Creche El Shadday</title>
+    <style>
+        @page { 
+            size: A4; 
+            margin: 2cm 1.5cm 1.5cm 1.5cm;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, Helvetica, sans-serif; background: white; color: #000; line-height: 1.3; width: 100%; max-width: 210mm; margin: 0 auto; }
+        .documento { width: 100%; padding: 0; }
+        .print-button-container { text-align: center; margin: 20px 0 15px 0; }
+        .print-button { background: #4CAF50; color: white; border: none; padding: 12px 30px; font-size: 16px; font-weight: bold; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: all 0.3s ease; }
+        .print-button:hover { background: #45a049; transform: translateY(-2px); }
+        @media print { .print-button-container { display: none; } }
+        
+        .cabecalho {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 12px;
+        }
+
+        .header-textos {
+            text-align: left;
+        }
+
+        .header-textos h1 {
+            font-size: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 0;
+            letter-spacing: 1px;
+        }
+
+        .header-textos h2 {
+            font-size: 14px;
+            font-weight: bold;
+            margin: 5px 0 2px 0;
+            color: #333;
+        }
+
+        .header-textos p {
+            font-size: 10px;
+            margin: 2px 0;
+            color: #555;
+        }
+
+        .header-imagens {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-imagens img {
+            max-height: 110px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .logo-mogi {
+            max-height: 50px !important;
+        }
+
+        .logo-creche {
+            max-height: 110px;
+        }
+        
+        .linha-simples { border-bottom: 1px solid #000; margin: 5px 0; }
+        .titulo { font-size: 13px; font-weight: bold; text-align: center; text-transform: uppercase; border: 1px solid #000; padding: 6px; margin: 12px 0; background: #f5f5f5; }
+        .dados-linha { display: flex; margin-bottom: 5px; font-size: 11px; border-bottom: 1px dotted #aaa; padding-bottom: 2px; }
+        .dados-label { font-weight: bold; width: 140px; }
+        .dados-valor { flex: 1; }
+        .assinatura-area { margin-top: 25px; display: flex; justify-content: space-between; gap: 30px; }
+        .assinatura-item { text-align: center; flex: 1; }
+        .assinatura-linha { border-top: 1px solid #000; width: 200px; margin: 0 auto 8px; }
+        .cut-line { text-align: center; margin: 20px 0; border-top: 1px dashed #999; position: relative; }
+        .cut-line span { background: white; padding: 0 10px; position: relative; top: -10px; font-size: 9px; color: #666; }
+        .rodape { display: flex; justify-content: space-between; font-size: 8px; border-top: 1px solid #000; padding-top: 6px; margin-top: 15px; }
+        .rodape-info { display: flex; flex-direction: column; }
+        .data-emissao { text-align: center; font-size: 8px; margin-top: 8px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="documento">
+        <div class="print-button-container">
+            <button class="print-button" onclick="window.print()">🖨️ Imprimir Justificativa</button>
+        </div>
+
+        <div class="cabecalho">
+            <div class="header-textos">
+                <h1>CRECHE EL SHADDAY</h1>
+                <h2 id="unidadeNome">CEIC El Shadday</h2>
+                <p id="unidadeInfo">CNPJ: 03.067.526/0001-87 - Mogi das Cruzes/SP</p>
+            </div>
+            <div class="header-imagens">
+                <img src="/static/img/logo-creche.png" alt="Creche El Shadday" class="logo-creche" onerror="this.style.display='none'">
+                <img src="/static/img/Mogi.jpg" alt="Mogi das Cruzes" class="logo-mogi" onerror="this.style.display='none'">
+            </div>
+        </div>
+
+        <div class="titulo">JUSTIFICATIVA DE PONTO - VIA ORIGINAL</div>
+
+        <div class="dados-linha"><span class="dados-label">Data de Lançamento:</span><span class="dados-valor" id="printData">___/___/_____</span></div>
+        <div class="dados-linha"><span class="dados-label">Colaborador:</span><span class="dados-valor" id="printColaborador">_________________________</span></div>
+        <div class="dados-linha"><span class="dados-label">Cargo:</span><span class="dados-valor" id="printCargo">_________________________</span></div>
+        <div class="dados-linha"><span class="dados-label">RGM:</span><span class="dados-valor" id="printRgm">___________</span></div>
+        <div class="dados-linha"><span class="dados-label">Unidade:</span><span class="dados-valor" id="printUnidade">___________</span></div>
+        <div class="dados-linha"><span class="dados-label">Apontamento Início:</span><span class="dados-valor" id="printApontamentoInicio">___:___</span></div>
+        <div class="dados-linha"><span class="dados-label">Apontamento Fim:</span><span class="dados-valor" id="printApontamentoFim">___:___</span></div>
+        <div class="dados-linha"><span class="dados-label">Motivo:</span><span class="dados-valor" id="printMotivo">_________________________</span></div>
+        <div class="dados-linha"><span class="dados-label">Observações:</span><span class="dados-valor" id="printObservacoes">_________________________</span></div>
+
+        <div class="assinatura-area">
+            <div class="assinatura-item">
+                <div class="assinatura-linha"></div>
+                <div>Assinatura do Colaborador</div>
+            </div>
+        </div>
+
+        <div class="rodape">
+            <div class="rodape-info"><span id="rodapeNome">Creche El Shadday</span><span id="rodapeEndereco">Rua Francisco Vilani Bicudo, 470 - Vila Nova Aparecida</span></div>
+            <div id="rodapeTelefone">📞 (11) 4739-3549</div>
+        </div>
+
+        <div class="cut-line"><span>✂️ RECORTE AQUI ✂️</span></div>
+
+        <div class="cabecalho">
+            <div class="header-textos">
+                <h1>CRECHE EL SHADDAY</h1>
+                <h2 id="unidadeNome2">CEIC El Shadday</h2>
+                <p id="unidadeInfo2">CNPJ: 03.067.526/0001-87 - Mogi das Cruzes/SP</p>
+            </div>
+            <div class="header-imagens">
+                <img src="/static/img/logo-creche.png" alt="Creche El Shadday" class="logo-creche" onerror="this.style.display='none'">
+                <img src="/static/img/Mogi.jpg" alt="Mogi das Cruzes" class="logo-mogi" onerror="this.style.display='none'">
+            </div>
+        </div>
+
+        <div class="titulo">JUSTIFICATIVA DE PONTO - VIA COLABORADOR</div>
+
+        <div class="dados-linha"><span class="dados-label">Data de Lançamento:</span><span class="dados-valor" id="printData2">___/___/_____</span></div>
+        <div class="dados-linha"><span class="dados-label">Colaborador:</span><span class="dados-valor" id="printColaborador2">_________________________</span></div>
+        <div class="dados-linha"><span class="dados-label">Cargo:</span><span class="dados-valor" id="printCargo2">_________________________</span></div>
+        <div class="dados-linha"><span class="dados-label">RGM:</span><span class="dados-valor" id="printRgm2">___________</span></div>
+        <div class="dados-linha"><span class="dados-label">Unidade:</span><span class="dados-valor" id="printUnidade2">___________</span></div>
+        <div class="dados-linha"><span class="dados-label">Apontamento Início:</span><span class="dados-valor" id="printApontamentoInicio2">___:___</span></div>
+        <div class="dados-linha"><span class="dados-label">Apontamento Fim:</span><span class="dados-valor" id="printApontamentoFim2">___:___</span></div>
+        <div class="dados-linha"><span class="dados-label">Motivo:</span><span class="dados-valor" id="printMotivo2">_________________________</span></div>
+        <div class="dados-linha"><span class="dados-label">Observações:</span><span class="dados-valor" id="printObservacoes2">_________________________</span></div>
+
+        <div class="assinatura-area">
+            <div class="assinatura-item">
+                <div class="assinatura-linha"></div>
+                <div>Assinatura do Colaborador</div>
+            </div>
+        </div>
+
+        <div class="rodape">
+            <div class="rodape-info"><span id="rodapeNome2">Creche El Shadday</span><span id="rodapeEndereco2">Rua Francisco Vilani Bicudo, 470 - Vila Nova Aparecida</span></div>
+            <div id="rodapeTelefone2">📞 (11) 4739-3549</div>
+        </div>
+        <div class="data-emissao" id="printDataEmissao"></div>
+    </div>
+
+    <script>
+        function preencherJustificativa(dados) {
+            document.getElementById('unidadeNome').textContent = dados.unidadeInfo.nome;
+            document.getElementById('unidadeInfo').textContent = "CNPJ: " + dados.unidadeInfo.cnpj + " - " + dados.unidadeInfo.cidade + "/" + dados.unidadeInfo.uf;
+            document.getElementById('rodapeNome').textContent = dados.unidadeInfo.nome;
+            document.getElementById('rodapeEndereco').textContent = dados.unidadeInfo.endereco;
+            document.getElementById('rodapeTelefone').textContent = "📞 " + dados.unidadeInfo.telefone;
+            document.getElementById('printData').textContent = dados.data;
+            document.getElementById('printColaborador').textContent = dados.colaborador;
+            document.getElementById('printCargo').textContent = dados.cargo;
+            document.getElementById('printRgm').textContent = dados.rgm;
+            document.getElementById('printUnidade').textContent = dados.unidade;
+            document.getElementById('printApontamentoInicio').textContent = dados.apontamentoInicio;
+            document.getElementById('printApontamentoFim').textContent = dados.apontamentoFim;
+            document.getElementById('printMotivo').textContent = dados.motivo;
+            document.getElementById('printObservacoes').textContent = dados.observacoes;
+            
+            document.getElementById('unidadeNome2').textContent = dados.unidadeInfo.nome;
+            document.getElementById('unidadeInfo2').textContent = "CNPJ: " + dados.unidadeInfo.cnpj + " - " + dados.unidadeInfo.cidade + "/" + dados.unidadeInfo.uf;
+            document.getElementById('rodapeNome2').textContent = dados.unidadeInfo.nome;
+            document.getElementById('rodapeEndereco2').textContent = dados.unidadeInfo.endereco;
+            document.getElementById('rodapeTelefone2').textContent = "📞 " + dados.unidadeInfo.telefone;
+            document.getElementById('printData2').textContent = dados.data;
+            document.getElementById('printColaborador2').textContent = dados.colaborador;
+            document.getElementById('printCargo2').textContent = dados.cargo;
+            document.getElementById('printRgm2').textContent = dados.rgm;
+            document.getElementById('printUnidade2').textContent = dados.unidade;
+            document.getElementById('printApontamentoInicio2').textContent = dados.apontamentoInicio;
+            document.getElementById('printApontamentoFim2').textContent = dados.apontamentoFim;
+            document.getElementById('printMotivo2').textContent = dados.motivo;
+            document.getElementById('printObservacoes2').textContent = dados.observacoes;
+            document.getElementById('printDataEmissao').textContent = "Emitido em: " + dados.dataEmissao;
+        }
+    <\/script>
+</body>
+</html>`;
+
         document.addEventListener('DOMContentLoaded', function() {
-            carregarFuncoes();
-            carregarFuncoesFiltro();
             carregarFuncionarios();
+            carregarMotivos();
+            // CORREÇÃO: Usar data local do Brasil
+            document.getElementById('dataSaida').value = getDataLocalBrasil();
         });
 
-        function carregarFuncoes() {
-            const selectFuncao = document.getElementById('funcao');
-            selectFuncao.innerHTML = '<option value="">Selecione</option>';
-            
-            FUNCOES.forEach(funcao => {
-                selectFuncao.innerHTML += `<option value="${funcao}">${funcao}</option>`;
-            });
-        }
-
-        function carregarFuncoesFiltro() {
-            const selectFiltroFuncao = document.getElementById('filtroFuncao');
-            selectFiltroFuncao.innerHTML = '<option value="">Todas as funções</option>';
-            
-            FUNCOES.forEach(funcao => {
-                selectFiltroFuncao.innerHTML += `<option value="${funcao}">${funcao}</option>`;
-            });
+        function carregarMotivos() {
+            const select = document.getElementById('motivo');
+            select.innerHTML = '<option value="">Selecione o motivo</option>';
+            MOTIVOS.forEach(m => select.innerHTML += `<option value="${m}">${m}</option>`);
         }
 
         function carregarFuncionarios() {
             fetch('/api/funcionarios/listar')
-                .then(response => response.json())
+                .then(r => r.json())
                 .then(data => {
                     if (data.sucesso && data.funcionarios) {
-                        funcionarios = data.funcionarios.sort((a, b) => {
-                            return a.nome.localeCompare(b.nome, 'pt-BR');
-                        });
-                        aplicarFiltros();
+                        funcionarios = data.funcionarios.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+                        const select = document.getElementById('colaborador');
+                        select.innerHTML = '<option value="">Selecione um funcionário</option>';
+                        funcionarios.forEach(f => select.innerHTML += `<option value="${f.rgm}">${f.nome}</option>`);
                     } else {
-                        document.getElementById('listaFuncionarios').innerHTML = '<tr><td colspan="7" style="text-align: center;">Nenhum funcionário cadastrado</td></tr>';
-                        atualizarContador(0);
+                        document.getElementById('colaborador').innerHTML = '<option value="">Nenhum funcionário cadastrado</option>';
                     }
                 })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    mostrarNotificacao('Erro ao carregar funcionários', 'error');
-                });
+                .catch(e => mostrarNotificacao('Erro ao carregar funcionários', 'error'));
         }
 
-        function atualizarContador(quantidade) {
-            const contador = document.getElementById('contadorFuncionarios');
-            if (quantidade === 1) {
-                contador.textContent = `${quantidade} funcionário`;
+        function preencherDadosFuncionario() {
+            const func = funcionarios.find(f => f.rgm === document.getElementById('colaborador').value);
+            if (func) {
+                document.getElementById('cargo').value = func.funcao || '';
+                document.getElementById('rgm').value = func.rgm;
+                document.getElementById('unidade').value = func.unidade;
             } else {
-                contador.textContent = `${quantidade} funcionários`;
+                ['cargo', 'rgm', 'unidade'].forEach(id => document.getElementById(id).value = '');
             }
         }
 
-        function aplicarFiltros() {
-            const filtroNome = document.getElementById('filtroNome').value.toLowerCase();
-            const filtroUnidade = document.getElementById('filtroUnidade').value;
-            const filtroFuncao = document.getElementById('filtroFuncao').value;
-
-            const filtrados = funcionarios.filter(func => {
-                const matchNome = func.nome.toLowerCase().includes(filtroNome);
-                const matchUnidade = !filtroUnidade || func.unidade === filtroUnidade;
-                const matchFuncao = !filtroFuncao || func.funcao === filtroFuncao;
-                return matchNome && matchUnidade && matchFuncao;
-            });
-
-            exibirTabela(filtrados);
-            atualizarContador(filtrados.length);
-        }
-
-        function filtrarFuncionarios() {
-            aplicarFiltros();
-        }
-
-        function exibirTabela(funcionariosFiltrados) {
-            const tbody = document.getElementById('listaFuncionarios');
-            if (funcionariosFiltrados.length > 0) {
-                tbody.innerHTML = funcionariosFiltrados.map(func => `
-                    <tr>
-                        <td>${escapeHtml(func.nome)}</td>
-                        <td>${func.cpf ? escapeHtml(func.cpf) : '—'}</td>
-                        <td>${escapeHtml(func.rgm)}</td>
-                        <td>${escapeHtml(func.telefone && func.telefone.trim() !== '' ? func.telefone : '—')}</td>
-                        <td>${escapeHtml(func.unidade)}</td>
-                        <td>${escapeHtml(func.funcao)}</td>
-                        <td class="acoes-container">
-                            <button class="btn-editar" onclick="editarFuncionario('${escapeHtml(func.rgm)}')">Editar</button>
-                            <button class="btn-excluir" onclick="abrirModalExclusao('${escapeHtml(func.rgm)}', '${escapeHtml(func.nome)}')">Excluir</button>
-                        </td>
-                    </tr>
-                `).join('');
-            } else {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Nenhum funcionário encontrado</td></tr>';
-            }
-        }
-
-        // Função para gerar PDF da unidade selecionada
-        function gerarPDFUnidade() {
-            const unidadeSelecionada = document.getElementById('filtroUnidade').value;
-            
-            if (!unidadeSelecionada) {
-                mostrarNotificacao('Selecione uma unidade no filtro antes de gerar o PDF!', 'warning');
-                return;
-            }
-
-            const funcionariosUnidade = funcionarios.filter(func => func.unidade === unidadeSelecionada);
-            
-            if (funcionariosUnidade.length === 0) {
-                mostrarNotificacao(`Nenhum funcionário encontrado na unidade ${unidadeSelecionada}`, 'warning');
-                return;
-            }
-
-            mostrarNotificacao(`Gerando PDF da unidade ${unidadeSelecionada}...`, 'success');
-
-            const unidadeInfo = UNIDADES_CONFIG[unidadeSelecionada];
-            const dataAtual = new Date().toLocaleDateString('pt-BR');
-            const horaAtual = new Date().toLocaleTimeString('pt-BR');
-
-            const printWindow = window.open('', '_blank');
-            
-            printWindow.document.write(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="UTF-8">
-                    <title>Lista de Funcionários - ${unidadeSelecionada}</title>
-                    <style>
-                        * { margin: 0; padding: 0; box-sizing: border-box; }
-                        body {
-                            font-family: 'Inter', Arial, Helvetica, sans-serif;
-                            margin: 0;
-                            padding: 30px;
-                            background: white;
-                            color: #333;
-                        }
-                        .pdf-container { max-width: 1200px; margin: 0 auto; background: white; }
-                        .header {
-                            text-align: center;
-                            margin-bottom: 30px;
-                            padding-bottom: 20px;
-                            border-bottom: 3px solid #E50914;
-                        }
-                        .header h1 { color: #E50914; margin: 0 0 5px 0; font-size: 28px; font-weight: 700; }
-                        .header h2 { color: #333; margin: 0 0 10px 0; font-size: 18px; font-weight: 500; }
-                        .header .data-hora { color: #666; font-size: 11px; margin-top: 5px; }
-                        .unidade-info {
-                            background: #f8f9fa;
-                            padding: 20px;
-                            border-radius: 8px;
-                            margin-bottom: 25px;
-                            border-left: 4px solid #E50914;
-                        }
-                        .unidade-info h3 { color: #E50914; margin: 0 0 15px 0; font-size: 16px; font-weight: 600; }
-                        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-                        .info-item { font-size: 12px; line-height: 1.5; }
-                        .info-item strong { color: #333; font-weight: 600; }
-                        .titulo-tabela { margin: 25px 0 15px 0; font-size: 16px; font-weight: 600; color: #E50914; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
-                        th { background: #E50914; color: white; padding: 12px 8px; text-align: left; font-weight: 600; border: 1px solid #c40812; }
-                        td { padding: 10px 8px; border: 1px solid #ddd; vertical-align: top; }
-                        .telefone-vazio { color: #999; font-style: italic; letter-spacing: 1px; font-family: monospace; font-size: 12px; }
-                        .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #ddd; padding-top: 20px; }
-                        .total-funcionarios {
-                            background: #E50914;
-                            color: white;
-                            padding: 8px 20px;
-                            border-radius: 20px;
-                            display: inline-block;
-                            margin-top: 20px;
-                            font-weight: bold;
-                            font-size: 13px;
-                        }
-                        .assinatura { margin-top: 40px; text-align: center; }
-                        .linha-assinatura { width: 300px; margin: 20px auto 5px auto; border-top: 1px solid #333; }
-                        @media print { body { padding: 0; margin: 0; } .pdf-container { max-width: 100%; } .no-print { display: none; } }
-                    </style>
-                </head>
-                <body>
-                    <div class="pdf-container">
-                        <div class="header">
-                            <h1>CRECHE EL SHADDAY</h1>
-                            <h2>Lista de Funcionários por Unidade</h2>
-                            <div class="data-hora">Documento gerado em: ${dataAtual} às ${horaAtual}</div>
-                        </div>
-                        
-                        <div class="unidade-info">
-                            <h3>INFORMAÇÕES DA UNIDADE</h3>
-                            <div class="info-grid">
-                                <div class="info-item"><strong>Unidade:</strong> ${unidadeInfo.nome}</div>
-                                <div class="info-item"><strong>INEP:</strong> ${unidadeInfo.INEP}</div>
-                                <div class="info-item"><strong>Endereço:</strong> ${unidadeInfo.endereco}</div>
-                                <div class="info-item"><strong>Bairro:</strong> ${unidadeInfo.bairro}</div>
-                                <div class="info-item"><strong>Cidade/UF:</strong> ${unidadeInfo.cidade}/${unidadeInfo.uf}</div>
-                                <div class="info-item"><strong>CEP:</strong> ${unidadeInfo.cep}</div>
-                                <div class="info-item"><strong>Telefone:</strong> ${unidadeInfo.telefone}</div>
-                                <div class="info-item"><strong>CNPJ:</strong> ${unidadeInfo.cnpj}</div>
-                            </div>
-                        </div>
-                        
-                        <div class="titulo-tabela">RELAÇÃO DE FUNCIONÁRIOS</div>
-                        
-                        <table>
-                            <thead>
-                                <tr><th style="width: 5%;">Nº</th><th style="width: 30%;">Nome Completo</th><th style="width: 12%;">CPF</th><th style="width: 12%;">RGM</th><th style="width: 20%;">Função</th><th style="width: 21%;">Telefone</th></tr>
-                            </thead>
-                            <tbody>
-                                ${funcionariosUnidade.map((func, index) => {
-                                    let telefoneDisplay = (!func.telefone || func.telefone.trim() === '' || func.telefone === 'null') ? 
-                                        '<span class="telefone-vazio">_________________________</span>' : func.telefone;
-                                    let cpfDisplay = func.cpf || '_________________';
-                                    return `
-                                    <tr>
-                                        <td style="text-align: center;">${index + 1}</td>
-                                        <td>${escapeHtml(func.nome)}</td>
-                                        <td>${cpfDisplay}</td>
-                                        <td>${escapeHtml(func.rgm)}</td>
-                                        <td>${escapeHtml(func.funcao)}</td>
-                                        <td>${telefoneDisplay}</td>
-                                    </tr>
-                                `}).join('')}
-                            </tbody>
-                        </table>
-                        
-                        <div style="text-align: center;">
-                            <div class="total-funcionarios">Total de Funcionários: ${funcionariosUnidade.length}</div>
-                        </div>
-                        
-                        <div class="assinatura">
-                            <div class="linha-assinatura"></div>
-                            <p style="font-size: 11px;">Assinatura do Responsável</p>
-                        </div>
-                        
-                        <div class="footer">
-                            <p>Documento gerado eletronicamente - Creche El Shadday</p>
-                            <p style="font-size: 9px; margin-top: 5px;">Campos com "_________" estão disponíveis para preenchimento manual após impressão.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="no-print" style="text-align: center; margin-top: 20px; padding: 20px; position: fixed; bottom: 20px; left: 0; right: 0; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);">
-                        <button onclick="window.print()" style="padding: 12px 40px; background: #E50914; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold;">Imprimir / Salvar como PDF</button>
-                        <button onclick="window.close()" style="padding: 12px 30px; background: #333; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; margin-left: 10px;">Fechar</button>
-                    </div>
-                    
-                    <script>setTimeout(function() { window.print(); }, 500);<\/script>
-                </body>
-                </html>
-            `);
-            
-            printWindow.document.close();
-        }
-
-        function abrirModalExclusao(rgm, nome) {
-            rgmParaExcluir = rgm;
-            const modal = document.getElementById('modalExclusao');
-            const mensagem = document.getElementById('modalExclusaoMensagem');
-            mensagem.textContent = `Tem certeza que deseja excluir o funcionário "${nome}"?`;
-            modal.classList.add('active');
-        }
-
-        function fecharModalExclusao() {
-            const modal = document.getElementById('modalExclusao');
-            modal.classList.remove('active');
-            rgmParaExcluir = null;
-        }
-
-        function confirmarExclusao() {
-            if (rgmParaExcluir) {
-                excluirFuncionario(rgmParaExcluir);
-                fecharModalExclusao();
-            }
-        }
-
-        function excluirFuncionario(rgm) {
-            fetch('/api/funcionarios/excluir', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ rgm })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.sucesso) {
-                    mostrarNotificacao('Funcionário excluído com sucesso!', 'success');
-                    if (modoEdicao && rgmEditando === rgm) {
-                        limparFormulario();
-                    }
-                    carregarFuncionarios();
-                } else {
-                    mostrarNotificacao(data.erro || 'Erro ao excluir', 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                mostrarNotificacao('Erro de conexão', 'error');
-            });
-        }
-
-        function editarFuncionario(rgm) {
-            const funcionario = funcionarios.find(f => f.rgm === rgm);
-            if (funcionario) {
-                modoEdicao = true;
-                rgmEditando = rgm;
-                
-                document.getElementById('formTitle').textContent = 'Editar Funcionário';
-                document.getElementById('formBadge').textContent = 'Edição';
-                document.getElementById('btnSalvar').textContent = 'Atualizar Funcionário';
-                
-                document.getElementById('nome').value = funcionario.nome;
-                document.getElementById('cpf').value = funcionario.cpf || '';
-                document.getElementById('rgm').value = funcionario.rgm;
-                document.getElementById('telefone').value = funcionario.telefone || '';
-                document.getElementById('unidade').value = funcionario.unidade;
-                document.getElementById('funcao').value = funcionario.funcao;
-                
-                document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth' });
-                mostrarNotificacao('Editando funcionário: ' + funcionario.nome, 'success');
-            }
-        }
-
-        function salvarFuncionario() {
-            const nome = document.getElementById('nome').value.trim();
-            const cpf = document.getElementById('cpf').value.trim();
-            const rgm = document.getElementById('rgm').value.trim();
-            const telefone = document.getElementById('telefone').value.trim();
+        function gerarJustificativa() {
+            const dataInput = document.getElementById('dataSaida').value;
+            const rgm = document.getElementById('colaborador').value;
             const unidade = document.getElementById('unidade').value;
-            const funcao = document.getElementById('funcao').value;
-
-            if (!nome) {
-                mostrarNotificacao('Nome é obrigatório!', 'warning');
-                document.getElementById('nome').focus();
-                return;
-            }
+            const motivo = document.getElementById('motivo').value;
             
-            if (!cpf) {
-                mostrarNotificacao('CPF é obrigatório!', 'warning');
-                document.getElementById('cpf').focus();
-                return;
-            }
-            
-            if (!validarCPF(cpf)) {
-                mostrarNotificacao('CPF inválido!', 'warning');
-                document.getElementById('cpf').focus();
-                return;
-            }
-            
-            if (!rgm) {
-                mostrarNotificacao('RGM é obrigatório!', 'warning');
-                document.getElementById('rgm').focus();
-                return;
-            }
-            
-            if (!unidade) {
-                mostrarNotificacao('Unidade é obrigatória!', 'warning');
-                document.getElementById('unidade').focus();
-                return;
-            }
-            
-            if (!funcao) {
-                mostrarNotificacao('Função é obrigatória!', 'warning');
-                document.getElementById('funcao').focus();
+            if (!rgm || !motivo) {
+                mostrarNotificacao('Selecione um colaborador e informe o motivo!', 'warning');
                 return;
             }
 
-            const dados = { 
-                nome: nome, 
-                cpf: cpf.replace(/\D/g, ''),
-                rgm: rgm, 
-                telefone: telefone || '', 
-                unidade: unidade, 
-                funcao: funcao 
+            // CORREÇÃO: Usar formatação local sem conversão de timezone
+            const dataFormatada = formatarDataLocal(dataInput);
+
+            const dados = {
+                data: dataFormatada,
+                colaborador: document.getElementById('colaborador').options[document.getElementById('colaborador').selectedIndex]?.text || '',
+                cargo: document.getElementById('cargo').value,
+                rgm: rgm,
+                unidade: unidade,
+                apontamentoInicio: document.getElementById('apontamentoInicio').value || '___:___',
+                apontamentoFim: document.getElementById('apontamentoFim').value || '___:___',
+                motivo: motivo,
+                observacoes: document.getElementById('observacoes').value || '',
+                unidadeInfo: UNIDADES_CONFIG[unidade] || UNIDADES_CONFIG["CEIC El Shadday"],
+                dataEmissao: new Date().toLocaleString('pt-BR')
             };
 
-            const url = modoEdicao ? '/api/funcionarios/atualizar' : '/api/funcionarios/cadastrar';
-            
-            fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dados)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.sucesso) {
-                    const mensagem = modoEdicao ? 'Funcionário atualizado com sucesso!' : 'Funcionário cadastrado com sucesso!';
-                    mostrarNotificacao(mensagem, 'success');
-                    limparFormulario();
-                    carregarFuncionarios();
-                } else {
-                    mostrarNotificacao(data.erro || 'Erro ao salvar', 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                mostrarNotificacao('Erro de conexão', 'error');
+            const win = window.open('', '_blank');
+            win.document.write(htmlImpressao);
+            win.document.close();
+            win.addEventListener('load', () => {
+                win.preencherJustificativa(dados);
+                setTimeout(() => win.print(), 500);
             });
+            mostrarNotificacao('Documento gerado!', 'success');
         }
 
         function limparFormulario() {
-            modoEdicao = false;
-            rgmEditando = null;
+            // CORREÇÃO: Usar data local do Brasil
+            document.getElementById('dataSaida').value = getDataLocalBrasil();
             
-            document.getElementById('formTitle').textContent = 'Cadastro de Funcionário';
-            document.getElementById('formBadge').textContent = 'Novo';
-            document.getElementById('btnSalvar').textContent = 'Salvar Funcionário';
-            
-            document.getElementById('nome').value = '';
-            document.getElementById('cpf').value = '';
-            document.getElementById('rgm').value = '';
-            document.getElementById('telefone').value = '';
-            document.getElementById('unidade').value = '';
-            document.getElementById('funcao').value = '';
+            ['colaborador', 'cargo', 'rgm', 'unidade', 'apontamentoInicio', 'apontamentoFim', 'motivo', 'observacoes'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
         }
 
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+        function mostrarNotificacao(msg, tipo = 'success') {
+            const n = document.createElement('div');
+            n.className = `notificacao-flutuante ${tipo}`;
+            n.innerHTML = `<div class="notificacao-conteudo"><span class="notificacao-texto">${msg}</span></div>`;
+            document.body.appendChild(n);
+            setTimeout(() => n.remove(), 3000);
         }
-
-        function mostrarNotificacao(mensagem, tipo = 'success') {
-            const notificacao = document.createElement('div');
-            notificacao.className = `notificacao-flutuante ${tipo}`;
-            notificacao.innerHTML = `
-                <div class="notificacao-conteudo">
-                    <span class="notificacao-texto">${mensagem}</span>
-                </div>
-            `;
-            document.body.appendChild(notificacao);
-            setTimeout(() => notificacao.remove(), 3000);
-        }
-
-        document.getElementById('btnConfirmarExclusao').addEventListener('click', confirmarExclusao);
     </script>
 </body>
 </html>
