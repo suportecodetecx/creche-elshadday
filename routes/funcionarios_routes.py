@@ -71,6 +71,8 @@ def cadastrar_funcionario():
             'beneficio_odonto': False,
             'beneficio_plano_saude': False,
             'beneficio_vale_transporte': False,
+            'valor_plano_saude': 0,
+            'valor_vale_transporte': 0,
             'dependentes': [],
             'data_cadastro': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
@@ -179,6 +181,10 @@ def listar_beneficios():
                 func['beneficio_plano_saude'] = False
             if 'beneficio_vale_transporte' not in func:
                 func['beneficio_vale_transporte'] = False
+            if 'valor_plano_saude' not in func:
+                func['valor_plano_saude'] = 0
+            if 'valor_vale_transporte' not in func:
+                func['valor_vale_transporte'] = 0
             if 'dependentes' not in func:
                 func['dependentes'] = []
             if 'cpf' not in func:
@@ -218,6 +224,41 @@ def atualizar_beneficio():
             return jsonify({'sucesso': False, 'erro': 'Funcionário não encontrado'}), 404
         
         return jsonify({'sucesso': True})
+        
+    except Exception as e:
+        return jsonify({'sucesso': False, 'erro': str(e)}), 500
+
+
+# API - Atualizar valor do benefício (Plano de Saúde ou Vale Transporte)
+@funcionarios_bp.route('/api/funcionarios/beneficios/atualizar-valor', methods=['POST'])
+def atualizar_valor_beneficio():
+    """Atualizar o valor mensal de um benefício (Plano de Saúde ou Vale Transporte)"""
+    try:
+        dados = request.get_json()
+        rgm = dados.get('rgm')
+        campo = dados.get('campo')  # 'valor_plano_saude' ou 'valor_vale_transporte'
+        valor = dados.get('valor', 0)
+        
+        if not rgm:
+            return jsonify({'sucesso': False, 'erro': 'RGM não informado'}), 400
+        
+        if campo not in ['valor_plano_saude', 'valor_vale_transporte']:
+            return jsonify({'sucesso': False, 'erro': 'Campo inválido'}), 400
+        
+        db = get_db()
+        
+        # Verificar se funcionário existe
+        funcionario = db.funcionarios.find_one({'rgm': rgm})
+        if not funcionario:
+            return jsonify({'sucesso': False, 'erro': 'Funcionário não encontrado'}), 404
+        
+        # Atualizar o valor
+        db.funcionarios.update_one(
+            {'rgm': rgm},
+            {'$set': {campo: float(valor)}}
+        )
+        
+        return jsonify({'sucesso': True, 'mensagem': 'Valor atualizado com sucesso'})
         
     except Exception as e:
         return jsonify({'sucesso': False, 'erro': str(e)}), 500
@@ -281,6 +322,10 @@ def buscar_funcionario_beneficios(rgm):
             funcionario['beneficio_plano_saude'] = False
         if 'beneficio_vale_transporte' not in funcionario:
             funcionario['beneficio_vale_transporte'] = False
+        if 'valor_plano_saude' not in funcionario:
+            funcionario['valor_plano_saude'] = 0
+        if 'valor_vale_transporte' not in funcionario:
+            funcionario['valor_vale_transporte'] = 0
         if 'dependentes' not in funcionario:
             funcionario['dependentes'] = []
         if 'cpf' not in funcionario:

@@ -781,8 +781,8 @@
                 <div class="header-buttons">
                     <a href="/" class="btn-nav btn-home">← Início</a>
                     <a href="/alunos/cadastro" class="btn-nav">+ Novo Cadastro</a>
-                    <button class="btn-pdf" onclick="gerarPDFListaAtual()">📄 Gerar PDF da Lista</button>
-                    <button class="btn-pdf btn-pdf-transporte" onclick="gerarPDFAlunosTransporte()">🚍 PDF Alunos com Transporte</button>
+                    <button class="btn-pdf" onclick="gerarPDFListaAtual()"> Gerar PDF da Lista</button>
+                    <button class="btn-pdf btn-pdf-transporte" onclick="gerarPDFAlunosTransporte()"> PDF Alunos com Transporte</button>
                 </div>
             </div>
         </header>
@@ -812,9 +812,9 @@
                         <option value="CEIM Prof. Egberto Malta Moreira">CEIM Prof. Egberto Malta Moreira</option>
                     </select>
                     <select class="filter-select" id="filterTransporte" onchange="buscarAlunos()">
-                        <option value="">🚍 Todos os alunos</option>
-                        <option value="sim">🚌 Alunos com Transporte</option>
-                        <option value="nao">🚶 Alunos sem Transporte</option>
+                        <option value=""> Todos os alunos</option>
+                        <option value="sim"> Alunos com Transporte</option>
+                        <option value="nao"> Alunos sem Transporte</option>
                     </select>
                 </div>
             </div>
@@ -1087,7 +1087,7 @@
                 <div class="endereco">📍 ${escapeHtml(endereco.logradouro || '---')}, ${escapeHtml(endereco.numero || '')} - ${escapeHtml(endereco.bairro || '')}, ${escapeHtml(endereco.cidade || '---')}/${escapeHtml(endereco.uf || '---')}</div>
             </div>
             <div class="status-badge-unificado ${temTransporte ? 'badge-transporte' : ''}">
-                ${temTransporte ? '🚍 Com Transporte' : '🚶 Sem Transporte'}
+                ${temTransporte ? ' Com Transporte' : ' Sem Transporte'}
             </div>
         </div>
         
@@ -1148,7 +1148,7 @@
                 // Seção de Transporte
                 if (temTransporte) {
                     const fotoTransp = getFotoUrl(aluno, 'transporte') || AVATAR_SVG;
-                    html += `<div class="secao-contatos"><div class="secao-titulo">🚍 Transporte Escolar</div><div class="contatos-grid">
+                    html += `<div class="secao-contatos"><div class="secao-titulo"> Transporte Escolar</div><div class="contatos-grid">
                         <div class="contato-card">
                             <img src="${fotoTransp}" class="foto-contato" onerror="this.src='${AVATAR_SVG}'">
                             <div class="contato-info">
@@ -1503,7 +1503,7 @@
                         
                         ${unidadeInfoHTML}
                         
-                        <div class="titulo-tabela">🚍 RELAÇÃO DE ALUNOS COM TRANSPORTE ESCOLAR</div>
+                        <div class="titulo-tabela"> RELAÇÃO DE ALUNOS COM TRANSPORTE ESCOLAR</div>
                         
                         <table>
                             <thead>
@@ -1526,7 +1526,7 @@
                                     return `
                                     <tr>
                                         <td style="text-align: center;">${index + 1}</td>
-                                        <td><strong>${escapeHtml(dadosPessoais.nome || '---')}</strong><br><span class="badge-transporte">🚍 ${escapeHtml(transporte.nome || 'Transporte')}</span></td>
+                                        <td><strong>${escapeHtml(dadosPessoais.nome || '---')}</strong><br><span class="badge-transporte"> ${escapeHtml(transporte.nome || 'Transporte')}</span></td>
                                         <td>${escapeHtml(dadosPessoais.ra || '---')}</td>
                                         <td>${escapeHtml(turma.unidade || '---')}</td>
                                         <td>${escapeHtml(turma.turma || '---')}</td>
@@ -1538,7 +1538,7 @@
                         
                         <div style="text-align: center;">
                             <div class="total-alunos">
-                                🚍 Total de Alunos com Transporte: ${alunosComTransporte.length}
+                                 Total de Alunos com Transporte: ${alunosComTransporte.length}
                             </div>
                         </div>
                         
@@ -1572,7 +1572,7 @@
             `);
             
             printWindow.document.close();
-            mostrarNotificacao(`🚍 Gerando PDF com ${alunosComTransporte.length} aluno(s) com transporte...`, 'success');
+            mostrarNotificacao(` Gerando PDF com ${alunosComTransporte.length} aluno(s) com transporte...`, 'success');
         }
 
         // ========== FUNÇÃO PARA GERAR PDF DA LISTA ATUAL ==========
@@ -1866,7 +1866,7 @@
                                     const turma = aluno.turma || {};
                                     const idade = calcularIdade(dadosPessoais.data_nasc);
                                     const temTransporte = verificarTransporte(aluno);
-                                    const transporteBadge = temTransporte ? '<span class="badge-transporte">🚍 Transporte</span>' : '';
+                                    const transporteBadge = temTransporte ? '<span class="badge-transporte"> Transporte</span>' : '';
                                     
                                     return `
                                     <tr>

@@ -11,12 +11,12 @@
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/processo-de-trabalho.png') }}">
     <style>
         :root {
-            --netflix-red: #E50914;
-            --netflix-red-dark: #B81D24;
-            --netflix-black: #0f0f0f;
-            --netflix-dark: #1a1a1a;
-            --netflix-gray: #2a2a2a;
-            --netflix-light: #808080;
+            --primary-red: #E50914;
+            --primary-red-dark: #B81D24;
+            --bg-dark: #0f0f0f;
+            --surface-dark: #1a1a1a;
+            --surface-gray: #2a2a2a;
+            --text-light: #808080;
             --accent-blue: #0080FF;
             --accent-green: #4ECDC4;
             --accent-purple: #A06CD5;
@@ -29,7 +29,7 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: var(--netflix-black);
+            background: var(--bg-dark);
             min-height: 100vh;
             color: var(--white);
             padding: 20px;
@@ -38,7 +38,7 @@
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            background: var(--netflix-dark);
+            background: var(--surface-dark);
             border-radius: 32px;
             overflow: hidden;
             border: 1px solid rgba(255,255,255,0.05);
@@ -47,7 +47,7 @@
         .header-moderno {
             padding: 24px 40px;
             border-bottom: 1px solid rgba(255,255,255,0.05);
-            background: var(--netflix-dark);
+            background: var(--surface-dark);
         }
 
         .header-content {
@@ -68,7 +68,7 @@
         .logo-animated {
             width: 50px;
             height: 50px;
-            background: linear-gradient(135deg, var(--netflix-red), var(--netflix-red-dark));
+            background: linear-gradient(135deg, var(--primary-red), var(--primary-red-dark));
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -79,7 +79,7 @@
         }
 
         .logo-text h2 { color: white; font-size: 1.6rem; margin: 0; }
-        .logo-text p { color: var(--netflix-light); font-size: 0.8rem; margin: 2px 0 0; }
+        .logo-text p { color: var(--text-light); font-size: 0.8rem; margin: 2px 0 0; }
 
         .btn-nav {
             padding: 10px 20px;
@@ -92,7 +92,7 @@
             text-decoration: none;
             display: inline-block;
         }
-        .btn-nav:hover { background: rgba(255,255,255,0.1); border-color: var(--netflix-red); }
+        .btn-nav:hover { background: rgba(255,255,255,0.1); border-color: var(--primary-red); }
 
         main { padding: 40px; }
 
@@ -110,16 +110,13 @@
             border: 1px solid rgba(255,255,255,0.1);
             color: white;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
             transition: all 0.2s;
         }
-        .tab-btn.active { background: var(--netflix-red); border-color: var(--netflix-red); }
+        .tab-btn.active { background: var(--primary-red); border-color: var(--primary-red); }
         .tab-btn:hover:not(.active) { background: rgba(255,255,255,0.1); }
 
         .form-card {
-            background: var(--netflix-dark);
+            background: var(--surface-dark);
             border-radius: 24px;
             padding: 28px 32px;
             margin-bottom: 24px;
@@ -143,7 +140,7 @@
             align-items: center;
             justify-content: center;
             font-size: 1.2rem;
-            color: var(--netflix-red);
+            color: var(--primary-red);
         }
         .card-header h2 { font-size: 1.2rem; font-weight: 600; color: white; flex: 1; margin: 0; }
 
@@ -154,9 +151,9 @@
         }
         .filtro-input {
             flex: 1;
-            min-width: 180px;
+            min-width: 150px;
             padding: 12px 16px;
-            background: var(--netflix-gray);
+            background: var(--surface-gray);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 14px;
             color: white;
@@ -164,25 +161,22 @@
         }
         .filtro-input:focus {
             outline: none;
-            border-color: var(--netflix-red);
+            border-color: var(--primary-red);
         }
 
         .btn-pdf {
-            background: var(--netflix-red);
+            background: var(--primary-red);
             color: white;
             border: none;
             padding: 10px 24px;
             border-radius: 30px;
             font-weight: 600;
             cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
             transition: all 0.2s;
         }
         .btn-pdf:hover { transform: translateY(-2px); filter: brightness(1.05); }
 
-        .btn-limpar-checkboxes {
+        .btn-limpar {
             background: var(--accent-yellow);
             color: #1a1a1a;
             border: none;
@@ -190,12 +184,33 @@
             border-radius: 30px;
             font-weight: 600;
             cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
             transition: all 0.2s;
         }
-        .btn-limpar-checkboxes:hover { transform: translateY(-2px); filter: brightness(1.05); }
+        .btn-limpar:hover { transform: translateY(-2px); filter: brightness(1.05); }
+
+        .btn-aplicar-massa {
+            background: var(--accent-purple);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-aplicar-massa:hover { transform: translateY(-2px); filter: brightness(1.05); }
+
+        .btn-limpar-valores {
+            background: var(--accent-orange);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-limpar-valores:hover { transform: translateY(-2px); filter: brightness(1.05); }
 
         .tabela-container { overflow-x: auto; }
         .tabela-funcionarios { width: 100%; border-collapse: collapse; }
@@ -205,7 +220,7 @@
             border-bottom: 1px solid rgba(255,255,255,0.08);
         }
         .tabela-funcionarios th { 
-            color: var(--netflix-red); 
+            color: var(--primary-red); 
             font-weight: 600;
             font-size: 0.85rem;
             text-transform: uppercase;
@@ -216,30 +231,53 @@
         .beneficio-checkbox {
             width: 18px;
             height: 18px;
-            accent-color: var(--netflix-red);
+            accent-color: var(--primary-red);
             cursor: pointer;
+        }
+
+        .select-all-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary-red);
+            cursor: pointer;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .valor-input {
+            width: 90px;
+            padding: 6px 8px;
+            background: var(--surface-gray);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+        .valor-input:focus {
+            outline: none;
+            border-color: var(--primary-red);
         }
 
         .acoes-container {
             display: flex;
-            flex-direction: column;
-            gap: 6px;
+            flex-direction: row;
+            gap: 8px;
+            justify-content: center;
         }
         .btn-editar, .btn-excluir {
-            padding: 5px 12px;
+            padding: 6px 12px;
             border-radius: 20px;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: 500;
             cursor: pointer;
             border: none;
             transition: all 0.2s;
-            width: 100%;
-            text-align: center;
         }
         .btn-editar { background: var(--accent-blue); color: white; }
         .btn-editar:hover { background: #0066CC; transform: translateY(-1px); }
-        .btn-excluir { background: var(--netflix-red); color: white; }
-        .btn-excluir:hover { background: var(--netflix-red-dark); transform: translateY(-1px); }
+        .btn-excluir { background: var(--primary-red); color: white; }
+        .btn-excluir:hover { background: var(--primary-red-dark); transform: translateY(-1px); }
 
         .contador {
             display: inline-flex;
@@ -248,14 +286,35 @@
             border-radius: 30px;
             font-size: 0.8rem;
             font-weight: 600;
-            background: var(--netflix-red);
+            background: var(--primary-red);
+        }
+
+        .total-card {
+            background: linear-gradient(135deg, var(--primary-red), var(--primary-red-dark));
+            border-radius: 16px;
+            padding: 16px 24px;
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .total-card span {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .total-card .total-valor {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent-yellow);
         }
 
         .btn-dep {
             background: rgba(78, 205, 196, 0.2);
             border: 1px solid var(--accent-green);
             color: var(--accent-green);
-            padding: 5px 12px;
+            padding: 5px 10px;
             border-radius: 20px;
             font-size: 0.7rem;
             font-weight: 500;
@@ -272,7 +331,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.95);
             backdrop-filter: blur(8px);
             z-index: 10000;
             align-items: center;
@@ -280,19 +339,17 @@
         }
         .modal.active { display: flex; }
         .modal-content {
-            background: var(--netflix-dark);
+            background: var(--surface-dark);
             border-radius: 24px;
             padding: 32px;
             width: 90%;
-            max-width: 650px;
-            max-height: 85vh;
-            overflow-y: auto;
+            max-width: 500px;
             border: 1px solid rgba(255,255,255,0.1);
         }
-        .modal-content h3 { font-size: 1.4rem; margin-bottom: 20px; color: var(--netflix-red); }
+        .modal-content h3 { font-size: 1.4rem; margin-bottom: 20px; color: var(--primary-red); }
 
         .dependente-item {
-            background: var(--netflix-gray);
+            background: var(--surface-gray);
             border-radius: 14px;
             padding: 14px;
             margin-bottom: 12px;
@@ -304,15 +361,15 @@
         .dependente-item input, .dependente-item select {
             flex: 1;
             padding: 10px 12px;
-            background: var(--netflix-dark);
+            background: var(--surface-dark);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 10px;
             color: white;
             font-family: inherit;
         }
-        .dependente-item select option { background: var(--netflix-dark); color: white; }
+        .dependente-item select option { background: var(--surface-dark); color: white; }
         .btn-remover-dep {
-            background: var(--netflix-red);
+            background: var(--primary-red);
             color: white;
             border: none;
             padding: 8px 16px;
@@ -362,7 +419,7 @@
             position: fixed;
             top: 30px;
             right: 30px;
-            background: var(--netflix-dark);
+            background: var(--surface-dark);
             border-radius: 12px;
             padding: 14px 20px;
             border-left: 4px solid var(--accent-green);
@@ -375,17 +432,55 @@
             to { opacity: 1; transform: translateX(0); }
         }
 
-        /* RODAPÉ PROFISSIONAL */
         .footer {
-            background: var(--netflix-dark);
+            background: var(--surface-dark);
             border-top: 1px solid rgba(255,255,255,0.05);
             padding: 20px 40px;
             text-align: center;
             font-size: 0.7rem;
-            color: var(--netflix-light);
+            color: var(--text-light);
             line-height: 1.5;
         }
         .footer p { margin: 3px 0; }
+
+        .massa-input-group {
+            display: flex;
+            gap: 5px;
+            background: rgba(0,0,0,0.3);
+            padding: 5px 15px;
+            border-radius: 40px;
+            align-items: center;
+        }
+        .massa-input-group label {
+            font-size: 0.8rem;
+            color: var(--accent-purple);
+            font-weight: 600;
+        }
+        .input-massa {
+            min-width: 120px;
+            background: var(--bg-dark);
+            border: 1px solid var(--accent-purple);
+        }
+
+        .modal-mensagem {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .modal-mensagem p {
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+        .modal-mensagem .valor-destaque {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-yellow);
+            margin: 10px 0;
+        }
+        .modal-mensagem .quantidade-destaque {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--accent-green);
+        }
 
         @media (max-width: 768px) {
             body { padding: 10px; }
@@ -398,6 +493,10 @@
             .tabela-funcionarios { font-size: 12px; }
             .tabela-funcionarios th, .tabela-funcionarios td { padding: 8px 6px; }
             .footer { padding: 15px 20px; }
+            .acoes-container { flex-direction: column; gap: 4px; }
+            .btn-editar, .btn-excluir { justify-content: center; }
+            .valor-input { width: 70px; }
+            .massa-input-group { flex-wrap: wrap; }
         }
     </style>
 </head>
@@ -413,33 +512,37 @@
                 </div>
             </div>
             <div style="display: flex; gap: 10px;">
-                <a href="/funcionarios/cadastro" class="btn-nav">👥 Cadastro</a>
-                <a href="/" class="btn-nav">← Início</a>
+                <a href="/funcionarios/cadastro" class="btn-nav">Cadastro</a>
+                <a href="/" class="btn-nav">Início</a>
             </div>
         </div>
     </header>
 
     <main>
-        <!-- Tabs -->
         <div class="tabs">
-            <button class="tab-btn active" onclick="mudarTab('todos')">📋 Todos</button>
-            <button class="tab-btn" onclick="mudarTab('odontologico')">🦷 Odontológico</button>
-            <button class="tab-btn" onclick="mudarTab('plano_saude')">🏥 Plano de Saúde</button>
-            <button class="tab-btn" onclick="mudarTab('vale_transporte')">🚍 Vale Transporte</button>
+            <button class="tab-btn active" onclick="mudarTab('todos')">Todos</button>
+            <button class="tab-btn" onclick="mudarTab('odontologico')">Odontológico</button>
+            <button class="tab-btn" onclick="mudarTab('plano_saude')">Plano de Saúde</button>
+            <button class="tab-btn" onclick="mudarTab('vale_transporte')">Vale Transporte</button>
         </div>
 
-        <!-- Filtros -->
         <div class="form-card">
             <div class="card-header">
-                <div class="header-icon">🔍</div>
+                <div class="header-icon">F</div>
                 <h2>Filtrar Funcionários</h2>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn-limpar-checkboxes" onclick="limparTodosCheckboxes()">🧹 Limpar Checkboxes</button>
-                    <button class="btn-pdf" id="btnGerarPDF" onclick="gerarPDF()">📄 Gerar PDF</button>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                    <div class="massa-input-group">
+                        <label>Plano Saúde:</label>
+                        <input type="number" id="valorMassaPlanoSaude" class="filtro-input input-massa" placeholder="Valor" step="0.01">
+                        <button class="btn-aplicar-massa" onclick="abrirModalConfirmacaoAplicacao()">Aplicar em Massa</button>
+                        <button class="btn-limpar-valores" onclick="abrirModalConfirmacaoLimpar()">Limpar Valores</button>
+                    </div>
+                    <button class="btn-limpar" onclick="limparTodosCheckboxes()">Limpar Checkboxes</button>
+                    <button class="btn-pdf" onclick="gerarPDF()">Gerar PDF</button>
                 </div>
             </div>
             <div class="filtros-grid">
-                <input type="text" id="filtroNome" class="filtro-input" placeholder="Nome do funcionário..." onkeyup="filtrar()">
+                <input type="text" id="filtroNome" class="filtro-input" placeholder="Nome do funcionário" onkeyup="filtrar()">
                 <select id="filtroUnidade" class="filtro-input" onchange="filtrar()">
                     <option value="">Todas as unidades</option>
                     <option value="CEIC El Shadday">CEIC El Shadday</option>
@@ -473,10 +576,14 @@
                     <option value="11">Novembro</option>
                     <option value="12">Dezembro</option>
                 </select>
+                <select id="filtroAno" class="filtro-input" onchange="filtrar()">
+                    <option value="">Todos os anos</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                </select>
             </div>
         </div>
 
-        <!-- Lista de Funcionários -->
         <div class="form-card">
             <div class="card-header">
                 <h2 id="tituloLista">Todos os Funcionários</h2>
@@ -490,32 +597,49 @@
                             <th>CPF</th>
                             <th>Unidade</th>
                             <th>Função</th>
-                            <th style="text-align:center">🦷</th>
-                            <th style="text-align:center">🏥</th>
-                            <th style="text-align:center">🚍</th>
-                            <th style="text-align:center">👨‍👩‍👧</th>
+                            <th style="text-align:center">
+                                <input type="checkbox" class="select-all-checkbox" id="selectAllOdonto" onchange="selecionarTodos('odonto', this.checked)">
+                                Odonto
+                            </th>
+                            <th style="text-align:center">
+                                <input type="checkbox" class="select-all-checkbox" id="selectAllPlanoSaude" onchange="selecionarTodos('plano_saude', this.checked)">
+                                Plano Saúde
+                            </th>
+                            <th style="text-align:center">Valor Base</th>
+                            <th style="text-align:center">Pessoas</th>
+                            <th style="text-align:center">Total</th>
+                            <th style="text-align:center">
+                                <input type="checkbox" class="select-all-checkbox" id="selectAllValeTransporte" onchange="selecionarTodos('vale_transporte', this.checked)">
+                                Vale Transp.
+                            </th>
+                            <th style="text-align:center">Valor</th>
+                            <th style="text-align:center">Dependentes</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody id="listaFuncionarios"></tbody>
                 </table>
             </div>
+            
+            <div class="total-card" id="totalCard" style="display: none;">
+                <span>TOTAL DO MÊS</span>
+                <span class="total-valor" id="totalValor">R$ 0,00</span>
+            </div>
         </div>
     </main>
 
-    <!-- Rodapé Profissional -->
     <div class="footer">
         <p><strong>Creche El Shadday</strong></p>
-        <p>© 2026 - Todos os direitos reservados</p>
+        <p>2026 - Todos os direitos reservados</p>
     </div>
 </div>
 
 <!-- Modal de Dependentes -->
 <div id="modalDependentes" class="modal">
     <div class="modal-content">
-        <h3 id="modalDependentesTitulo">👨‍👩‍👧 Dependentes</h3>
+        <h3 id="modalDependentesTitulo">Dependentes - Plano de Saúde</h3>
         <div id="listaDependentes"></div>
-        <button class="btn-add-dep" onclick="adicionarDependente()">+ Adicionar Dependente</button>
+        <button class="btn-add-dep" onclick="adicionarDependente()">Adicionar Dependente</button>
         <div class="modal-buttons">
             <button class="btn-modal-cancel" onclick="fecharModalDependentes()">Cancelar</button>
             <button class="btn-modal-save" onclick="salvarDependentes()">Salvar</button>
@@ -523,15 +647,49 @@
     </div>
 </div>
 
-<!-- Modal Exclusão -->
+<!-- Modal de Exclusão -->
 <div id="modalExclusao" class="modal">
     <div class="modal-content">
-        <h3>⚠️ Confirmar Exclusão</h3>
+        <h3>Confirmar Exclusão</h3>
         <p id="msgExclusao">Tem certeza que deseja excluir este funcionário?</p>
-        <p style="font-size: 0.8rem; color: var(--netflix-red);">Esta ação não pode ser desfeita.</p>
+        <p style="font-size: 0.8rem; color: var(--primary-red);">Esta ação não pode ser desfeita.</p>
         <div class="modal-buttons">
             <button class="btn-modal-cancel" onclick="fecharModalExclusao()">Cancelar</button>
-            <button class="btn-modal-save" style="background: var(--netflix-red); color: white;" onclick="confirmarExclusao()">Excluir</button>
+            <button class="btn-modal-save" style="background: var(--primary-red); color: white;" onclick="confirmarExclusao()">Excluir</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação para Aplicação em Massa -->
+<div id="modalConfirmacaoAplicacao" class="modal">
+    <div class="modal-content">
+        <h3>Confirmar Operação</h3>
+        <div class="modal-mensagem" id="mensagemConfirmacao">
+            <p>Você está prestes a aplicar o valor</p>
+            <div class="valor-destaque" id="valorDestaque">R$ 0,00</div>
+            <p>para o campo <strong>Valor Base</strong> do <strong>Plano de Saúde</strong> de</p>
+            <div class="quantidade-destaque" id="quantidadeDestaque">0 funcionário(s)</div>
+            <p>Deseja continuar com esta operação?</p>
+        </div>
+        <div class="modal-buttons">
+            <button class="btn-modal-cancel" onclick="fecharModalConfirmacao()">Cancelar</button>
+            <button class="btn-modal-save" style="background: var(--primary-red); color: white;" onclick="confirmarAplicacaoMassa()">Confirmar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação para Limpar Valores -->
+<div id="modalConfirmacaoLimpar" class="modal">
+    <div class="modal-content">
+        <h3>Confirmar Operação</h3>
+        <div class="modal-mensagem">
+            <p>Você está prestes a <strong>ZERAR</strong> o campo <strong>Valor Base</strong> do <strong>Plano de Saúde</strong> de</p>
+            <div class="quantidade-destaque" id="quantidadeDestaqueLimpar">0 funcionário(s)</div>
+            <p>Deseja continuar com esta operação?</p>
+        </div>
+        <div class="modal-buttons">
+            <button class="btn-modal-cancel" onclick="fecharModalConfirmacaoLimpar()">Cancelar</button>
+            <button class="btn-modal-save" style="background: var(--primary-red); color: white;" onclick="confirmarLimparValores()">Confirmar</button>
         </div>
     </div>
 </div>
@@ -542,8 +700,8 @@
     let rgmDependentesAtual = null;
     let dependentesTemp = [];
     let tabAtual = 'todos';
+    let funcionariosFiltradosAtuais = [];
 
-    // Configurações das unidades (para o PDF)
     const UNIDADES_INFO = {
         "CEIC El Shadday": {
             "nome": "CEIC El Shadday",
@@ -561,17 +719,14 @@
         }
     };
 
-    // Nomes dos meses
     const mesesNomes = {
         '1': 'Janeiro', '2': 'Fevereiro', '3': 'Março', '4': 'Abril',
         '5': 'Maio', '6': 'Junho', '7': 'Julho', '8': 'Agosto',
         '9': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro'
     };
 
-    // Opções de parentesco
     const opcoesParentesco = ['Filho(a)', 'Cônjuge', 'Pai', 'Mãe', 'Irmão(ã)', 'Avô/Avó', 'Outros'];
 
-    // Carregar funcionários
     document.addEventListener('DOMContentLoaded', function() {
         carregarFuncionarios();
     });
@@ -582,6 +737,11 @@
             .then(data => {
                 if (data.sucesso) {
                     funcionarios = data.funcionarios.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+                    funcionarios.forEach(f => {
+                        if (f.valor_plano_saude === undefined) f.valor_plano_saude = 0;
+                        if (f.valor_vale_transporte === undefined) f.valor_vale_transporte = 0;
+                        if (f.dependentes === undefined) f.dependentes = [];
+                    });
                     filtrar();
                 } else {
                     mostrarNotificacao('Erro ao carregar funcionários', 'error');
@@ -591,6 +751,215 @@
                 console.error('Erro:', error);
                 mostrarNotificacao('Erro de conexão', 'error');
             });
+    }
+
+    function calcularTotalPessoas(dependentes) {
+        return 1 + (dependentes ? dependentes.length : 0);
+    }
+
+    function calcularValorTotalPlanoSaude(func) {
+        if (!func.beneficio_plano_saude) return 0;
+        const totalPessoas = calcularTotalPessoas(func.dependentes);
+        return (parseFloat(func.valor_plano_saude) || 0) * totalPessoas;
+    }
+
+    function calcularTotal() {
+        let total = 0;
+        if (tabAtual === 'plano_saude') {
+            funcionariosFiltradosAtuais.forEach(func => {
+                if (func.beneficio_plano_saude) {
+                    total += calcularValorTotalPlanoSaude(func);
+                }
+            });
+        } else if (tabAtual === 'vale_transporte') {
+            funcionariosFiltradosAtuais.forEach(func => {
+                if (func.beneficio_vale_transporte && func.valor_vale_transporte) {
+                    total += parseFloat(func.valor_vale_transporte) || 0;
+                }
+            });
+        }
+        
+        const totalCard = document.getElementById('totalCard');
+        const totalValor = document.getElementById('totalValor');
+        
+        if ((tabAtual === 'plano_saude' || tabAtual === 'vale_transporte') && funcionariosFiltradosAtuais.length > 0) {
+            totalCard.style.display = 'flex';
+            totalValor.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+        } else {
+            totalCard.style.display = 'none';
+        }
+    }
+
+    function abrirModalConfirmacaoAplicacao() {
+        const inputValor = document.getElementById('valorMassaPlanoSaude');
+        let valor = parseFloat(inputValor.value);
+        
+        if (isNaN(valor) || valor < 0) {
+            mostrarNotificacao('Por favor, digite um valor válido', 'warning');
+            return;
+        }
+
+        if (funcionariosFiltradosAtuais.length === 0) {
+            mostrarNotificacao('Nenhum funcionário na lista atual', 'info');
+            return;
+        }
+
+        // Salvar os dados no modal para usar depois
+        document.getElementById('modalConfirmacaoAplicacao').setAttribute('data-valor', valor);
+        document.getElementById('modalConfirmacaoAplicacao').setAttribute('data-funcionarios', JSON.stringify(funcionariosFiltradosAtuais.map(f => f.rgm)));
+        
+        document.getElementById('valorDestaque').textContent = `R$ ${valor.toFixed(2).replace('.', ',')}`;
+        document.getElementById('quantidadeDestaque').textContent = `${funcionariosFiltradosAtuais.length} funcionário(s)`;
+        document.getElementById('modalConfirmacaoAplicacao').classList.add('active');
+    }
+
+    function abrirModalConfirmacaoLimpar() {
+        if (funcionariosFiltradosAtuais.length === 0) {
+            mostrarNotificacao('Nenhum funcionário na lista atual', 'info');
+            return;
+        }
+
+        document.getElementById('modalConfirmacaoLimpar').setAttribute('data-funcionarios', JSON.stringify(funcionariosFiltradosAtuais.map(f => f.rgm)));
+        document.getElementById('quantidadeDestaqueLimpar').textContent = `${funcionariosFiltradosAtuais.length} funcionário(s)`;
+        document.getElementById('modalConfirmacaoLimpar').classList.add('active');
+    }
+
+    function fecharModalConfirmacao() {
+        document.getElementById('modalConfirmacaoAplicacao').classList.remove('active');
+    }
+
+    function fecharModalConfirmacaoLimpar() {
+        document.getElementById('modalConfirmacaoLimpar').classList.remove('active');
+    }
+
+    async function confirmarAplicacaoMassa() {
+        const modal = document.getElementById('modalConfirmacaoAplicacao');
+        const valor = parseFloat(modal.getAttribute('data-valor'));
+        const rgms = JSON.parse(modal.getAttribute('data-funcionarios') || '[]');
+        
+        fecharModalConfirmacao();
+        
+        if (rgms.length === 0) {
+            mostrarNotificacao('Nenhum funcionário para aplicar', 'warning');
+            return;
+        }
+        
+        mostrarNotificacao(`Aplicando valor a ${rgms.length} funcionário(s)...`, 'info');
+        
+        let sucessos = 0;
+        let falhas = 0;
+        
+        for (const rgm of rgms) {
+            try {
+                const response = await fetch('/api/funcionarios/beneficios/atualizar-valor', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        rgm: rgm, 
+                        campo: 'valor_plano_saude', 
+                        valor: valor 
+                    })
+                });
+                const data = await response.json();
+                
+                if (data.sucesso) {
+                    const funcLocal = funcionarios.find(f => f.rgm === rgm);
+                    if (funcLocal) {
+                        funcLocal.valor_plano_saude = valor;
+                    }
+                    sucessos++;
+                } else {
+                    console.error(`Erro ao atualizar ${rgm}:`, data.erro);
+                    falhas++;
+                }
+            } catch (error) {
+                console.error(`Erro de rede para ${rgm}:`, error);
+                falhas++;
+            }
+        }
+        
+        if (falhas === 0) {
+            mostrarNotificacao(`Valor R$ ${valor.toFixed(2).replace('.', ',')} aplicado a ${sucessos} funcionário(s)`, 'success');
+        } else {
+            mostrarNotificacao(`Aplicação parcial: ${sucessos} sucesso(s), ${falhas} falha(s)`, 'warning');
+        }
+        
+        exibirTabela(funcionariosFiltradosAtuais);
+        calcularTotal();
+    }
+
+    async function confirmarLimparValores() {
+        const modal = document.getElementById('modalConfirmacaoLimpar');
+        const rgms = JSON.parse(modal.getAttribute('data-funcionarios') || '[]');
+        
+        fecharModalConfirmacaoLimpar();
+        
+        if (rgms.length === 0) {
+            mostrarNotificacao('Nenhum funcionário para limpar', 'warning');
+            return;
+        }
+        
+        mostrarNotificacao(`Limpando valores de ${rgms.length} funcionário(s)...`, 'info');
+        
+        let sucessos = 0;
+        let falhas = 0;
+        
+        for (const rgm of rgms) {
+            try {
+                const response = await fetch('/api/funcionarios/beneficios/atualizar-valor', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        rgm: rgm, 
+                        campo: 'valor_plano_saude', 
+                        valor: 0 
+                    })
+                });
+                const data = await response.json();
+                
+                if (data.sucesso) {
+                    const funcLocal = funcionarios.find(f => f.rgm === rgm);
+                    if (funcLocal) {
+                        funcLocal.valor_plano_saude = 0;
+                    }
+                    sucessos++;
+                } else {
+                    console.error(`Erro ao limpar ${rgm}:`, data.erro);
+                    falhas++;
+                }
+            } catch (error) {
+                console.error(`Erro de rede para ${rgm}:`, error);
+                falhas++;
+            }
+        }
+        
+        if (falhas === 0) {
+            mostrarNotificacao(`Valores zerados para ${sucessos} funcionário(s)`, 'success');
+        } else {
+            mostrarNotificacao(`Limpeza parcial: ${sucessos} sucesso(s), ${falhas} falha(s)`, 'warning');
+        }
+        
+        exibirTabela(funcionariosFiltradosAtuais);
+        calcularTotal();
+    }
+
+    function selecionarTodos(tipo, valor) {
+        let campo = '';
+        if (tipo === 'odonto') campo = 'beneficio_odonto';
+        else if (tipo === 'plano_saude') campo = 'beneficio_plano_saude';
+        else if (tipo === 'vale_transporte') campo = 'beneficio_vale_transporte';
+        
+        funcionariosFiltradosAtuais.forEach(func => {
+            if (func[campo] !== valor) {
+                func[campo] = valor;
+                atualizarBeneficioAPI(func.rgm, campo, valor);
+            }
+        });
+        
+        exibirTabela(funcionariosFiltradosAtuais);
+        const mensagem = valor ? 'ativados' : 'desativados';
+        mostrarNotificacao(`Todos os benefícios ${mensagem} com sucesso`, 'success');
+        calcularTotal();
     }
 
     function limparTodosCheckboxes() {
@@ -607,7 +976,7 @@
             }
             return Promise.all(promises);
         })).then(() => {
-            mostrarNotificacao('✅ Todos os checkboxes foram desmarcados!', 'success');
+            mostrarNotificacao('Todos os checkboxes foram desmarcados', 'success');
             carregarFuncionarios();
         }).catch(error => {
             console.error('Erro ao limpar checkboxes:', error);
@@ -623,6 +992,30 @@
         });
     }
 
+    function atualizarValor(rgm, campo, valor) {
+        const valorNum = parseFloat(valor) || 0;
+        fetch('/api/funcionarios/beneficios/atualizar-valor', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rgm: rgm, campo: campo, valor: valorNum })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.sucesso) {
+                const func = funcionarios.find(f => f.rgm === rgm);
+                if (func) func[campo] = valorNum;
+                exibirTabela(funcionariosFiltradosAtuais);
+                calcularTotal();
+            } else {
+                mostrarNotificacao('Erro ao atualizar valor', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            mostrarNotificacao('Erro de conexão', 'error');
+        });
+    }
+
     function formatarCPF(cpf) {
         if (!cpf) return '—';
         const numeros = cpf.replace(/\D/g, '');
@@ -632,11 +1025,15 @@
         return cpf;
     }
 
+    function formatarMoeda(valor) {
+        if (!valor && valor !== 0) return 'R$ 0,00';
+        return `R$ ${valor.toFixed(2).replace('.', ',')}`;
+    }
+
     function filtrar() {
         const filtroNome = document.getElementById('filtroNome').value.toLowerCase();
         const filtroUnidade = document.getElementById('filtroUnidade').value;
         const filtroFuncao = document.getElementById('filtroFuncao').value;
-        const filtroMes = document.getElementById('filtroMes').value;
 
         let filtrados = funcionarios.filter(func => {
             const matchNome = func.nome ? func.nome.toLowerCase().includes(filtroNome) : false;
@@ -645,63 +1042,93 @@
             return matchNome && matchUnidade && matchFuncao;
         });
 
+        funcionariosFiltradosAtuais = filtrados;
+
         if (tabAtual === 'odontologico') {
             filtrados = filtrados.filter(f => f.beneficio_odonto === true);
-            document.getElementById('tituloLista').innerHTML = '🦷 Odontológico';
+            document.getElementById('tituloLista').innerHTML = 'Odontológico';
         } else if (tabAtual === 'plano_saude') {
             filtrados = filtrados.filter(f => f.beneficio_plano_saude === true);
-            document.getElementById('tituloLista').innerHTML = '🏥 Plano de Saúde Plena';
+            document.getElementById('tituloLista').innerHTML = 'Plano de Saúde';
         } else if (tabAtual === 'vale_transporte') {
             filtrados = filtrados.filter(f => f.beneficio_vale_transporte === true);
-            document.getElementById('tituloLista').innerHTML = '🚍 Vale Transporte';
+            document.getElementById('tituloLista').innerHTML = 'Vale Transporte';
         } else {
             document.getElementById('tituloLista').innerHTML = 'Todos os Funcionários';
         }
 
         exibirTabela(filtrados);
         document.getElementById('contador').textContent = `${filtrados.length} funcionário${filtrados.length !== 1 ? 's' : ''}`;
+        calcularTotal();
+        
+        document.getElementById('selectAllOdonto').checked = false;
+        document.getElementById('selectAllPlanoSaude').checked = false;
+        document.getElementById('selectAllValeTransporte').checked = false;
     }
 
     function exibirTabela(filtrados) {
         const tbody = document.getElementById('listaFuncionarios');
         if (filtrados.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px;">Nenhum funcionário encontrado</td>' +
-                '</tr>';
+            tbody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 40px;">Nenhum funcionário encontrado</td></tr>';
             return;
         }
 
-        tbody.innerHTML = filtrados.map(func => `
-            <tr>
-                <td><strong>${escapeHtml(func.nome || '')}</strong></td>
-                <td>${formatarCPF(func.cpf)}</td>
-                <td>${escapeHtml(func.unidade || '')}</td>
-                <td>${escapeHtml(func.funcao || '')}</td>
-                <td style="text-align:center">
-                    <input type="checkbox" class="beneficio-checkbox" 
-                        ${func.beneficio_odonto ? 'checked' : ''} 
-                        onchange="atualizarBeneficio('${func.rgm}', 'beneficio_odonto', this.checked)">
-                </td>
-                <td style="text-align:center">
-                    <input type="checkbox" class="beneficio-checkbox" 
-                        ${func.beneficio_plano_saude ? 'checked' : ''} 
-                        onchange="atualizarBeneficio('${func.rgm}', 'beneficio_plano_saude', this.checked)">
-                </td>
-                <td style="text-align:center">
-                    <input type="checkbox" class="beneficio-checkbox" 
-                        ${func.beneficio_vale_transporte ? 'checked' : ''} 
-                        onchange="atualizarBeneficio('${func.rgm}', 'beneficio_vale_transporte', this.checked)">
-                </td>
-                <td style="text-align:center">
-                    <button class="btn-dep" onclick="abrirDependentes('${func.rgm}', '${escapeHtml(func.nome || '')}')">
-                        👨‍👩‍👧 ${(func.dependentes && func.dependentes.length) || 0}
-                    </button>
-                </td>
-                <td class="acoes-container">
-                    <button class="btn-editar" onclick="window.location.href='/funcionarios/cadastro?editar=${func.rgm}'">✏️ Editar</button>
-                    <button class="btn-excluir" onclick="abrirModalExclusao('${func.rgm}', '${escapeHtml(func.nome || '')}')">🗑️ Excluir</button>
-                </td>
-            </tr>
-        `).join('');
+        tbody.innerHTML = filtrados.map(func => {
+            const totalPessoas = calcularTotalPessoas(func.dependentes);
+            const valorBase = func.valor_plano_saude || 0;
+            const valorTotalPlano = calcularValorTotalPlanoSaude(func);
+            
+            return `
+                <tr>
+                    <td><strong>${escapeHtml(func.nome || '')}</strong></td>
+                    <td>${formatarCPF(func.cpf)}</td>
+                    <td>${escapeHtml(func.unidade || '')}</td>
+                    <td>${escapeHtml(func.funcao || '')}</td>
+                    <td style="text-align:center">
+                        <input type="checkbox" class="beneficio-checkbox" 
+                            ${func.beneficio_odonto ? 'checked' : ''} 
+                            onchange="atualizarBeneficio('${func.rgm}', 'beneficio_odonto', this.checked)">
+                    </td>
+                    <td style="text-align:center">
+                        <input type="checkbox" class="beneficio-checkbox" 
+                            ${func.beneficio_plano_saude ? 'checked' : ''} 
+                            onchange="atualizarBeneficio('${func.rgm}', 'beneficio_plano_saude', this.checked)">
+                    </td>
+                    <td style="text-align:center">
+                        <input type="number" class="valor-input" step="0.01" min="0" 
+                            value="${valorBase}" 
+                            onchange="atualizarValor('${func.rgm}', 'valor_plano_saude', this.value)"
+                            ${!func.beneficio_plano_saude ? 'disabled style="opacity:0.5"' : ''}>
+                    </td>
+                    <td style="text-align:center">
+                        <span style="background:rgba(78,205,196,0.1); padding:4px 8px; border-radius:20px;">${totalPessoas}</span>
+                    </td>
+                    <td style="text-align:center">
+                        <strong style="color: var(--accent-green);">${formatarMoeda(valorTotalPlano)}</strong>
+                    </td>
+                    <td style="text-align:center">
+                        <input type="checkbox" class="beneficio-checkbox" 
+                            ${func.beneficio_vale_transporte ? 'checked' : ''} 
+                            onchange="atualizarBeneficio('${func.rgm}', 'beneficio_vale_transporte', this.checked)">
+                    </td>
+                    <td style="text-align:center">
+                        <input type="number" class="valor-input" step="0.01" min="0" 
+                            value="${func.valor_vale_transporte || 0}" 
+                            onchange="atualizarValor('${func.rgm}', 'valor_vale_transporte', this.value)"
+                            ${!func.beneficio_vale_transporte ? 'disabled style="opacity:0.5"' : ''}>
+                    </td>
+                    <td style="text-align:center">
+                        <button class="btn-dep" onclick="abrirDependentes('${func.rgm}', '${escapeHtml(func.nome || '')}')">
+                            ${(func.dependentes && func.dependentes.length) || 0}
+                        </button>
+                    </td>
+                    <td class="acoes-container">
+                        <button class="btn-editar" onclick="window.location.href='/funcionarios/cadastro?editar=${func.rgm}'" title="Editar">Editar</button>
+                        <button class="btn-excluir" onclick="abrirModalExclusao('${func.rgm}', '${escapeHtml(func.nome || '')}')" title="Excluir">Excluir</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
     }
 
     function mudarTab(tab) {
@@ -741,7 +1168,7 @@
         const func = funcionarios.find(f => f.rgm === rgm);
         if (func) {
             dependentesTemp = JSON.parse(JSON.stringify(func.dependentes || []));
-            document.getElementById('modalDependentesTitulo').innerHTML = `👨‍👩‍👧 Dependentes de ${nome}`;
+            document.getElementById('modalDependentesTitulo').innerHTML = `Dependentes de ${nome} - Plano de Saúde`;
             renderizarDependentes();
             document.getElementById('modalDependentes').classList.add('active');
         }
@@ -762,7 +1189,7 @@
                     <option value="">Parentesco</option>
                     ${opcoesParentesco.map(p => `<option value="${p}" ${dep.parentesco === p ? 'selected' : ''}>${p}</option>`).join('')}
                 </select>
-                <button class="btn-remover-dep" onclick="removerDependenteTemp(${index})">✖</button>
+                <button class="btn-remover-dep" onclick="removerDependenteTemp(${index})">Remover</button>
             </div>
         `).join('');
     }
@@ -794,7 +1221,7 @@
             if (data.sucesso) {
                 const func = funcionarios.find(f => f.rgm === rgmDependentesAtual);
                 if (func) func.dependentes = dependentesTemp;
-                mostrarNotificacao('✅ Dependentes salvos!', 'success');
+                mostrarNotificacao('Dependentes salvos com sucesso', 'success');
                 fecharModalDependentes();
                 filtrar();
             } else {
@@ -834,7 +1261,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.sucesso) {
-                    mostrarNotificacao('✅ Funcionário excluído!', 'success');
+                    mostrarNotificacao('Funcionário excluído com sucesso', 'success');
                     carregarFuncionarios();
                     fecharModalExclusao();
                 } else {
@@ -853,6 +1280,7 @@
         const filtroUnidade = document.getElementById('filtroUnidade').value;
         const filtroFuncao = document.getElementById('filtroFuncao').value;
         const filtroMes = document.getElementById('filtroMes').value;
+        const filtroAno = document.getElementById('filtroAno').value;
 
         let filtrados = funcionarios.filter(func => {
             const matchNome = func.nome ? func.nome.toLowerCase().includes(filtroNome) : false;
@@ -861,39 +1289,48 @@
             return matchNome && matchUnidade && matchFuncao;
         });
 
-        let titulo = '', corTema = '#E50914', icone = '📋';
+        let titulo = '', corTema = '#E50914';
+        let mostrarValor = false;
         
         if (tabAtual === 'odontologico') {
             filtrados = filtrados.filter(f => f.beneficio_odonto === true);
             titulo = 'BENEFÍCIO ODONTOLÓGICO';
             corTema = '#4ECDC4';
-            icone = '🦷';
         } else if (tabAtual === 'plano_saude') {
             filtrados = filtrados.filter(f => f.beneficio_plano_saude === true);
-            titulo = 'PLANO DE SAÚDE PLENA';
+            titulo = 'PLANO DE SAÚDE';
             corTema = '#0080FF';
-            icone = '🏥';
+            mostrarValor = true;
         } else if (tabAtual === 'vale_transporte') {
             filtrados = filtrados.filter(f => f.beneficio_vale_transporte === true);
             titulo = 'VALE TRANSPORTE';
             corTema = '#FFD166';
-            icone = '🚍';
+            mostrarValor = true;
         } else {
             titulo = 'LISTA DE FUNCIONÁRIOS';
             corTema = '#E50914';
-            icone = '📋';
         }
 
         if (filtrados.length === 0) {
-            mostrarNotificacao('⚠️ Nenhum funcionário para gerar PDF', 'warning');
+            mostrarNotificacao('Nenhum funcionário para gerar PDF', 'warning');
             return;
         }
 
         const dataAtual = new Date().toLocaleDateString('pt-BR');
         const horaAtual = new Date().toLocaleTimeString('pt-BR');
         const mesTexto = filtroMes && mesesNomes[filtroMes] ? ` - ${mesesNomes[filtroMes]}` : '';
+        const anoTexto = filtroAno ? ` - ${filtroAno}` : '';
         
         const unidadeInfo = filtroUnidade ? UNIDADES_INFO[filtroUnidade] || UNIDADES_INFO["CEIC El Shadday"] : UNIDADES_INFO["CEIC El Shadday"];
+        
+        let totalGeral = 0;
+        if (mostrarValor) {
+            if (tabAtual === 'plano_saude') {
+                totalGeral = filtrados.reduce((acc, f) => acc + calcularValorTotalPlanoSaude(f), 0);
+            } else {
+                totalGeral = filtrados.reduce((acc, f) => acc + (f.valor_vale_transporte || 0), 0);
+            }
+        }
 
         const printWindow = window.open('', '_blank');
         printWindow.document.write(`
@@ -937,31 +1374,60 @@
             <body>
                 <div class="header">
                     <h1>CRECHE EL SHADDAY</h1>
-                    <h2>${icone} ${titulo}${mesTexto} ${icone}</h2>
+                    <h2>${titulo}${mesTexto}${anoTexto}</h2>
                     <div class="data-hora">Gerado em: ${dataAtual} às ${horaAtual}</div>
                 </div>
                 <div class="info">
-                    <strong>📌 Unidade:</strong> ${unidadeInfo.nome}<br>
+                    <strong>Unidade:</strong> ${unidadeInfo.nome}<br>
                     <strong>CNPJ:</strong> ${unidadeInfo.cnpj}<br>
-                    <strong>Mês de referência:</strong> ${mesTexto.substring(3) || 'Todos os meses'}<br>
+                    <strong>Período:</strong> ${mesTexto.substring(3) || 'Todos os meses'} ${anoTexto.substring(3) || ''}<br>
                     <strong>Total de funcionários:</strong> ${filtrados.length}
+                    ${mostrarValor ? `<br><strong>Valor Total:</strong> R$ ${totalGeral.toFixed(2).replace('.', ',')}` : ''}
                 </div>
                 <table>
                     <thead>
-                        <tr><th>Nº</th><th>Nome</th><th>CPF</th><th>Função</th><th>Unidade</th>${tabAtual === 'plano_saude' ? '<th>Dependentes</th>' : ''}</tr>
+                        <tr><th>Nº</th><th>Nome</th><th>CPF</th><th>Função</th><th>Unidade</th>
+                        ${tabAtual === 'plano_saude' ? '<th>Valor Base</th><th>Pessoas</th><th>Valor Total</th><th>Dependentes</th>' : ''}
+                        ${tabAtual === 'vale_transporte' ? '<th>Valor Mensal</th>' : ''}
                     </thead>
                     <tbody>
-                        ${filtrados.map((f, i) => `<tr>
-                            <td>${i+1}</td>
-                            <td>${escapeHtml(f.nome || '')}</td>
-                            <td>${formatarCPF(f.cpf)}</td>
-                            <td>${escapeHtml(f.funcao || '')}</td>
-                            <td>${escapeHtml(f.unidade || '')}</td>
-                            ${tabAtual === 'plano_saude' ? `<td>${(f.dependentes && f.dependentes.length) ? f.dependentes.map(d => `${d.nome} (${d.parentesco || '—'})`).join(', ') : '—'}</td>` : ''}
-                        </tr>`).join('')}
+                        ${filtrados.map((f, i) => {
+                            if (tabAtual === 'plano_saude') {
+                                const totalPessoas = calcularTotalPessoas(f.dependentes);
+                                const valorTotal = calcularValorTotalPlanoSaude(f);
+                                return `<tr>
+                                    <td>${i+1}</td>
+                                    <td>${escapeHtml(f.nome || '')}</td>
+                                    <td>${formatarCPF(f.cpf)}</td>
+                                    <td>${escapeHtml(f.funcao || '')}</td>
+                                    <td>${escapeHtml(f.unidade || '')}</td>
+                                    <td>R$ ${(f.valor_plano_saude || 0).toFixed(2).replace('.', ',')}</td>
+                                    <td>${totalPessoas}</td>
+                                    <td><strong>R$ ${valorTotal.toFixed(2).replace('.', ',')}</strong></td>
+                                    <td>${(f.dependentes && f.dependentes.length) ? f.dependentes.map(d => `${d.nome} (${d.parentesco || '—'})`).join(', ') : '—'}</td>
+                                </tr>`;
+                            } else if (tabAtual === 'vale_transporte') {
+                                return `<tr>
+                                    <td>${i+1}</td>
+                                    <td>${escapeHtml(f.nome || '')}</td>
+                                    <td>${formatarCPF(f.cpf)}</td>
+                                    <td>${escapeHtml(f.funcao || '')}</td>
+                                    <td>${escapeHtml(f.unidade || '')}</td>
+                                    <td>R$ ${(f.valor_vale_transporte || 0).toFixed(2).replace('.', ',')}</td>
+                                </tr>`;
+                            } else {
+                                return `<tr>
+                                    <td>${i+1}</td>
+                                    <td>${escapeHtml(f.nome || '')}</td>
+                                    <td>${formatarCPF(f.cpf)}</td>
+                                    <td>${escapeHtml(f.funcao || '')}</td>
+                                    <td>${escapeHtml(f.unidade || '')}</td>
+                                </tr>`;
+                            }
+                        }).join('')}
                     </tbody>
                 </table>
-                <div style="text-align: center;"><div class="total">📊 Total: ${filtrados.length}</div></div>
+                <div style="text-align: center;"><div class="total">Total: ${filtrados.length}</div></div>
                 <div class="footer-pdf">
                     <p>${unidadeInfo.nome} - CNPJ: ${unidadeInfo.cnpj}</p>
                     <p>${unidadeInfo.endereco}</p>
@@ -969,8 +1435,8 @@
                     <p>Documento gerado eletronicamente - Creche El Shadday</p>
                 </div>
                 <div class="no-print" style="text-align:center; margin-top:20px; padding:15px; position:fixed; bottom:0; left:0; right:0; background:white; box-shadow:0 -2px 10px rgba(0,0,0,0.1);">
-                    <button onclick="window.print()" style="padding:10px 30px; background:${corTema}; color:white; border:none; border-radius:8px; cursor:pointer; margin-right:10px;">🖨️ Imprimir</button>
-                    <button onclick="window.close()" style="padding:10px 25px; background:#333; color:white; border:none; border-radius:8px; cursor:pointer;">✖ Fechar</button>
+                    <button onclick="window.print()" style="padding:10px 30px; background:${corTema}; color:white; border:none; border-radius:8px; cursor:pointer; margin-right:10px;">Imprimir</button>
+                    <button onclick="window.close()" style="padding:10px 25px; background:#333; color:white; border:none; border-radius:8px; cursor:pointer;">Fechar</button>
                 </div>
                 <script>setTimeout(() => window.print(), 500);<\/script>
             </body>
