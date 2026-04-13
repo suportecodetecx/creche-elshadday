@@ -1274,177 +1274,242 @@
         }
     }
 
-    function gerarPDF() {
-        const filtroNome = document.getElementById('filtroNome').value.toLowerCase();
-        const filtroUnidade = document.getElementById('filtroUnidade').value;
-        const filtroFuncao = document.getElementById('filtroFuncao').value;
-        const filtroMes = document.getElementById('filtroMes').value;
-        const filtroAno = document.getElementById('filtroAno').value;
+   function gerarPDF() {
+    const filtroNome = document.getElementById('filtroNome').value.toLowerCase();
+    const filtroUnidade = document.getElementById('filtroUnidade').value;
+    const filtroFuncao = document.getElementById('filtroFuncao').value;
+    const filtroMes = document.getElementById('filtroMes').value;
+    const filtroAno = document.getElementById('filtroAno').value;
 
-        let filtrados = funcionarios.filter(func => {
-            const matchNome = func.nome ? func.nome.toLowerCase().includes(filtroNome) : false;
-            const matchUnidade = !filtroUnidade || func.unidade === filtroUnidade;
-            const matchFuncao = !filtroFuncao || func.funcao === filtroFuncao;
-            return matchNome && matchUnidade && matchFuncao;
-        });
+    let filtrados = funcionarios.filter(func => {
+        const matchNome = func.nome ? func.nome.toLowerCase().includes(filtroNome) : false;
+        const matchUnidade = !filtroUnidade || func.unidade === filtroUnidade;
+        const matchFuncao = !filtroFuncao || func.funcao === filtroFuncao;
+        return matchNome && matchUnidade && matchFuncao;
+    });
 
-        let titulo = '', corTema = '#E50914';
-        let mostrarValor = false;
-        
-        if (tabAtual === 'odontologico') {
-            filtrados = filtrados.filter(f => f.beneficio_odonto === true);
-            titulo = 'BENEFÍCIO ODONTOLÓGICO';
-            corTema = '#4ECDC4';
-        } else if (tabAtual === 'plano_saude') {
-            filtrados = filtrados.filter(f => f.beneficio_plano_saude === true);
-            titulo = 'PLANO DE SAÚDE';
-            corTema = '#0080FF';
-            mostrarValor = true;
-        } else if (tabAtual === 'vale_transporte') {
-            filtrados = filtrados.filter(f => f.beneficio_vale_transporte === true);
-            titulo = 'VALE TRANSPORTE';
-            corTema = '#FFD166';
-            mostrarValor = true;
-        } else {
-            titulo = 'LISTA DE FUNCIONÁRIOS';
-            corTema = '#E50914';
-        }
-
-        if (filtrados.length === 0) {
-            mostrarNotificacao('Nenhum funcionário para gerar PDF', 'warning');
-            return;
-        }
-
-        const dataAtual = new Date().toLocaleDateString('pt-BR');
-        const horaAtual = new Date().toLocaleTimeString('pt-BR');
-        const mesTexto = filtroMes && mesesNomes[filtroMes] ? ` - ${mesesNomes[filtroMes]}` : '';
-        const anoTexto = filtroAno ? ` - ${filtroAno}` : '';
-        
-        const unidadeInfo = filtroUnidade ? UNIDADES_INFO[filtroUnidade] || UNIDADES_INFO["CEIC El Shadday"] : UNIDADES_INFO["CEIC El Shadday"];
-        
-        let totalGeral = 0;
-        if (mostrarValor) {
-            if (tabAtual === 'plano_saude') {
-                totalGeral = filtrados.reduce((acc, f) => acc + calcularValorTotalPlanoSaude(f), 0);
-            } else {
-                totalGeral = filtrados.reduce((acc, f) => acc + (f.valor_vale_transporte || 0), 0);
-            }
-        }
-
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <title>${titulo} - Creche El Shadday</title>
-                <style>
-                    * { margin: 0; padding: 0; box-sizing: border-box; }
-                    body {
-                        font-family: 'Inter', Arial, Helvetica, sans-serif;
-                        padding: 40px;
-                        background: white;
-                        color: #333;
-                    }
-                    .header {
-                        text-align: center;
-                        margin-bottom: 30px;
-                        padding-bottom: 20px;
-                        border-bottom: 3px solid ${corTema};
-                    }
-                    .header h1 { color: ${corTema}; font-size: 24px; }
-                    .header h2 { color: #555; font-size: 16px; font-weight: 500; margin-top: 5px; }
-                    .data-hora { color: #999; font-size: 11px; margin-top: 10px; }
-                    .info {
-                        background: #f8f9fa;
-                        padding: 15px;
-                        border-radius: 8px;
-                        margin-bottom: 20px;
-                        border-left: 4px solid ${corTema};
-                    }
-                    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-                    th { background: ${corTema}; color: white; padding: 10px; text-align: left; font-size: 12px; }
-                    td { padding: 10px; border-bottom: 1px solid #ddd; font-size: 11px; }
-                    /* CORREÇÃO: Impede que o CPF quebre em várias linhas */
-                    td:has(strong), td:nth-child(2) { white-space: nowrap; }
-                    .footer-pdf { margin-top: 30px; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #ddd; padding-top: 20px; }
-                    .total { background: ${corTema}; color: white; padding: 8px 20px; border-radius: 20px; display: inline-block; margin-top: 20px; font-weight: bold; }
-                    @media print { body { padding: 20px; } .no-print { display: none; } }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <h1>CRECHE EL SHADDAY</h1>
-                    <h2>${titulo}${mesTexto}${anoTexto}</h2>
-                    <div class="data-hora">Gerado em: ${dataAtual} às ${horaAtual}</div>
-                </div>
-                <div class="info">
-                    <strong>Unidade:</strong> ${unidadeInfo.nome}<br>
-                    <strong>CNPJ:</strong> ${unidadeInfo.cnpj}<br>
-                    <strong>Período:</strong> ${mesTexto.substring(3) || 'Todos os meses'} ${anoTexto.substring(3) || ''}<br>
-                    <strong>Total de funcionários:</strong> ${filtrados.length}
-                    ${mostrarValor ? `<br><strong>Valor Total:</strong> R$ ${totalGeral.toFixed(2).replace('.', ',')}` : ''}
-                </div>
-                <table>
-                    <thead>
-                        <tr><th>Nº</th><th>Nome</th><th>CPF</th><th>Função</th><th>Unidade</th>
-                        ${tabAtual === 'plano_saude' ? '<th>Valor Base</th><th>Pessoas</th><th>Valor Total</th><th>Dependentes</th>' : ''}
-                        ${tabAtual === 'vale_transporte' ? '<th>Valor Mensal</th>' : ''}
-                    </thead>
-                    <tbody>
-                        ${filtrados.map((f, i) => {
-                            if (tabAtual === 'plano_saude') {
-                                const totalPessoas = calcularTotalPessoas(f.dependentes);
-                                const valorTotal = calcularValorTotalPlanoSaude(f);
-                                return `<tr>
-                                    <td style="text-align: center;">${i+1}</td>
-                                    <td style="white-space: nowrap;">${escapeHtml(f.nome || '')}</td>
-                                    <td style="white-space: nowrap;">${formatarCPF(f.cpf)}</td>
-                                    <td style="white-space: nowrap;">${escapeHtml(f.funcao || '')}</td>
-                                    <td style="white-space: nowrap;">${escapeHtml(f.unidade || '')}</td>
-                                    <td style="white-space: nowrap;">R$ ${(f.valor_plano_saude || 0).toFixed(2).replace('.', ',')}</td>
-                                    <td style="text-align: center;">${totalPessoas}</td>
-                                    <td style="white-space: nowrap;"><strong>R$ ${valorTotal.toFixed(2).replace('.', ',')}</strong></td>
-                                    <td style="white-space: normal;">${(f.dependentes && f.dependentes.length) ? f.dependentes.map(d => `${d.nome} (${d.parentesco || '—'})`).join(', ') : '—'}</td>
-                                </tr>`;
-                            } else if (tabAtual === 'vale_transporte') {
-                                return `<tr>
-                                    <td style="text-align: center;">${i+1}</td>
-                                    <td style="white-space: nowrap;">${escapeHtml(f.nome || '')}</td>
-                                    <td style="white-space: nowrap;">${formatarCPF(f.cpf)}</td>
-                                    <td style="white-space: nowrap;">${escapeHtml(f.funcao || '')}</td>
-                                    <td style="white-space: nowrap;">${escapeHtml(f.unidade || '')}</td>
-                                    <td style="white-space: nowrap;">R$ ${(f.valor_vale_transporte || 0).toFixed(2).replace('.', ',')}</td>
-                                </tr>`;
-                            } else {
-                                return `<tr>
-                                    <td style="text-align: center;">${i+1}</td>
-                                    <td style="white-space: nowrap;">${escapeHtml(f.nome || '')}</td>
-                                    <td style="white-space: nowrap;">${formatarCPF(f.cpf)}</td>
-                                    <td style="white-space: nowrap;">${escapeHtml(f.funcao || '')}</td>
-                                    <td style="white-space: nowrap;">${escapeHtml(f.unidade || '')}</td>
-                                </tr>`;
-                            }
-                        }).join('')}
-                    </tbody>
-                </table>
-                <div style="text-align: center;"><div class="total">Total: ${filtrados.length}</div></div>
-                <div class="footer-pdf">
-                    <p>${unidadeInfo.nome} - CNPJ: ${unidadeInfo.cnpj}</p>
-                    <p>${unidadeInfo.endereco}</p>
-                    <p>Telefone: ${unidadeInfo.telefone} | E-mail: ${unidadeInfo.email}</p>
-                    <p>Documento gerado eletronicamente - Creche El Shadday</p>
-                </div>
-                <div class="no-print" style="text-align:center; margin-top:20px; padding:15px; position:fixed; bottom:0; left:0; right:0; background:white; box-shadow:0 -2px 10px rgba(0,0,0,0.1);">
-                    <button onclick="window.print()" style="padding:10px 30px; background:${corTema}; color:white; border:none; border-radius:8px; cursor:pointer; margin-right:10px;">Imprimir</button>
-                    <button onclick="window.close()" style="padding:10px 25px; background:#333; color:white; border:none; border-radius:8px; cursor:pointer;">Fechar</button>
-                </div>
-                <script>setTimeout(() => window.print(), 500);<\/script>
-            </body>
-            </html>
-        `);
-        printWindow.document.close();
+    let titulo = '', corTema = '#E50914';
+    let mostrarValor = false;
+    
+    if (tabAtual === 'odontologico') {
+        filtrados = filtrados.filter(f => f.beneficio_odonto === true);
+        titulo = 'BENEFÍCIO ODONTOLÓGICO';
+        corTema = '#4ECDC4';
+    } else if (tabAtual === 'plano_saude') {
+        filtrados = filtrados.filter(f => f.beneficio_plano_saude === true);
+        titulo = 'PLANO DE SAÚDE';
+        corTema = '#0080FF';
+        mostrarValor = true;
+    } else if (tabAtual === 'vale_transporte') {
+        filtrados = filtrados.filter(f => f.beneficio_vale_transporte === true);
+        titulo = 'VALE TRANSPORTE';
+        corTema = '#FFD166';
+        mostrarValor = true;
+    } else {
+        titulo = 'LISTA DE FUNCIONÁRIOS';
+        corTema = '#E50914';
     }
+
+    if (filtrados.length === 0) {
+        mostrarNotificacao('Nenhum funcionário para gerar PDF', 'warning');
+        return;
+    }
+
+    const dataAtual = new Date().toLocaleDateString('pt-BR');
+    const horaAtual = new Date().toLocaleTimeString('pt-BR');
+    const mesTexto = filtroMes && mesesNomes[filtroMes] ? ` - ${mesesNomes[filtroMes]}` : '';
+    const anoTexto = filtroAno ? ` - ${filtroAno}` : '';
+    
+    const unidadeInfo = filtroUnidade ? UNIDADES_INFO[filtroUnidade] || UNIDADES_INFO["CEIC El Shadday"] : UNIDADES_INFO["CEIC El Shadday"];
+    
+    let totalGeral = 0;
+    if (mostrarValor) {
+        if (tabAtual === 'plano_saude') {
+            totalGeral = filtrados.reduce((acc, f) => acc + calcularValorTotalPlanoSaude(f), 0);
+        } else {
+            totalGeral = filtrados.reduce((acc, f) => acc + (f.valor_vale_transporte || 0), 0);
+        }
+    }
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>${titulo} - Creche El Shadday</title>
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body {
+                    font-family: 'Inter', Arial, Helvetica, sans-serif;
+                    padding: 10px;
+                    background: white;
+                    color: #333;
+                    font-size: 9px;
+                }
+                .header {
+                    text-align: center;
+                    margin-bottom: 10px;
+                    padding-bottom: 8px;
+                    border-bottom: 2px solid ${corTema};
+                }
+                .header h1 { 
+                    color: ${corTema}; 
+                    font-size: 16px;
+                    margin-bottom: 3px;
+                }
+                .data-hora { 
+                    color: #999; 
+                    font-size: 8px; 
+                    margin-top: 3px; 
+                }
+                .info {
+                    background: #f8f9fa;
+                    padding: 8px 12px;
+                    border-radius: 6px;
+                    margin-bottom: 10px;
+                    border-left: 3px solid ${corTema};
+                    font-size: 8px;
+                    line-height: 1.4;
+                }
+                .info p {
+                    margin: 2px 0;
+                }
+                table { 
+                    width: 100%; 
+                    border-collapse: collapse; 
+                    margin-top: 8px;
+                    font-size: 8px;
+                }
+                th { 
+                    background: ${corTema}; 
+                    color: white; 
+                    padding: 5px 4px; 
+                    text-align: left; 
+                    font-weight: 600;
+                    font-size: 8px;
+                }
+                td { 
+                    padding: 4px 4px; 
+                    border-bottom: 1px solid #ddd;
+                }
+                .footer-pdf { 
+                    margin-top: 10px; 
+                    text-align: center; 
+                    font-size: 7px; 
+                    color: #999; 
+                    border-top: 1px solid #ddd; 
+                    padding-top: 8px; 
+                }
+                .total { 
+                    background: ${corTema}; 
+                    color: white; 
+                    padding: 4px 15px; 
+                    border-radius: 15px; 
+                    display: inline-block; 
+                    margin-top: 10px; 
+                    font-weight: bold;
+                    font-size: 8px;
+                }
+                /* Mantém o CPF em uma linha */
+                td:nth-child(3) { 
+                    white-space: nowrap;
+                }
+                @media print {
+                    body { 
+                        padding: 0; 
+                        margin: 0;
+                    }
+                    .no-print { 
+                        display: none; 
+                    }
+                    @page {
+                        margin: 0.5cm;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>CRECHE EL SHADDAY</h1>
+                <div class="data-hora">Gerado em: ${dataAtual} às ${horaAtual}</div>
+            </div>
+            <div class="info">
+                <p><strong>Unidade:</strong> ${unidadeInfo.nome}</p>
+                <p><strong>CNPJ:</strong> ${unidadeInfo.cnpj}</p>
+                <p><strong>Período:</strong> ${mesTexto.substring(3) || 'Todos os meses'} ${anoTexto.substring(3) || ''}</p>
+                <p><strong>Relatório:</strong> ${titulo}${mesTexto}${anoTexto}</p>
+                <p><strong>Total de funcionários:</strong> ${filtrados.length} ${mostrarValor ? `| <strong>Valor Total:</strong> R$ ${totalGeral.toFixed(2).replace('.', ',')}` : ''}</p>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:5%">Nº</th>
+                        <th style="width:20%">Nome</th>
+                        <th style="width:10%">CPF</th>
+                        <th style="width:12%">Função</th>
+                        <th style="width:15%">Unidade</th>
+                        ${tabAtual === 'plano_saude' ? '<th style="width:8%">Valor Base</th><th style="width:6%">Pessoas</th><th style="width:10%">Valor Total</th><th style="width:14%">Dependentes</th>' : ''}
+                        ${tabAtual === 'vale_transporte' ? '<th style="width:10%">Valor Mensal</th>' : ''}
+                    </tr>
+                </thead>
+                <tbody>
+                    ${filtrados.map((f, i) => {
+                        if (tabAtual === 'plano_saude') {
+                            const totalPessoas = calcularTotalPessoas(f.dependentes);
+                            const valorTotal = calcularValorTotalPlanoSaude(f);
+                            return `<tr>
+                                <td style="text-align: center;">${i+1}</td>
+                                <td style="white-space: nowrap;">${escapeHtml(f.nome || '')}</td>
+                                <td style="white-space: nowrap;">${formatarCPF(f.cpf)}</td>
+                                <td style="white-space: nowrap;">${escapeHtml(f.funcao || '')}</td>
+                                <td style="white-space: nowrap;">${escapeHtml(f.unidade || '')}</td>
+                                <td style="text-align: center;">R$ ${(f.valor_plano_saude || 0).toFixed(2).replace('.', ',')}</td>
+                                <td style="text-align: center;">${totalPessoas}</td>
+                                <td style="text-align: center;">R$ ${valorTotal.toFixed(2).replace('.', ',')}</td>
+                                <td style="white-space: normal; font-size: 7px;">${(f.dependentes && f.dependentes.length) ? f.dependentes.map(d => `${d.nome} (${d.parentesco || '—'})`).join(', ') : '—'}</td>
+                            </tr>`;
+                        } else if (tabAtual === 'vale_transporte') {
+                            return `<tr>
+                                <td style="text-align: center;">${i+1}</td>
+                                <td style="white-space: nowrap;">${escapeHtml(f.nome || '')}</td>
+                                <td style="white-space: nowrap;">${formatarCPF(f.cpf)}</td>
+                                <td style="white-space: nowrap;">${escapeHtml(f.funcao || '')}</td>
+                                <td style="white-space: nowrap;">${escapeHtml(f.unidade || '')}</td>
+                                <td style="text-align: center;">R$ ${(f.valor_vale_transporte || 0).toFixed(2).replace('.', ',')}</td>
+                            </tr>`;
+                        } else {
+                            return `<tr>
+                                <td style="text-align: center;">${i+1}</td>
+                                <td style="white-space: nowrap;">${escapeHtml(f.nome || '')}</td>
+                                <td style="white-space: nowrap;">${formatarCPF(f.cpf)}</td>
+                                <td style="white-space: nowrap;">${escapeHtml(f.funcao || '')}</td>
+                                <td style="white-space: nowrap;">${escapeHtml(f.unidade || '')}</td>
+                            </tr>`;
+                        }
+                    }).join('')}
+                </tbody>
+            </table>
+            <div style="text-align: center;"><div class="total">Total: ${filtrados.length} funcionário(s)</div></div>
+            <div class="footer-pdf">
+                <p>${unidadeInfo.nome} - CNPJ: ${unidadeInfo.cnpj}</p>
+                <p>${unidadeInfo.endereco} | Telefone: ${unidadeInfo.telefone}</p>
+                <p>Documento gerado eletronicamente - Creche El Shadday</p>
+            </div>
+            <div class="no-print" style="text-align:center; margin-top:10px; padding:8px; position:fixed; bottom:0; left:0; right:0; background:white; box-shadow:0 -1px 5px rgba(0,0,0,0.1);">
+                <button onclick="window.print()" style="padding:6px 25px; background:${corTema}; color:white; border:none; border-radius:5px; cursor:pointer; margin-right:8px; font-size:11px;">Imprimir</button>
+                <button onclick="window.close()" style="padding:6px 20px; background:#333; color:white; border:none; border-radius:5px; cursor:pointer; font-size:11px;">Fechar</button>
+            </div>
+            <script>
+                setTimeout(function() {
+                    window.print();
+                }, 500);
+            <\/script>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
 
     function escapeHtml(text) {
         if (!text) return '';
