@@ -23,6 +23,10 @@ iniciar_contador.py
 pai.py
 resetar.py
 
+# Scripts de migração e dados sensíveis
+padronizar_nomes_mongo.py
+alunos.xlsx
+
 # Config
 config.py
 
