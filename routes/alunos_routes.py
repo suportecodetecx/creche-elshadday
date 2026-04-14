@@ -8,6 +8,7 @@ import traceback
 import sys
 import base64
 import json
+import re
 from io import BytesIO
 from bson import ObjectId
 
@@ -131,6 +132,71 @@ def _gerar_novo_numero_inscricao(db, ano):
 
 
 # ============================================
+# ENDPOINT PARA VERIFICAR DUPLICIDADE
+# ============================================
+
+@alunos_bp.route('/api/alunos/verificar-duplicidade', methods=['GET'])
+def verificar_duplicidade():
+    """Verifica se já existe aluno com o mesmo nome ou RA"""
+    try:
+        nome = request.args.get('nome', '').strip()
+        ra = request.args.get('ra', '').strip()
+        num_inscricao_ignore = request.args.get('ignore_inscricao', '')
+        
+        print(f"\n🔍 Verificando duplicidade: nome='{nome}', ra='{ra}'")
+        
+        from database.mongo import db
+        
+        resultado = {
+            'existe': False,
+            'mensagem': '',
+            'duplicado_por': None
+        }
+        
+        # Verificar por RA (mais preciso)
+        if ra:
+            query = {'dados_pessoais.ra': ra}
+            if num_inscricao_ignore:
+                query['num_inscricao'] = {'$ne': num_inscricao_ignore}
+            
+            aluno_ra = db.alunos.find_one(query)
+            if aluno_ra:
+                resultado['existe'] = True
+                resultado['mensagem'] = f'Já existe um aluno cadastrado com o RA: {ra} (Aluno: {aluno_ra["dados_pessoais"]["nome"]})'
+                resultado['duplicado_por'] = 'ra'
+                print(f"   ⚠️ Duplicidade encontrada por RA")
+                return jsonify(resultado)
+        
+        # Verificar por nome (case-insensitive)
+        if nome:
+            query = {
+                'dados_pessoais.nome': {'$regex': f'^{re.escape(nome)}$', '$options': 'i'}
+            }
+            if num_inscricao_ignore:
+                query['num_inscricao'] = {'$ne': num_inscricao_ignore}
+            
+            aluno_nome = db.alunos.find_one(query)
+            if aluno_nome:
+                resultado['existe'] = True
+                resultado['mensagem'] = f'Já existe um aluno cadastrado com o nome: {nome} (RA: {aluno_nome["dados_pessoais"].get("ra", "N/A")})'
+                resultado['duplicado_por'] = 'nome'
+                print(f"   ⚠️ Duplicidade encontrada por nome")
+                return jsonify(resultado)
+        
+        print(f"   ✅ Nenhuma duplicidade encontrada")
+        return jsonify(resultado)
+        
+    except Exception as e:
+        print(f"❌ Erro ao verificar duplicidade: {e}")
+        traceback.print_exc()
+        return jsonify({
+            'existe': False, 
+            'mensagem': 'Erro ao verificar duplicidade',
+            'erro': str(e)
+        }), 500
+
+
+# ============================================
 # ENDPOINTS PARA GRIDFS (UPLOAD DIRETO)
 # ============================================
 
@@ -210,7 +276,7 @@ def visualizar_gridfs(file_id):
 
 
 # ============================================
-# ENDPOINT DE CADASTRO VIA JSON - CORRIGIDO
+# ENDPOINT DE CADASTRO VIA JSON - COM VERIFICAÇÃO DE DUPLICIDADE
 # ============================================
 
 @alunos_bp.route('/api/alunos/cadastrar-json', methods=['POST'])
@@ -231,6 +297,23 @@ def cadastrar_aluno_json():
         print(f"📦 Dados recebidos:")
         print(f"   📝 Campos de texto: {len(dados)}")
         print(f"   📎 IDs de arquivos: {len(arquivos_ids)}")
+        
+        # ===== VALIDAÇÃO DE DUPLICIDADE =====
+        nome = dados.get('nome', '').strip()
+        ra = dados.get('ra', '').strip()
+        
+        from database.mongo import db
+        from database.mongo import verificar_duplicidade_aluno
+        
+        # Usar a função de verificação do mongo.py
+        verificacao = verificar_duplicidade_aluno(nome=nome, ra=ra)
+        
+        if verificacao['existe']:
+            print(f"   ❌ {verificacao['mensagem']}")
+            return jsonify({
+                'sucesso': False,
+                'erro': verificacao['mensagem']
+            }), 400
         
         # ===== VERIFICA SE OS DADOS VIERAM COMO ARRAY =====
         print(f"\n🔍 VERIFICANDO ARRAYS:")
@@ -423,7 +506,7 @@ def cadastrar_aluno_json():
 
 
 # ============================================
-# ENDPOINT DE ATUALIZAÇÃO DE ALUNO
+# ENDPOINT DE ATUALIZAÇÃO DE ALUNO COM VERIFICAÇÃO
 # ============================================
 
 @alunos_bp.route('/api/alunos/atualizar', methods=['POST', 'PUT'])
@@ -455,6 +538,7 @@ def atualizar_aluno():
             return jsonify({'sucesso': False, 'erro': 'Número de inscrição não fornecido'}), 400
         
         from database.mongo import db
+        from database.mongo import verificar_duplicidade_aluno
         from datetime import datetime
         
         aluno_existente = db.alunos.find_one({'num_inscricao': num_inscricao_original})
@@ -462,6 +546,19 @@ def atualizar_aluno():
         if not aluno_existente:
             print(f"❌ Aluno não encontrado: {num_inscricao_original}")
             return jsonify({'sucesso': False, 'erro': 'Aluno não encontrado'}), 404
+        
+        # ===== VALIDAÇÃO DE DUPLICIDADE NA ATUALIZAÇÃO =====
+        nome = dados.get('nome', '').strip()
+        ra = dados.get('ra', '').strip()
+        
+        verificacao = verificar_duplicidade_aluno(nome=nome, ra=ra, num_inscricao_ignore=num_inscricao_original)
+        
+        if verificacao['existe']:
+            print(f"   ❌ {verificacao['mensagem']}")
+            return jsonify({
+                'sucesso': False,
+                'erro': verificacao['mensagem']
+            }), 400
         
         print(f"📌 Atualizando aluno: {aluno_existente['dados_pessoais']['nome']}")
         
@@ -742,7 +839,7 @@ def buscar_alunos():
         if unidade:
             filtro['turma.unidade'] = unidade
         
-        alunos = list(db.alunos.find(filtro).sort('data_cadastro', -1))
+        alunos = list(db.alunos.find(filtro).sort('dados_pessoais.nome', 1))  # Ordenado por nome
         
         for aluno in alunos:
             if '_id' in aluno:
@@ -961,5 +1058,5 @@ def estatisticas():
     except Exception as e:
         return jsonify({
             'sucesso': False,
-            'erro': str(e)
+            'erro': str(e) 
         }), 500

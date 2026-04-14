@@ -58,7 +58,7 @@ class MongoDB:
         return cls._instance
     
     def _criar_indices(self):
-        """Cria índices para otimizar buscas"""
+        """Cria índices para otimizar buscas e evitar duplicidade"""
         try:
             # Índice para funcionários (RGM único)
             if 'funcionarios' in self.db.list_collection_names():
@@ -69,6 +69,15 @@ class MongoDB:
             if 'alunos' in self.db.list_collection_names():
                 self.db.alunos.create_index('num_inscricao', unique=True)
                 print("✅ Índice 'num_inscricao' criado na coleção 'alunos'")
+                
+                # ===== NOVOS ÍNDICES PARA EVITAR DUPLICIDADE =====
+                # Índice para RA (único - opcional, mas recomendado)
+                self.db.alunos.create_index('dados_pessoais.ra', unique=True, sparse=True)
+                print("✅ Índice 'dados_pessoais.ra' criado (único)")
+                
+                # Índice para busca de nome case-insensitive
+                self.db.alunos.create_index([('dados_pessoais.nome', 'text')])
+                print("✅ Índice de texto para 'dados_pessoais.nome' criado")
             
             # Índice para usuários (usuário único)
             if 'usuarios' in self.db.list_collection_names():
@@ -298,6 +307,59 @@ def excluir_arquivo_gridfs(file_id):
         return False
 
 
+# ==================== FUNÇÕES PARA VERIFICAÇÃO DE DUPLICIDADE ====================
+
+def verificar_duplicidade_aluno(nome=None, ra=None, num_inscricao_ignore=None):
+    """
+    Verifica se já existe aluno com o mesmo nome ou RA
+    
+    Args:
+        nome: Nome do aluno (opcional)
+        ra: RA do aluno (opcional)
+        num_inscricao_ignore: Número de inscrição para ignorar (útil na edição)
+    
+    Returns:
+        dict: {'existe': bool, 'mensagem': str, 'duplicado_por': str}
+    """
+    try:
+        # Verificar por RA (mais preciso)
+        if ra and ra.strip():
+            query = {'dados_pessoais.ra': ra.strip()}
+            if num_inscricao_ignore:
+                query['num_inscricao'] = {'$ne': num_inscricao_ignore}
+            
+            aluno_ra = db.alunos.find_one(query)
+            if aluno_ra:
+                return {
+                    'existe': True,
+                    'mensagem': f'Já existe um aluno cadastrado com o RA: {ra} (Aluno: {aluno_ra["dados_pessoais"]["nome"]})',
+                    'duplicado_por': 'ra'
+                }
+        
+        # Verificar por nome (case-insensitive)
+        if nome and nome.strip():
+            import re
+            query = {
+                'dados_pessoais.nome': {'$regex': f'^{re.escape(nome.strip())}$', '$options': 'i'}
+            }
+            if num_inscricao_ignore:
+                query['num_inscricao'] = {'$ne': num_inscricao_ignore}
+            
+            aluno_nome = db.alunos.find_one(query)
+            if aluno_nome:
+                return {
+                    'existe': True,
+                    'mensagem': f'Já existe um aluno cadastrado com o nome: {nome} (RA: {aluno_nome["dados_pessoais"].get("ra", "N/A")})',
+                    'duplicado_por': 'nome'
+                }
+        
+        return {'existe': False, 'mensagem': '', 'duplicado_por': None}
+        
+    except Exception as e:
+        print(f"❌ Erro ao verificar duplicidade: {e}")
+        return {'existe': False, 'mensagem': 'Erro ao verificar', 'duplicado_por': None, 'erro': str(e)}
+
+
 # ==================== FUNÇÕES PARA USUÁRIOS ====================
 
 def get_usuario_by_username(usuario):
@@ -446,9 +508,17 @@ def listar_alunos(filtro=None):
 
 
 def cadastrar_aluno(dados):
-    """Cadastra um novo aluno"""
+    """Cadastra um novo aluno com verificação de duplicidade"""
     try:
         from datetime import datetime
+        
+        nome = dados.get('dados_pessoais', {}).get('nome', '').strip()
+        ra = dados.get('dados_pessoais', {}).get('ra', '').strip()
+        
+        # Verificar duplicidade antes de cadastrar
+        verificacao = verificar_duplicidade_aluno(nome=nome, ra=ra)
+        if verificacao['existe']:
+            return {'sucesso': False, 'erro': verificacao['mensagem']}
         
         # Gerar número de inscrição se não tiver
         if not dados.get('num_inscricao'):
@@ -470,9 +540,18 @@ def cadastrar_aluno(dados):
 
 
 def atualizar_aluno(num_inscricao, dados):
-    """Atualiza um aluno existente"""
+    """Atualiza um aluno existente com verificação de duplicidade"""
     try:
         from datetime import datetime
+        
+        nome = dados.get('dados_pessoais', {}).get('nome', '').strip()
+        ra = dados.get('dados_pessoais', {}).get('ra', '').strip()
+        
+        # Verificar duplicidade ignorando o próprio aluno
+        verificacao = verificar_duplicidade_aluno(nome=nome, ra=ra, num_inscricao_ignore=num_inscricao)
+        if verificacao['existe']:
+            return {'sucesso': False, 'erro': verificacao['mensagem']}
+        
         dados['data_atualizacao'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         
         resultado = db.alunos.update_one(
