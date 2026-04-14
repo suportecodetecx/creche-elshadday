@@ -9,9 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/processo-de-trabalho.png') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/processo-de-trabalho.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <!-- CSS do Modal (mantido) -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/modal.css') }}">
     
     <style>
@@ -164,7 +163,6 @@
             border-color: var(--netflix-red);
         }
 
-        /* Botão PDF */
         .btn-pdf {
             background: var(--netflix-red);
             color: white;
@@ -781,8 +779,8 @@
                 <div class="header-buttons">
                     <a href="/" class="btn-nav btn-home">← Início</a>
                     <a href="/alunos/cadastro" class="btn-nav">+ Novo Cadastro</a>
-                    <button class="btn-pdf" onclick="gerarPDFListaAtual()"> Gerar PDF da Lista</button>
-                    <button class="btn-pdf btn-pdf-transporte" onclick="gerarPDFAlunosTransporte()"> PDF Alunos com Transporte</button>
+                    <button class="btn-pdf" onclick="gerarPDFListaAtual()">📄 Gerar PDF da Lista</button>
+                    <button class="btn-pdf btn-pdf-transporte" onclick="gerarPDFAlunosTransporte()">🚍 PDF Alunos com Transporte</button>
                 </div>
             </div>
         </header>
@@ -812,9 +810,9 @@
                         <option value="CEIM Prof. Egberto Malta Moreira">CEIM Prof. Egberto Malta Moreira</option>
                     </select>
                     <select class="filter-select" id="filterTransporte" onchange="buscarAlunos()">
-                        <option value=""> Todos os alunos</option>
-                        <option value="sim"> Alunos com Transporte</option>
-                        <option value="nao"> Alunos sem Transporte</option>
+                        <option value="">📋 Todos os alunos</option>
+                        <option value="sim">🚍 Alunos com Transporte</option>
+                        <option value="nao">🚫 Alunos sem Transporte</option>
                     </select>
                 </div>
             </div>
@@ -861,6 +859,72 @@
         let alunoAtual = null;
         let alunosExibidosAtualmente = [];
 
+        // ===== FUNÇÃO PARA CAPITALIZAR TEXTO (Primeira letra maiúscula, resto minúscula) =====
+        function capitalizarTexto(texto) {
+            if (!texto || texto === '---') return texto || '---';
+            if (typeof texto !== 'string') return texto;
+            
+            // Palavras que devem ficar em maiúsculo específico
+            const palavrasEspeciais = ['RG', 'CPF', 'CIN', 'CNPJ', 'TEA', 'TDAH', 'HIV', 'AIDS', 'SP', 'RJ', 'MG'];
+            
+            // Divide o texto em palavras
+            let palavras = texto.toLowerCase().split(' ');
+            
+            palavras = palavras.map(palavra => {
+                // Verifica se é uma palavra especial
+                if (palavrasEspeciais.includes(palavra.toUpperCase())) {
+                    return palavra.toUpperCase();
+                }
+                // Verifica se tem hífen
+                if (palavra.includes('-')) {
+                    return palavra.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join('-');
+                }
+                // Capitaliza primeira letra
+                return palavra.charAt(0).toUpperCase() + palavra.slice(1);
+            });
+            
+            return palavras.join(' ');
+        }
+
+        // ===== FUNÇÃO PARA CAPITALIZAR NOME COMPLETO =====
+        function capitalizarNome(nome) {
+            if (!nome) return '';
+            
+            const palavrasMinusculas = ['da', 'de', 'do', 'das', 'dos', 'e', 'a', 'o', 'as', 'os'];
+            
+            let palavras = nome.toLowerCase().split(' ');
+            
+            palavras = palavras.map((palavra, index) => {
+                // Primeira palavra sempre capitalizada
+                if (index === 0) {
+                    return palavra.charAt(0).toUpperCase() + palavra.slice(1);
+                }
+                // Palavras pequenas que ficam minúsculas
+                if (palavrasMinusculas.includes(palavra)) {
+                    return palavra;
+                }
+                // Restante capitalizado
+                return palavra.charAt(0).toUpperCase() + palavra.slice(1);
+            });
+            
+            return palavras.join(' ');
+        }
+
+        // ===== FUNÇÃO PARA ESCAPE HTML =====
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ===== FUNÇÃO PARA CAPITALIZAR E ESCAPAR =====
+        function formatarTexto(texto, isNome = false) {
+            if (!texto || texto === '---') return texto || '---';
+            const capitalizado = isNome ? capitalizarNome(texto) : capitalizarTexto(texto);
+            return escapeHtml(capitalizado);
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('emptyState').style.display = 'block';
             document.getElementById('resultsArea').style.display = 'none';
@@ -882,23 +946,34 @@
         }
 
         function carregarListaAlunos() {
-            fetch('/api/alunos/buscar')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.sucesso) {
-                        alunosData = data.alunos || [];
-                        const select = document.getElementById('alunoSelect');
-                        let options = '<option value="">Selecione um aluno...</option>';
-                        alunosData.forEach(aluno => {
-                            const nome = aluno.dados_pessoais?.nome || 'Sem nome';
-                            const numInscricao = aluno.num_inscricao || '000-0000';
-                            options += `<option value="${numInscricao}">${nome} - ${numInscricao}</option>`;
-                        });
-                        select.innerHTML = options;
-                    }
-                })
-                .catch(error => console.error('Erro ao carregar lista:', error));
-        }
+    fetch('/api/alunos/buscar')
+        .then(response => response.json())
+        .then(data => {
+            if (data.sucesso) {
+                alunosData = data.alunos || [];
+                
+                // ORDENAR ALUNOS EM ORDEM ALFABÉTICA PELO NOME
+                const alunosOrdenados = [...alunosData];
+                alunosOrdenados.sort((a, b) => {
+                    const nomeA = (a.dados_pessoais?.nome || '').toLowerCase();
+                    const nomeB = (b.dados_pessoais?.nome || '').toLowerCase();
+                    return nomeA.localeCompare(nomeB, 'pt-BR');
+                });
+                
+                const select = document.getElementById('alunoSelect');
+                let options = '<option value="">Selecione um aluno...</option>';
+                
+                alunosOrdenados.forEach(aluno => {
+                    const nome = capitalizarNome(aluno.dados_pessoais?.nome || 'Sem nome');
+                    const numInscricao = aluno.num_inscricao || '000-0000';
+                    options += `<option value="${numInscricao}">${nome} - ${numInscricao}</option>`;
+                });
+                
+                select.innerHTML = options;
+            }
+        })
+        .catch(error => console.error('Erro ao carregar lista:', error));
+}
 
         function buscarAlunoPorSelect(numInscricao) {
             if (!numInscricao) {
@@ -949,7 +1024,7 @@
         function formatarParentesco(parentesco) {
             if (!parentesco) return '---';
             const mapa = { 'pai': 'Pai', 'mae': 'Mãe', 'avo': 'Avô/Avó', 'tio': 'Tio/Tia', 'outro': 'Outro' };
-            return mapa[parentesco] || parentesco.charAt(0).toUpperCase() + parentesco.slice(1);
+            return mapa[parentesco] || capitalizarTexto(parentesco);
         }
 
         function calcularIdade(dataNascimento) {
@@ -1013,12 +1088,18 @@
                     if (data.sucesso) {
                         let alunos = data.alunos || [];
                         
-                        // Aplicar filtro de transporte
                         if (filtroTransporte === 'sim') {
                             alunos = alunos.filter(aluno => verificarTransporte(aluno));
                         } else if (filtroTransporte === 'nao') {
                             alunos = alunos.filter(aluno => !verificarTransporte(aluno));
                         }
+                        
+                        // Ordenar em ordem alfabética
+                        alunos.sort((a, b) => {
+                            const nomeA = (a.dados_pessoais?.nome || '').toLowerCase();
+                            const nomeB = (b.dados_pessoais?.nome || '').toLowerCase();
+                            return nomeA.localeCompare(nomeB, 'pt-BR');
+                        });
                         
                         if (alunos.length === 0) {
                             let mensagem = 'Nenhum aluno encontrado';
@@ -1081,32 +1162,30 @@
         <div class="card-unificado-header">
             <img src="${fotoAluno}" class="foto-aluno-principal" alt="Foto do aluno" onerror="this.src='${AVATAR_SVG}'">
             <div class="info-aluno-resumo">
-                <h2>${escapeHtml(dadosPessoais.nome || 'Sem nome')}</h2>
-                <div class="ra-turma">📚 RA: ${escapeHtml(dadosPessoais.ra || '---')} | Turma: ${escapeHtml(turma.turma || '---')} | Unidade: ${escapeHtml(turma.unidade || '---')}</div>
+                <h2>${formatarTexto(dadosPessoais.nome || 'Sem nome', true)}</h2>
+                <div class="ra-turma">📚 RA: ${formatarTexto(dadosPessoais.ra || '---')} | Turma: ${formatarTexto(turma.turma || '---')} | Unidade: ${formatarTexto(turma.unidade || '---')}</div>
                 <div class="ra-turma">🎂 ${calcularIdade(dadosPessoais.data_nasc)} (${formatarData(dadosPessoais.data_nasc)})</div>
-                <div class="endereco">📍 ${escapeHtml(endereco.logradouro || '---')}, ${escapeHtml(endereco.numero || '')} - ${escapeHtml(endereco.bairro || '')}, ${escapeHtml(endereco.cidade || '---')}/${escapeHtml(endereco.uf || '---')}</div>
+                <div class="endereco">📍 ${formatarTexto(endereco.logradouro || '---')}, ${formatarTexto(endereco.numero || '')} - ${formatarTexto(endereco.bairro || '')}, ${formatarTexto(endereco.cidade || '---')}/${formatarTexto(endereco.uf || '---')}</div>
             </div>
             <div class="status-badge-unificado ${temTransporte ? 'badge-transporte' : ''}">
-                ${temTransporte ? ' Com Transporte' : ' Sem Transporte'}
+                ${temTransporte ? '🚍 Com Transporte' : '🚫 Sem Transporte'}
             </div>
         </div>
         
         <div class="card-unificado-body">
 `;
                 
-                // Seção de Saúde (se houver alertas)
                 if (temAlertaSaude) {
                     html += `
             <div class="saude-alerta-unificado">
-                <div class="saude-titulo">⚠️ ATENÇÃO SAÚDE</div>`;
-                    if (temAlergias) html += `<div class="saude-item"><span class="label">🔴 Alergias:</span><span class="valor">${escapeHtml(saude.alergias)}</span></div>`;
-                    if (temMedicamentos) html += `<div class="saude-item"><span class="label">💊 Medicamentos:</span><span class="valor">${escapeHtml(saude.medicamentos)}</span></div>`;
-                    if (temRestricoes) html += `<div class="saude-item"><span class="label">🍽️ Restrições:</span><span class="valor">${escapeHtml(saude.restricoes)}</span></div>`;
-                    if (saude.tipo_sanguineo) html += `<div class="saude-item"><span class="label">🩸 Tipo Sanguíneo:</span><span class="valor">${escapeHtml(saude.tipo_sanguineo)}</span></div>`;
+                <div class="saude-titulo">⚠️ Atenção Saúde</div>`;
+                    if (temAlergias) html += `<div class="saude-item"><span class="label">🔴 Alergias:</span><span class="valor">${formatarTexto(saude.alergias)}</span></div>`;
+                    if (temMedicamentos) html += `<div class="saude-item"><span class="label">💊 Medicamentos:</span><span class="valor">${formatarTexto(saude.medicamentos)}</span></div>`;
+                    if (temRestricoes) html += `<div class="saude-item"><span class="label">🍽️ Restrições:</span><span class="valor">${formatarTexto(saude.restricoes)}</span></div>`;
+                    if (saude.tipo_sanguineo) html += `<div class="saude-item"><span class="label">🩸 Tipo Sanguíneo:</span><span class="valor">${formatarTexto(saude.tipo_sanguineo)}</span></div>`;
                     html += `</div>`;
                 }
                 
-                // Seção de Responsáveis
                 if (responsaveis.length > 0) {
                     html += `<div class="secao-contatos"><div class="secao-titulo">👪 Responsáveis</div><div class="contatos-grid">`;
                     responsaveis.forEach((resp, idx) => {
@@ -1115,11 +1194,11 @@
                             <div class="contato-card">
                                 <img src="${fotoResp}" class="foto-contato" onerror="this.src='${AVATAR_SVG}'">
                                 <div class="contato-info">
-                                    <h4>${escapeHtml(resp.nome || '---')}</h4>
+                                    <h4>${formatarTexto(resp.nome || '---', true)}</h4>
                                     <div class="contato-parentesco">${formatarParentesco(resp.parentesco)}</div>
-                                    <div class="contato-telefone"><i>📞</i> ${escapeHtml(resp.telefone || '---')}</div>
-                                    ${resp.telefone_contato ? `<div class="contato-telefone"><i>📱</i> ${escapeHtml(resp.telefone_contato)}</div>` : ''}
-                                    ${resp.email ? `<div class="contato-telefone"><i>✉️</i> ${escapeHtml(resp.email)}</div>` : ''}
+                                    <div class="contato-telefone"><i>📞</i> ${formatarTexto(resp.telefone || '---')}</div>
+                                    ${resp.telefone_contato ? `<div class="contato-telefone"><i>📱</i> ${formatarTexto(resp.telefone_contato)}</div>` : ''}
+                                    ${resp.email ? `<div class="contato-telefone"><i>✉️</i> ${formatarTexto(resp.email)}</div>` : ''}
                                 </div>
                             </div>
                         `;
@@ -1127,7 +1206,6 @@
                     html += `</div></div>`;
                 }
                 
-                // Seção de Terceiros
                 if (terceiros.length > 0) {
                     html += `<div class="secao-contatos"><div class="secao-titulo">👥 Terceiros Autorizados</div><div class="contatos-grid">`;
                     terceiros.forEach((terc, idx) => {
@@ -1136,8 +1214,8 @@
                             <div class="contato-card">
                                 <img src="${fotoTerc}" class="foto-contato" onerror="this.src='${AVATAR_SVG}'">
                                 <div class="contato-info">
-                                    <h4>${escapeHtml(terc.nome || 'Terceiro ' + (idx + 1))}</h4>
-                                    <div class="contato-telefone"><i>📞</i> ${escapeHtml(terc.telefone || '---')}</div>
+                                    <h4>${formatarTexto(terc.nome || 'Terceiro ' + (idx + 1), true)}</h4>
+                                    <div class="contato-telefone"><i>📞</i> ${formatarTexto(terc.telefone || '---')}</div>
                                 </div>
                             </div>
                         `;
@@ -1145,22 +1223,20 @@
                     html += `</div></div>`;
                 }
                 
-                // Seção de Transporte
                 if (temTransporte) {
                     const fotoTransp = getFotoUrl(aluno, 'transporte') || AVATAR_SVG;
-                    html += `<div class="secao-contatos"><div class="secao-titulo"> Transporte Escolar</div><div class="contatos-grid">
+                    html += `<div class="secao-contatos"><div class="secao-titulo">🚍 Transporte Escolar</div><div class="contatos-grid">
                         <div class="contato-card">
                             <img src="${fotoTransp}" class="foto-contato" onerror="this.src='${AVATAR_SVG}'">
                             <div class="contato-info">
-                                <h4>${escapeHtml(transporte.nome)}</h4>
-                                <div class="contato-telefone"><i>📞</i> ${escapeHtml(transporte.telefone || '---')}</div>
-                                ${transporte.placa ? `<div class="contato-telefone"><i>🚗</i> Placa: ${escapeHtml(transporte.placa)}</div>` : ''}
+                                <h4>${formatarTexto(transporte.nome, true)}</h4>
+                                <div class="contato-telefone"><i>📞</i> ${formatarTexto(transporte.telefone || '---')}</div>
+                                ${transporte.placa ? `<div class="contato-telefone"><i>🚗</i> Placa: ${formatarTexto(transporte.placa)}</div>` : ''}
                             </div>
                         </div>
                     </div></div>`;
                 }
                 
-                // Seção de Documentos
                 html += `
             <div class="documentos-area-unificado">
                 <div class="documentos-header-unificado">
@@ -1201,7 +1277,7 @@
             const aluno = alunosData.find(a => a.num_inscricao === numInscricao);
             if (aluno) {
                 alunoAtual = aluno;
-                document.getElementById('confirmarExclusaoTexto').innerHTML = `Deseja realmente excluir o aluno <strong>${aluno.dados_pessoais.nome}</strong>?<br><br>Esta ação não poderá ser desfeita.`;
+                document.getElementById('confirmarExclusaoTexto').innerHTML = `Deseja realmente excluir o aluno <strong>${formatarTexto(aluno.dados_pessoais.nome, true)}</strong>?<br><br>Esta ação não poderá ser desfeita.`;
                 document.getElementById('confirmarExclusaoModal').classList.add('active');
                 document.body.style.overflow = 'hidden';
             }
@@ -1244,7 +1320,14 @@
 
         // ========== FUNÇÃO PARA GERAR PDF APENAS ALUNOS COM TRANSPORTE ==========
         function gerarPDFAlunosTransporte() {
-            const alunosComTransporte = alunosExibidosAtualmente.filter(aluno => verificarTransporte(aluno));
+            let alunosComTransporte = alunosExibidosAtualmente.filter(aluno => verificarTransporte(aluno));
+            
+            // Ordenar em ordem alfabética
+            alunosComTransporte.sort((a, b) => {
+                const nomeA = (a.dados_pessoais?.nome || '').toLowerCase();
+                const nomeB = (b.dados_pessoais?.nome || '').toLowerCase();
+                return nomeA.localeCompare(nomeB, 'pt-BR');
+            });
             
             if (alunosComTransporte.length === 0) {
                 mostrarNotificacao('❌ Nenhum aluno com transporte escolar encontrado!', 'warning');
@@ -1258,11 +1341,11 @@
             let subtitulo = '';
             
             if (unidadeSelecionada && turmaSelecionada) {
-                subtitulo = `${unidadeSelecionada} - Turma: ${turmaSelecionada}`;
+                subtitulo = `${capitalizarTexto(unidadeSelecionada)} - Turma: ${capitalizarTexto(turmaSelecionada)}`;
             } else if (unidadeSelecionada) {
-                subtitulo = unidadeSelecionada;
+                subtitulo = capitalizarTexto(unidadeSelecionada);
             } else if (turmaSelecionada) {
-                subtitulo = `Turma: ${turmaSelecionada}`;
+                subtitulo = `Turma: ${capitalizarTexto(turmaSelecionada)}`;
             } else {
                 subtitulo = 'Relação completa de alunos que utilizam transporte escolar';
             }
@@ -1298,16 +1381,15 @@
                 const info = UNIDADES_CONFIG[unidadeSelecionada];
                 unidadeInfoHTML = `
                     <div class="unidade-info">
-                        <h3>📌 INFORMAÇÕES DA UNIDADE</h3>
+                        <h3>📌 Informações da Unidade</h3>
                         <div class="info-grid">
-                            <div class="info-item"><strong>Unidade:</strong> ${info.nome}</div>
-                            <div class="info-item"><strong>INEP:</strong> ${info.INEP}</div>
-                            <div class="info-item"><strong>Endereço:</strong> ${info.endereco}</div>
-                            <div class="info-item"><strong>Bairro:</strong> ${info.bairro}</div>
-                            <div class="info-item"><strong>Cidade/UF:</strong> ${info.cidade}/${info.uf}</div>
-                            <div class="info-item"><strong>CEP:</strong> ${info.cep}</div>
+                            <div class="info-item"><strong>Unidade:</strong> ${capitalizarTexto(info.nome)}</div>
+                            <div class="info-item"><strong>Endereço:</strong> ${capitalizarTexto(info.endereco)}</div>
+                            <div class="info-item"><strong>Bairro:</strong> ${capitalizarTexto(info.bairro)}</div>
+                            <div class="info-item"><strong>Cidade/Uf:</strong> ${capitalizarTexto(info.cidade)}/${info.uf}</div>
+                            <div class="info-item"><strong>Cep:</strong> ${info.cep}</div>
                             <div class="info-item"><strong>Telefone:</strong> ${info.telefone}</div>
-                            <div class="info-item"><strong>CNPJ:</strong> ${info.cnpj}</div>
+                            <div class="info-item"><strong>Cnpj:</strong> ${info.cnpj}</div>
                         </div>
                     </div>
                 `;
@@ -1322,262 +1404,80 @@
                     <meta charset="UTF-8">
                     <title>${tituloRelatorio} - Creche El Shadday</title>
                     <style>
-                        * {
-                            margin: 0;
-                            padding: 0;
-                            box-sizing: border-box;
-                        }
-                        
-                        body {
-                            font-family: 'Inter', Arial, Helvetica, sans-serif;
-                            margin: 0;
-                            padding: 30px;
-                            background: white;
-                            color: #333;
-                        }
-                        
-                        .pdf-container {
-                            max-width: 1200px;
-                            margin: 0 auto;
-                            background: white;
-                        }
-                        
-                        .header {
-                            text-align: center;
-                            margin-bottom: 30px;
-                            padding-bottom: 20px;
-                            border-bottom: 3px solid #E50914;
-                        }
-                        
-                        .header h1 {
-                            color: #E50914;
-                            margin: 0 0 5px 0;
-                            font-size: 28px;
-                            font-weight: 700;
-                        }
-                        
-                        .header h2 {
-                            color: #333;
-                            margin: 0 0 10px 0;
-                            font-size: 18px;
-                            font-weight: 500;
-                        }
-                        
-                        .header .subtitulo {
-                            color: #666;
-                            font-size: 14px;
-                            margin-top: 5px;
-                        }
-                        
-                        .header .data-hora {
-                            color: #999;
-                            font-size: 11px;
-                            margin-top: 5px;
-                        }
-                        
-                        .badge-transporte {
-                            background: #FF9800;
-                            color: white;
-                            padding: 4px 12px;
-                            border-radius: 20px;
-                            display: inline-block;
-                            font-size: 11px;
-                            font-weight: bold;
-                        }
-                        
-                        .unidade-info {
-                            background: #f8f9fa;
-                            padding: 20px;
-                            border-radius: 8px;
-                            margin-bottom: 25px;
-                            border-left: 4px solid #E50914;
-                        }
-                        
-                        .unidade-info h3 {
-                            color: #E50914;
-                            margin: 0 0 15px 0;
-                            font-size: 16px;
-                            font-weight: 600;
-                        }
-                        
-                        .info-grid {
-                            display: grid;
-                            grid-template-columns: repeat(2, 1fr);
-                            gap: 10px;
-                        }
-                        
-                        .info-item {
-                            font-size: 12px;
-                            line-height: 1.5;
-                        }
-                        
-                        .info-item strong {
-                            color: #333;
-                            font-weight: 600;
-                        }
-                        
-                        .titulo-tabela {
-                            margin: 25px 0 15px 0;
-                            font-size: 16px;
-                            font-weight: 600;
-                            color: #E50914;
-                        }
-                        
-                        table {
-                            width: 100%;
-                            border-collapse: collapse;
-                            margin-top: 10px;
-                            font-size: 11px;
-                        }
-                        
-                        th {
-                            background: #E50914;
-                            color: white;
-                            padding: 12px 8px;
-                            text-align: left;
-                            font-weight: 600;
-                            border: 1px solid #c40812;
-                        }
-                        
-                        td {
-                            padding: 10px 8px;
-                            border: 1px solid #ddd;
-                            vertical-align: top;
-                        }
-                        
-                        .footer {
-                            margin-top: 30px;
-                            text-align: center;
-                            font-size: 10px;
-                            color: #999;
-                            border-top: 1px solid #ddd;
-                            padding-top: 20px;
-                        }
-                        
-                        .total-alunos {
-                            background: #FF9800;
-                            color: white;
-                            padding: 8px 20px;
-                            border-radius: 20px;
-                            display: inline-block;
-                            margin-top: 20px;
-                            font-weight: bold;
-                            font-size: 13px;
-                        }
-                        
-                        .assinatura {
-                            margin-top: 40px;
-                            text-align: center;
-                        }
-                        
-                        .linha-assinatura {
-                            width: 300px;
-                            margin: 20px auto 5px auto;
-                            border-top: 1px solid #333;
-                        }
-                        
-                        @media print {
-                            body {
-                                padding: 0;
-                                margin: 0;
-                            }
-                            .pdf-container {
-                                max-width: 100%;
-                            }
-                            .no-print {
-                                display: none;
-                            }
-                        }
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body { font-family: 'Inter', Arial, Helvetica, sans-serif; margin: 0; padding: 30px; background: white; color: #333; }
+                        .pdf-container { max-width: 1200px; margin: 0 auto; background: white; }
+                        .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #E50914; }
+                        .header h1 { color: #E50914; margin: 0 0 5px 0; font-size: 28px; font-weight: 700; }
+                        .header h2 { color: #333; margin: 0 0 10px 0; font-size: 18px; font-weight: 500; }
+                        .header .subtitulo { color: #666; font-size: 14px; margin-top: 5px; }
+                        .header .data-hora { color: #999; font-size: 11px; margin-top: 5px; }
+                        .badge-transporte { background: #FF9800; color: white; padding: 4px 12px; border-radius: 20px; display: inline-block; font-size: 11px; font-weight: bold; }
+                        .unidade-info { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #E50914; }
+                        .unidade-info h3 { color: #E50914; margin: 0 0 15px 0; font-size: 16px; font-weight: 600; }
+                        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+                        .info-item { font-size: 12px; line-height: 1.5; }
+                        .info-item strong { color: #333; font-weight: 600; }
+                        .titulo-tabela { margin: 25px 0 15px 0; font-size: 16px; font-weight: 600; color: #E50914; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+                        th { background: #E50914; color: white; padding: 12px 8px; text-align: left; font-weight: 600; border: 1px solid #c40812; }
+                        td { padding: 10px 8px; border: 1px solid #ddd; vertical-align: top; }
+                        .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #ddd; padding-top: 20px; }
+                        .total-alunos { background: #FF9800; color: white; padding: 8px 20px; border-radius: 20px; display: inline-block; margin-top: 20px; font-weight: bold; font-size: 13px; }
+                        .assinatura { margin-top: 40px; text-align: center; }
+                        .linha-assinatura { width: 300px; margin: 20px auto 5px auto; border-top: 1px solid #333; }
+                        @media print { body { padding: 0; margin: 0; } .pdf-container { max-width: 100%; } .no-print { display: none; } }
                     </style>
                 </head>
                 <body>
                     <div class="pdf-container">
                         <div class="header">
-                            <h1>CRECHE EL SHADDAY</h1>
+                            <h1>Creche El Shadday</h1>
                             <h2>${tituloRelatorio}</h2>
                             <div class="subtitulo">${subtitulo}</div>
-                            <div class="data-hora">
-                                Documento gerado em: ${dataAtual} às ${horaAtual}
-                            </div>
+                            <div class="data-hora">Documento gerado em: ${dataAtual} às ${horaAtual}</div>
                         </div>
-                        
                         ${unidadeInfoHTML}
-                        
-                        <div class="titulo-tabela"> RELAÇÃO DE ALUNOS COM TRANSPORTE ESCOLAR</div>
-                        
+                        <div class="titulo-tabela">👥 Relação De Alunos Com Transporte Escolar</div>
                         <table>
-                            <thead>
-                                <tr>
-                                    <th style="width: 5%;">Nº</th>
-                                    <th style="width: 35%;">Nome do Aluno</th>
-                                    <th style="width: 15%;">RA</th>
-                                    <th style="width: 20%;">Unidade</th>
-                                    <th style="width: 15%;">Turma</th>
-                                    <th style="width: 10%;">Idade</th>
-                                </tr>
-                            </thead>
+                            <thead><tr><th style="width: 5%;">Nº</th><th style="width: 45%;">Nome Do Aluno</th><th style="width: 15%;">Ra</th><th style="width: 20%;">Unidade</th><th style="width: 15%;">Turma</th></tr></thead>
                             <tbody>
                                 ${alunosComTransporte.map((aluno, index) => {
                                     const dadosPessoais = aluno.dados_pessoais || {};
                                     const turma = aluno.turma || {};
-                                    const idade = calcularIdade(dadosPessoais.data_nasc);
                                     const transporte = aluno.transporte || {};
-                                    
-                                    return `
-                                    <tr>
-                                        <td style="text-align: center;">${index + 1}</td>
-                                        <td><strong>${escapeHtml(dadosPessoais.nome || '---')}</strong><br><span class="badge-transporte"> ${escapeHtml(transporte.nome || 'Transporte')}</span></td>
-                                        <td>${escapeHtml(dadosPessoais.ra || '---')}</td>
-                                        <td>${escapeHtml(turma.unidade || '---')}</td>
-                                        <td>${escapeHtml(turma.turma || '---')}</td>
-                                        <td>${idade}</td>
-                                    </tr>
-                                `}).join('')}
+                                    return `<tr><td style="text-align: center;">${index + 1}</td><td><strong>${capitalizarNome(dadosPessoais.nome || '---')}</strong><br><span class="badge-transporte">🚍 ${capitalizarTexto(transporte.nome || 'Transporte')}</span></td><td>${capitalizarTexto(dadosPessoais.ra || '---')}</td><td>${capitalizarTexto(turma.unidade || '---')}</td><td>${capitalizarTexto(turma.turma || '---')}</td></tr>`;
+                                }).join('')}
                             </tbody>
                         </table>
-                        
-                        <div style="text-align: center;">
-                            <div class="total-alunos">
-                                 Total de Alunos com Transporte: ${alunosComTransporte.length}
-                            </div>
-                        </div>
-                        
-                        <div class="assinatura">
-                            <div class="linha-assinatura"></div>
-                            <p style="font-size: 11px;">Assinatura do Responsável pelo Transporte</p>
-                        </div>
-                        
-                        <div class="footer">
-                            <p>Documento gerado eletronicamente - Creche El Shadday</p>
-                            <p style="font-size: 9px; margin-top: 5px;">Sistema de Gestão Escolar</p>
-                        </div>
+                        <div style="text-align: center;"><div class="total-alunos">📊 Total De Alunos Com Transporte: ${alunosComTransporte.length}</div></div>
+                        <div class="assinatura"><div class="linha-assinatura"></div><p style="font-size: 11px;">Assinatura Do Responsável Pelo Transporte</p></div>
+                        <div class="footer"><p>Documento gerado eletronicamente - Creche El Shadday</p><p style="font-size: 9px; margin-top: 5px;">Sistema de Gestão Escolar</p></div>
                     </div>
-                    
                     <div class="no-print" style="text-align: center; margin-top: 20px; padding: 20px; position: fixed; bottom: 20px; left: 0; right: 0; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);">
-                        <button onclick="window.print()" style="padding: 12px 40px; background: #E50914; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold;">
-                            🖨️ Imprimir / Salvar como PDF
-                        </button>
-                        <button onclick="window.close()" style="padding: 12px 30px; background: #333; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; margin-left: 10px;">
-                            ✖ Fechar
-                        </button>
+                        <button onclick="window.print()" style="padding: 12px 40px; background: #E50914; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold;">🖨️ Imprimir / Salvar Como Pdf</button>
+                        <button onclick="window.close()" style="padding: 12px 30px; background: #333; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; margin-left: 10px;">✖ Fechar</button>
                     </div>
-                    
-                    <script>
-                        setTimeout(function() {
-                            window.print();
-                        }, 500);
-                    <\/script>
+                    <script>setTimeout(function() { window.print(); }, 500);<\/script>
                 </body>
                 </html>
             `);
             
             printWindow.document.close();
-            mostrarNotificacao(` Gerando PDF com ${alunosComTransporte.length} aluno(s) com transporte...`, 'success');
+            mostrarNotificacao(`📄 Gerando PDF com ${alunosComTransporte.length} aluno(s) com transporte...`, 'success');
         }
 
         // ========== FUNÇÃO PARA GERAR PDF DA LISTA ATUAL ==========
         function gerarPDFListaAtual() {
-            if (alunosExibidosAtualmente.length === 0) {
+            // Ordenar em ordem alfabética
+            const alunosOrdenados = [...alunosExibidosAtualmente];
+            alunosOrdenados.sort((a, b) => {
+                const nomeA = (a.dados_pessoais?.nome || '').toLowerCase();
+                const nomeB = (b.dados_pessoais?.nome || '').toLowerCase();
+                return nomeA.localeCompare(nomeB, 'pt-BR');
+            });
+            
+            if (alunosOrdenados.length === 0) {
                 mostrarNotificacao('❌ Nenhum aluno para gerar o PDF!', 'warning');
                 return;
             }
@@ -1590,22 +1490,22 @@
             let subtitulo = '';
             
             if (unidadeSelecionada && turmaSelecionada) {
-                tituloRelatorio = 'Alunos por Unidade e Turma';
-                subtitulo = `${unidadeSelecionada} - Turma: ${turmaSelecionada}`;
+                tituloRelatorio = 'Alunos Por Unidade E Turma';
+                subtitulo = `${capitalizarTexto(unidadeSelecionada)} - Turma: ${capitalizarTexto(turmaSelecionada)}`;
             } else if (unidadeSelecionada) {
-                tituloRelatorio = 'Alunos por Unidade Escolar';
-                subtitulo = unidadeSelecionada;
+                tituloRelatorio = 'Alunos Por Unidade Escolar';
+                subtitulo = capitalizarTexto(unidadeSelecionada);
             } else if (turmaSelecionada) {
-                tituloRelatorio = 'Alunos por Turma';
-                subtitulo = `Turma: ${turmaSelecionada}`;
+                tituloRelatorio = 'Alunos Por Turma';
+                subtitulo = `Turma: ${capitalizarTexto(turmaSelecionada)}`;
             } else if (filtroTransporte === 'sim') {
-                tituloRelatorio = 'Alunos com Transporte Escolar';
+                tituloRelatorio = 'Alunos Com Transporte Escolar';
                 subtitulo = 'Relação de alunos que utilizam transporte escolar';
             } else if (filtroTransporte === 'nao') {
-                tituloRelatorio = 'Alunos sem Transporte Escolar';
-                subtitulo = 'Relação de alunos que NÃO utilizam transporte escolar';
+                tituloRelatorio = 'Alunos Sem Transporte Escolar';
+                subtitulo = 'Relação de alunos que não utilizam transporte escolar';
             } else {
-                tituloRelatorio = 'Relatório Geral de Alunos';
+                tituloRelatorio = 'Relatório Geral De Alunos';
                 subtitulo = 'Relação completa de todos os alunos cadastrados';
             }
             
@@ -1642,16 +1542,16 @@
                 const info = UNIDADES_CONFIG[unidadeSelecionada];
                 unidadeInfoHTML = `
                     <div class="unidade-info">
-                        <h3>📌 INFORMAÇÕES DA UNIDADE</h3>
+                        <h3>📌 Informações Da Unidade</h3>
                         <div class="info-grid">
-                            <div class="info-item"><strong>Unidade:</strong> ${info.nome}</div>
-                            <div class="info-item"><strong>INEP:</strong> ${info.INEP}</div>
-                            <div class="info-item"><strong>Endereço:</strong> ${info.endereco}</div>
-                            <div class="info-item"><strong>Bairro:</strong> ${info.bairro}</div>
-                            <div class="info-item"><strong>Cidade/UF:</strong> ${info.cidade}/${info.uf}</div>
-                            <div class="info-item"><strong>CEP:</strong> ${info.cep}</div>
+                            <div class="info-item"><strong>Unidade:</strong> ${capitalizarTexto(info.nome)}</div>
+                            <div class="info-item"><strong>Inep:</strong> ${info.INEP}</div>
+                            <div class="info-item"><strong>Endereço:</strong> ${capitalizarTexto(info.endereco)}</div>
+                            <div class="info-item"><strong>Bairro:</strong> ${capitalizarTexto(info.bairro)}</div>
+                            <div class="info-item"><strong>Cidade/Uf:</strong> ${capitalizarTexto(info.cidade)}/${info.uf}</div>
+                            <div class="info-item"><strong>Cep:</strong> ${info.cep}</div>
                             <div class="info-item"><strong>Telefone:</strong> ${info.telefone}</div>
-                            <div class="info-item"><strong>CNPJ:</strong> ${info.cnpj}</div>
+                            <div class="info-item"><strong>Cnpj:</strong> ${info.cnpj}</div>
                         </div>
                     </div>
                 `;
@@ -1666,265 +1566,69 @@
                     <meta charset="UTF-8">
                     <title>${tituloRelatorio} - Creche El Shadday</title>
                     <style>
-                        * {
-                            margin: 0;
-                            padding: 0;
-                            box-sizing: border-box;
-                        }
-                        
-                        body {
-                            font-family: 'Inter', Arial, Helvetica, sans-serif;
-                            margin: 0;
-                            padding: 30px;
-                            background: white;
-                            color: #333;
-                        }
-                        
-                        .pdf-container {
-                            max-width: 1200px;
-                            margin: 0 auto;
-                            background: white;
-                        }
-                        
-                        .header {
-                            text-align: center;
-                            margin-bottom: 30px;
-                            padding-bottom: 20px;
-                            border-bottom: 3px solid #E50914;
-                        }
-                        
-                        .header h1 {
-                            color: #E50914;
-                            margin: 0 0 5px 0;
-                            font-size: 28px;
-                            font-weight: 700;
-                        }
-                        
-                        .header h2 {
-                            color: #333;
-                            margin: 0 0 10px 0;
-                            font-size: 18px;
-                            font-weight: 500;
-                        }
-                        
-                        .header .subtitulo {
-                            color: #666;
-                            font-size: 14px;
-                            margin-top: 5px;
-                        }
-                        
-                        .header .data-hora {
-                            color: #999;
-                            font-size: 11px;
-                            margin-top: 5px;
-                        }
-                        
-                        .badge-transporte {
-                            background: #FF9800;
-                            color: white;
-                            padding: 2px 8px;
-                            border-radius: 12px;
-                            font-size: 9px;
-                            font-weight: bold;
-                            margin-left: 5px;
-                        }
-                        
-                        .unidade-info {
-                            background: #f8f9fa;
-                            padding: 20px;
-                            border-radius: 8px;
-                            margin-bottom: 25px;
-                            border-left: 4px solid #E50914;
-                        }
-                        
-                        .unidade-info h3 {
-                            color: #E50914;
-                            margin: 0 0 15px 0;
-                            font-size: 16px;
-                            font-weight: 600;
-                        }
-                        
-                        .info-grid {
-                            display: grid;
-                            grid-template-columns: repeat(2, 1fr);
-                            gap: 10px;
-                        }
-                        
-                        .info-item {
-                            font-size: 12px;
-                            line-height: 1.5;
-                        }
-                        
-                        .info-item strong {
-                            color: #333;
-                            font-weight: 600;
-                        }
-                        
-                        .titulo-tabela {
-                            margin: 25px 0 15px 0;
-                            font-size: 16px;
-                            font-weight: 600;
-                            color: #E50914;
-                        }
-                        
-                        table {
-                            width: 100%;
-                            border-collapse: collapse;
-                            margin-top: 10px;
-                            font-size: 11px;
-                        }
-                        
-                        th {
-                            background: #E50914;
-                            color: white;
-                            padding: 12px 8px;
-                            text-align: left;
-                            font-weight: 600;
-                            border: 1px solid #c40812;
-                        }
-                        
-                        td {
-                            padding: 10px 8px;
-                            border: 1px solid #ddd;
-                            vertical-align: top;
-                        }
-                        
-                        .footer {
-                            margin-top: 30px;
-                            text-align: center;
-                            font-size: 10px;
-                            color: #999;
-                            border-top: 1px solid #ddd;
-                            padding-top: 20px;
-                        }
-                        
-                        .total-alunos {
-                            background: #E50914;
-                            color: white;
-                            padding: 8px 20px;
-                            border-radius: 20px;
-                            display: inline-block;
-                            margin-top: 20px;
-                            font-weight: bold;
-                            font-size: 13px;
-                        }
-                        
-                        .assinatura {
-                            margin-top: 40px;
-                            text-align: center;
-                        }
-                        
-                        .linha-assinatura {
-                            width: 300px;
-                            margin: 20px auto 5px auto;
-                            border-top: 1px solid #333;
-                        }
-                        
-                        @media print {
-                            body {
-                                padding: 0;
-                                margin: 0;
-                            }
-                            .pdf-container {
-                                max-width: 100%;
-                            }
-                            .no-print {
-                                display: none;
-                            }
-                        }
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body { font-family: 'Inter', Arial, Helvetica, sans-serif; margin: 0; padding: 30px; background: white; color: #333; }
+                        .pdf-container { max-width: 1200px; margin: 0 auto; background: white; }
+                        .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #E50914; }
+                        .header h1 { color: #E50914; margin: 0 0 5px 0; font-size: 28px; font-weight: 700; }
+                        .header h2 { color: #333; margin: 0 0 10px 0; font-size: 18px; font-weight: 500; }
+                        .header .subtitulo { color: #666; font-size: 14px; margin-top: 5px; }
+                        .header .data-hora { color: #999; font-size: 11px; margin-top: 5px; }
+                        .badge-transporte { background: #FF9800; color: white; padding: 2px 8px; border-radius: 12px; font-size: 9px; font-weight: bold; margin-left: 5px; }
+                        .unidade-info { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #E50914; }
+                        .unidade-info h3 { color: #E50914; margin: 0 0 15px 0; font-size: 16px; font-weight: 600; }
+                        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+                        .info-item { font-size: 12px; line-height: 1.5; }
+                        .info-item strong { color: #333; font-weight: 600; }
+                        .titulo-tabela { margin: 25px 0 15px 0; font-size: 16px; font-weight: 600; color: #E50914; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+                        th { background: #E50914; color: white; padding: 12px 8px; text-align: left; font-weight: 600; border: 1px solid #c40812; }
+                        td { padding: 10px 8px; border: 1px solid #ddd; vertical-align: top; }
+                        .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #ddd; padding-top: 20px; }
+                        .total-alunos { background: #E50914; color: white; padding: 8px 20px; border-radius: 20px; display: inline-block; margin-top: 20px; font-weight: bold; font-size: 13px; }
+                        .assinatura { margin-top: 40px; text-align: center; }
+                        .linha-assinatura { width: 300px; margin: 20px auto 5px auto; border-top: 1px solid #333; }
+                        @media print { body { padding: 0; margin: 0; } .pdf-container { max-width: 100%; } .no-print { display: none; } }
                     </style>
                 </head>
                 <body>
                     <div class="pdf-container">
                         <div class="header">
-                            <h1>CRECHE EL SHADDAY</h1>
+                            <h1>Creche El Shadday</h1>
                             <h2>${tituloRelatorio}</h2>
                             <div class="subtitulo">${subtitulo}</div>
-                            <div class="data-hora">
-                                Documento gerado em: ${dataAtual} às ${horaAtual}
-                            </div>
+                            <div class="data-hora">Documento gerado em: ${dataAtual} às ${horaAtual}</div>
                         </div>
-                        
                         ${unidadeInfoHTML}
-                        
-                        <div class="titulo-tabela">👥 RELAÇÃO DE ALUNOS</div>
-                        
+                        <div class="titulo-tabela">👥 Relação De Alunos</div>
                         <table>
-                            <thead>
-                                <tr>
-                                    <th style="width: 5%;">Nº</th>
-                                    <th style="width: 35%;">Nome do Aluno</th>
-                                    <th style="width: 15%;">RA</th>
-                                    <th style="width: 20%;">Unidade</th>
-                                    <th style="width: 15%;">Turma</th>
-                                    <th style="width: 10%;">Idade</th>
-                                </tr>
-                            </thead>
+                            <thead><tr><th style="width: 5%;">Nº</th><th style="width: 35%;">Nome Do Aluno</th><th style="width: 15%;">Ra</th><th style="width: 20%;">Unidade</th><th style="width: 15%;">Turma</th><th style="width: 10%;">Idade</th></tr></thead>
                             <tbody>
-                                ${alunosExibidosAtualmente.map((aluno, index) => {
+                                ${alunosOrdenados.map((aluno, index) => {
                                     const dadosPessoais = aluno.dados_pessoais || {};
                                     const turma = aluno.turma || {};
                                     const idade = calcularIdade(dadosPessoais.data_nasc);
                                     const temTransporte = verificarTransporte(aluno);
-                                    const transporteBadge = temTransporte ? '<span class="badge-transporte"> Transporte</span>' : '';
-                                    
-                                    return `
-                                    <tr>
-                                        <td style="text-align: center;">${index + 1}</td>
-                                        <td><strong>${escapeHtml(dadosPessoais.nome || '---')}</strong> ${transporteBadge}</td>
-                                        <td>${escapeHtml(dadosPessoais.ra || '---')}</td>
-                                        <td>${escapeHtml(turma.unidade || '---')}</td>
-                                        <td>${escapeHtml(turma.turma || '---')}</td>
-                                        <td>${idade}</td>
-                                    </tr>
-                                `}).join('')}
+                                    const transporteBadge = temTransporte ? '<span class="badge-transporte">🚍 Transporte</span>' : '';
+                                    return `<tr><td style="text-align: center;">${index + 1}</td><td><strong>${capitalizarNome(dadosPessoais.nome || '---')}</strong> ${transporteBadge}</td><td>${capitalizarTexto(dadosPessoais.ra || '---')}</td><td>${capitalizarTexto(turma.unidade || '---')}</td><td>${capitalizarTexto(turma.turma || '---')}</td><td>${idade}</td></tr>`;
+                                }).join('')}
                             </tbody>
                         </table>
-                        
-                        <div style="text-align: center;">
-                            <div class="total-alunos">
-                                📊 Total de Alunos: ${alunosExibidosAtualmente.length}
-                            </div>
-                        </div>
-                        
-                        <div class="assinatura">
-                            <div class="linha-assinatura"></div>
-                            <p style="font-size: 11px;">Assinatura do Responsável</p>
-                        </div>
-                        
-                        <div class="footer">
-                            <p>Documento gerado eletronicamente - Creche El Shadday</p>
-                            <p style="font-size: 9px; margin-top: 5px;">Sistema de Gestão Escolar</p>
-                        </div>
+                        <div style="text-align: center;"><div class="total-alunos">📊 Total De Alunos: ${alunosOrdenados.length}</div></div>
+                        <div class="assinatura"><div class="linha-assinatura"></div><p style="font-size: 11px;">Assinatura Do Responsável</p></div>
+                        <div class="footer"><p>Documento gerado eletronicamente - Creche El Shadday</p><p style="font-size: 9px; margin-top: 5px;">Sistema de Gestão Escolar</p></div>
                     </div>
-                    
                     <div class="no-print" style="text-align: center; margin-top: 20px; padding: 20px; position: fixed; bottom: 20px; left: 0; right: 0; background: white; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);">
-                        <button onclick="window.print()" style="padding: 12px 40px; background: #E50914; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold;">
-                            🖨️ Imprimir / Salvar como PDF
-                        </button>
-                        <button onclick="window.close()" style="padding: 12px 30px; background: #333; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; margin-left: 10px;">
-                            ✖ Fechar
-                        </button>
+                        <button onclick="window.print()" style="padding: 12px 40px; background: #E50914; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold;">🖨️ Imprimir / Salvar Como Pdf</button>
+                        <button onclick="window.close()" style="padding: 12px 30px; background: #333; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; margin-left: 10px;">✖ Fechar</button>
                     </div>
-                    
-                    <script>
-                        setTimeout(function() {
-                            window.print();
-                        }, 500);
-                    <\/script>
+                    <script>setTimeout(function() { window.print(); }, 500);<\/script>
                 </body>
                 </html>
             `);
             
             printWindow.document.close();
             mostrarNotificacao('📄 Gerando PDF...', 'success');
-        }
-
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
         }
 
         function mostrarNotificacao(mensagem, tipo = 'success') {

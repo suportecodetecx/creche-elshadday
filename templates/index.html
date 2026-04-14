@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/processo-de-trabalho.png') }}">
     <style>
-        /* ===== TODO O CSS DO SEU INDEX ATUAL ===== */
+        /* ===== TODO O CSS DO SEU INDEX ATUAL (mantido) ===== */
         * {
             margin: 0;
             padding: 0;
@@ -1289,6 +1289,103 @@
         let usuarioLogado = null;
         let tipoAcesso = 'pedagogico';
 
+        // ===== FUNÇÕES DE CAPITALIZAÇÃO =====
+        function capitalizarTexto(texto) {
+            if (!texto || texto === '---') return texto || '---';
+            if (typeof texto !== 'string') return texto;
+            
+            const palavrasEspeciais = ['RG', 'CPF', 'CIN', 'CNPJ', 'TEA', 'TDAH', 'HIV', 'AIDS', 'SP', 'RJ', 'MG'];
+            
+            let palavras = texto.toLowerCase().split(' ');
+            
+            palavras = palavras.map(palavra => {
+                if (palavrasEspeciais.includes(palavra.toUpperCase())) {
+                    return palavra.toUpperCase();
+                }
+                if (palavra.includes('-')) {
+                    return palavra.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join('-');
+                }
+                return palavra.charAt(0).toUpperCase() + palavra.slice(1);
+            });
+            
+            return palavras.join(' ');
+        }
+
+        function capitalizarNome(nome) {
+            if (!nome) return '';
+            
+            const palavrasMinusculas = ['da', 'de', 'do', 'das', 'dos', 'e', 'a', 'o', 'as', 'os'];
+            
+            let palavras = nome.toLowerCase().split(' ');
+            
+            palavras = palavras.map((palavra, index) => {
+                if (index === 0) {
+                    return palavra.charAt(0).toUpperCase() + palavra.slice(1);
+                }
+                if (palavrasMinusculas.includes(palavra)) {
+                    return palavra;
+                }
+                return palavra.charAt(0).toUpperCase() + palavra.slice(1);
+            });
+            
+            return palavras.join(' ');
+        }
+
+        // ===== FUNÇÃO PARA IMPRIMIR TERMO COM CAPITALIZAÇÃO =====
+        function imprimirTermo(event, tipo, numInscricao) {
+            const button = event.currentTarget;
+            const textoOriginal = button.textContent;
+            button.textContent = 'Preparando...';
+            button.disabled = true;
+            
+            // Buscar o aluno para capitalizar os dados
+            const aluno = alunosData.find(a => a.num_inscricao === numInscricao);
+            
+            if (aluno) {
+                // Capitalizar os dados do aluno antes de enviar
+                const dadosCapitalizados = {
+                    nome: capitalizarNome(aluno.dados_pessoais?.nome || ''),
+                    ra: aluno.dados_pessoais?.ra || '',
+                    turma: capitalizarTexto(aluno.turma?.turma || ''),
+                    unidade: capitalizarTexto(aluno.turma?.unidade || ''),
+                    endereco: capitalizarTexto(aluno.endereco?.logradouro || ''),
+                    numero: aluno.endereco?.numero || '',
+                    bairro: capitalizarTexto(aluno.endereco?.bairro || ''),
+                    cidade: capitalizarTexto(aluno.endereco?.cidade || ''),
+                    uf: aluno.endereco?.uf || '',
+                    cep: aluno.endereco?.cep || '',
+                    responsavel: capitalizarNome(aluno.responsaveis?.[0]?.nome || ''),
+                    telefone: aluno.responsaveis?.[0]?.telefone || '',
+                    data_nasc: aluno.dados_pessoais?.data_nasc || '',
+                    sexo: aluno.dados_pessoais?.sexo === 'M' ? 'Masculino' : 'Feminino'
+                };
+                
+                // Salvar dados capitalizados para o backend
+                sessionStorage.setItem('dadosImpressao', JSON.stringify(dadosCapitalizados));
+            }
+            
+            const urls = {
+                'matricula': `/visualizar/termo/matricula/${numInscricao}`,
+                'imagem': `/visualizar/termo/imagem/${numInscricao}`,
+                'transporte': `/visualizar/termo/transporte/${numInscricao}`,
+                'terceiro': `/visualizar/termo/terceiro/${numInscricao}`,
+                'regulamento': `/visualizar/termo/regulamento/${numInscricao}`,
+                'saude': `/visualizar/termo/saude/${numInscricao}`
+            };
+            
+            const url = urls[tipo];
+            if (url) {
+                // Adicionar parâmetro para indicar capitalização
+                const urlComParams = url + (url.includes('?') ? '&' : '?') + 'capitalizar=true';
+                window.open(urlComParams, '_blank');
+            }
+            
+            setTimeout(() => { 
+                button.textContent = textoOriginal; 
+                button.disabled = false; 
+            }, 1000);
+        }
+
         // Verificar se já tem usuário logado (sessionStorage)
         function verificarSessao() {
             const usuario = sessionStorage.getItem('usuarioLogado');
@@ -1335,7 +1432,7 @@
             
             const userInfo = document.getElementById('userInfo');
             userInfo.classList.add('active');
-            document.getElementById('userName').textContent = usuarioLogado.nome || usuarioLogado.usuario || 'Usuário';
+            document.getElementById('userName').textContent = capitalizarNome(usuarioLogado.nome || usuarioLogado.usuario || 'Usuário');
             document.getElementById('userAvatar').textContent = usuarioLogado.nome ? usuarioLogado.nome.charAt(0).toUpperCase() : '👤';
             
             const userRoleSpan = document.getElementById('userRole');
@@ -1349,7 +1446,7 @@
                 } else if (usuarioLogado.unidade === 'CEIM Prof. Egberto Malta Moreira') {
                     userRoleSpan.innerHTML = '🏫 CEIM Prof. Egberto Malta Moreira';
                 } else {
-                    userRoleSpan.textContent = usuarioLogado.unidade;
+                    userRoleSpan.textContent = capitalizarTexto(usuarioLogado.unidade);
                 }
             } else {
                 userRoleSpan.textContent = '👩‍🏫 Pedagógico';
@@ -1530,11 +1627,21 @@
                 });
         }
 
+        // ===== SELECT DE ALUNOS EM ORDEM ALFABÉTICA E CAPITALIZADO =====
         function atualizarSelectAlunos() {
             const select = document.getElementById('alunoSelect');
-            let options = '<option value="">Selecione um aluno</option>';
-            alunosData.forEach(aluno => {
-                const nome = aluno.dados_pessoais?.nome || 'Sem nome';
+            let options = '<option value="">🔍 Selecione um aluno</option>';
+            
+            // ORDENAR ALUNOS EM ORDEM ALFABÉTICA
+            const alunosOrdenados = [...alunosData];
+            alunosOrdenados.sort((a, b) => {
+                const nomeA = (a.dados_pessoais?.nome || '').toLowerCase();
+                const nomeB = (b.dados_pessoais?.nome || '').toLowerCase();
+                return nomeA.localeCompare(nomeB, 'pt-BR');
+            });
+            
+            alunosOrdenados.forEach(aluno => {
+                const nome = capitalizarNome(aluno.dados_pessoais?.nome || 'Sem nome');
                 const numInscricao = aluno.num_inscricao || '000-0000';
                 options += `<option value="${numInscricao}">${nome} - ${numInscricao}</option>`;
             });
@@ -1549,11 +1656,12 @@
             }
             const aluno = alunosData.find(a => a.num_inscricao === numInscricao);
             if (aluno) {
-                document.getElementById('searchTermos').value = aluno.dados_pessoais?.nome || '';
+                document.getElementById('searchTermos').value = capitalizarNome(aluno.dados_pessoais?.nome || '');
                 exibirCardAluno(aluno);
             }
         }
 
+        // ===== FILTRAR ALUNOS COM ORDENAÇÃO =====
         function filtrarAlunos() {
             const termo = document.getElementById('searchTermos').value.toLowerCase().trim();
             if (!termo) {
@@ -1566,6 +1674,14 @@
                 const numInscricao = (aluno.num_inscricao || '').toLowerCase();
                 return nome.includes(termo) || numInscricao.includes(termo);
             });
+            
+            // ORDENAR OS FILTRADOS
+            filtrados.sort((a, b) => {
+                const nomeA = (a.dados_pessoais?.nome || '').toLowerCase();
+                const nomeB = (b.dados_pessoais?.nome || '').toLowerCase();
+                return nomeA.localeCompare(nomeB, 'pt-BR');
+            });
+            
             if (filtrados.length === 1) {
                 exibirCardAluno(filtrados[0]);
                 document.getElementById('alunoSelect').value = filtrados[0].num_inscricao || '';
@@ -1577,12 +1693,13 @@
             }
         }
 
+        // ===== LISTA DE ALUNOS COM CAPITALIZAÇÃO E ORDENAÇÃO =====
         function exibirListaAlunos(alunos) {
             let html = '<div class="lista-alunos">';
             alunos.forEach(aluno => {
-                const nome = aluno.dados_pessoais?.nome || 'Sem nome';
-                const turma = aluno.turma?.turma || 'Sem turma';
-                const unidade = aluno.turma?.unidade || '';
+                const nome = capitalizarNome(aluno.dados_pessoais?.nome || 'Sem nome');
+                const turma = capitalizarTexto(aluno.turma?.turma || 'Sem turma');
+                const unidade = capitalizarTexto(aluno.turma?.unidade || '');
                 const numInscricao = aluno.num_inscricao || '000-0000';
                 const fotoUrl = getFotoUrl(aluno, 'aluno');
                 html += `
@@ -1597,33 +1714,16 @@
             document.getElementById('alunos-termos').innerHTML = html;
         }
 
-        function imprimirTermo(event, tipo, numInscricao) {
-            const button = event.currentTarget;
-            const textoOriginal = button.textContent;
-            button.textContent = 'Preparando...';
-            button.disabled = true;
-            const urls = {
-                'matricula': `/visualizar/termo/matricula/${numInscricao}`,
-                'imagem': `/visualizar/termo/imagem/${numInscricao}`,
-                'transporte': `/visualizar/termo/transporte/${numInscricao}`,
-                'terceiro': `/visualizar/termo/terceiro/${numInscricao}`,
-                'regulamento': `/visualizar/termo/regulamento/${numInscricao}`,
-                'saude': `/visualizar/termo/saude/${numInscricao}`
-            };
-            const url = urls[tipo];
-            if (url) window.open(url, '_blank');
-            setTimeout(() => { button.textContent = textoOriginal; button.disabled = false; }, 1000);
-        }
-
+        // ===== CARD DO ALUNO COM CAPITALIZAÇÃO =====
         function exibirCardAluno(aluno) {
-            const nome = aluno.dados_pessoais?.nome || 'Sem nome';
-            const turma = aluno.turma?.turma || 'Sem turma';
-            const unidade = aluno.turma?.unidade || '';
+            const nome = capitalizarNome(aluno.dados_pessoais?.nome || 'Sem nome');
+            const turma = capitalizarTexto(aluno.turma?.turma || 'Sem turma');
+            const unidade = capitalizarTexto(aluno.turma?.unidade || '');
             const numInscricao = aluno.num_inscricao || '000-0000';
-            const endereco = aluno.endereco?.logradouro || 'Não informado';
+            const endereco = capitalizarTexto(aluno.endereco?.logradouro || 'Não informado');
             const numero = aluno.endereco?.numero || '';
-            const bairro = aluno.endereco?.bairro || '';
-            const responsavel = aluno.responsaveis?.[0]?.nome || 'Não informado';
+            const bairro = capitalizarTexto(aluno.endereco?.bairro || '');
+            const responsavel = capitalizarNome(aluno.responsaveis?.[0]?.nome || 'Não informado');
             const telefone = aluno.responsaveis?.[0]?.telefone || 'Não informado';
             const temTransporte = !!(aluno.transporte && Object.keys(aluno.transporte).length > 0);
             const temTerceiros = !!(aluno.terceiros && aluno.terceiros.length > 0);
