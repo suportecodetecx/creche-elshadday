@@ -146,7 +146,7 @@
             background: #f0f0f0;
         }
 
-        /* LINHA TURMA E RA */
+        /* LINHA TURMA E RA - CORRIGIDA PARA MOSTRAR O RA DO ALUNO */
         .turma-ra {
             display: flex;
             justify-content: space-between;
@@ -380,10 +380,10 @@
         <!-- TÍTULO -->
         <div class="titulo">FICHA CADASTRAL DO ALUNO - EDUCAÇÃO INFANTIL</div>
 
-        <!-- TURMA E RA - RGM mantido -->
+        <!-- TURMA E RA - CORRIGIDO: Agora mostra o RA do aluno corretamente -->
         <div class="turma-ra">
             <span>Turma: {{ aluno.turma.turma or '_________________' }}</span>
-            <span>RGM°: {{ aluno.num_inscricao or '___________' }}</span>
+            <span>RA do Aluno: {{ aluno.dados_pessoais.ra or '___________' }}</span>
         </div>
 
         <!-- DADOS DO ALUNO -->
