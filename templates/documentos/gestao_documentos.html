@@ -80,18 +80,16 @@
         .logo-wrapper:hover { transform: scale(1.02); }
 
         .logo-animated {
-            width: 52px;
-            height: 52px;
-            background: linear-gradient(135deg, var(--netflix-red), var(--netflix-red-dark));
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 1.5rem;
-            color: white;
-            box-shadow: 0 6px 18px rgba(229, 9, 20, 0.4);
-        }
+    width: 50px;
+    height: 50px;
+    background: transparent;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
 
         .logo-text h2 {
             font-size: 1.7rem;
@@ -165,24 +163,28 @@
             font-weight: 600;
             flex: 1;
         }
-        .btn-add {
-            background: linear-gradient(95deg, var(--netflix-red), var(--netflix-red-dark));
-            border: none;
-            padding: 10px 24px;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 12px rgba(229,9,20,0.3);
-            transition: all 0.2s;
-        }
-        .btn-add:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(229,9,20,0.4);
-        }
+       .btn-add {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 10px 24px;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+    transition: all 0.25s ease;
+}
+.btn-add:hover {
+    background: var(--netflix-red);
+    border-color: var(--netflix-red);
+    box-shadow: 0 4px 14px rgba(229, 9, 20, 0.3);
+    transform: translateY(-2px);
+}
 
         .filtros-container {
             display: flex;
@@ -599,7 +601,9 @@
         <header class="header-moderno">
             <div class="header-content">
                 <div class="logo-wrapper" onclick="window.location.href='/'">
-                    <div class="logo-animated"><span>CS</span></div>
+                    <div class="logo-animated">
+    <img src="/static/img/gestao.png" alt="Creche El Shadday" style="width: 100%; height: 100%; object-fit: contain;">
+</div>
                     <div class="logo-text">
                         <h2>Creche El Shadday</h2>
                         <p>Gestão de Documentos</p>
@@ -613,7 +617,7 @@
             <div class="form-card">
                 <div class="card-header">
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        <div class="header-icon">📄</div>
+                        <div class="header-icon"></div>
                         <h2>Documentos Administrativos</h2>
                     </div>
                     <button class="btn-add" onclick="abrirModalUpload()">+ Novo Documento</button>

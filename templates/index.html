@@ -153,18 +153,21 @@
         }
 
         .logo {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #E50914, #B81D24);
+            width: 100px;
+            height: 100px;
+            background: transparent;
             border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 20px;
-            font-size: 2rem;
-            font-weight: 800;
-            color: white;
-            box-shadow: 0 10px 30px -10px rgba(229, 9, 20, 0.5);
+            overflow: hidden;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
 
         .header h1 {
@@ -819,6 +822,10 @@
             .netflix-loader {
                 transform: scale(0.8);
             }
+            .logo {
+                width: 80px;
+                height: 80px;
+            }
         }
 
         /* Avatar do usuário logado */
@@ -989,6 +996,7 @@
             display: flex;
             gap: 20px;
             margin-top: 10px;
+            flex-wrap: wrap;
         }
         
         .termo-meta span {
@@ -1063,6 +1071,13 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .aluno-item:hover {
+            transform: translateY(-3px);
+            border-color: rgba(229,9,20,0.3);
+            background: rgba(229,9,20,0.05);
         }
         
         .aluno-foto-mini {
@@ -1095,11 +1110,19 @@
             margin: 0 auto;
         }
         
+        .no-alunos {
+            text-align: center;
+            padding: 60px;
+            color: #888;
+        }
+        
         @keyframes spin { to { transform: rotate(360deg); } }
         
         @media (max-width: 768px) {
             .termo-card-header { flex-direction: column; text-align: center; }
             .termo-detalhes { grid-template-columns: 1fr; }
+            .termos-section { padding: 20px; }
+            .termo-card { padding: 20px; }
         }
     </style>
 </head>
@@ -1118,7 +1141,9 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <div class="logo">CS</div>
+            <div class="logo">
+             <img src="/static/img/gestao.png" alt="Creche El Shadday" style="width: 100%; height: 100%; object-fit: contain;">   
+            </div>
             <h1>Creche El Shadday</h1>
             <p>Sistema de Gestão Educacional</p>
         </div>
@@ -1178,7 +1203,7 @@
                     </svg>
                 </div>
                 <h3>Professores</h3>
-                <p>Linções e Documentos para imprimir.</p>
+                <p>Lições e Documentos para imprimir.</p>
                 <span class="card-badge">EM BREVE</span>
             </div>
 
@@ -1308,7 +1333,7 @@
                     <input type="text" id="searchTermos" class="termos-busca" placeholder="Buscar aluno por nome ou matrícula..." onkeyup="filtrarAlunos()">
                 </div>
                 <select id="alunoSelect" class="termos-select" onchange="selecionarAluno(this.value)">
-                    <option value="">Selecione um aluno</option>
+                    <option value="">🔍 Selecione um aluno</option>
                 </select>
             </div>
             <div id="alunos-termos" class="termos-resultado"></div>
@@ -1736,7 +1761,9 @@
 
         function carregarAlunos() {
             const container = document.getElementById('alunos-termos');
-            container.innerHTML = '<div class="loading-alunos"><div class="loading-spinner"></div><p>Carregando alunos...</p></div>';
+            if (container) {
+                container.innerHTML = '<div class="loading-alunos"><div class="loading-spinner"></div><p>Carregando alunos...</p></div>';
+            }
             
             fetch('/api/alunos/buscar')
                 .then(response => response.json())
@@ -1746,16 +1773,18 @@
                         console.log(`📋 ${alunosData.length} alunos carregados`);
                         atualizarSelectAlunos();
                     }
-                    container.innerHTML = '';
+                    if (container) container.innerHTML = '';
                 })
                 .catch(error => {
                     console.error('Erro:', error);
-                    container.innerHTML = '<div class="no-alunos">Erro ao carregar alunos</div>';
+                    if (container) container.innerHTML = '<div class="no-alunos">❌ Erro ao carregar alunos</div>';
                 });
         }
 
         function atualizarSelectAlunos() {
             const select = document.getElementById('alunoSelect');
+            if (!select) return;
+            
             let options = '<option value="">🔍 Selecione um aluno</option>';
             
             const alunosOrdenados = [...alunosData];
@@ -1812,7 +1841,7 @@
                 exibirListaAlunos(filtrados);
                 document.getElementById('alunoSelect').value = '';
             } else {
-                document.getElementById('alunos-termos').innerHTML = '<div class="no-alunos">Nenhum aluno encontrado</div>';
+                document.getElementById('alunos-termos').innerHTML = '<div class="no-alunos">😕 Nenhum aluno encontrado</div>';
             }
         }
 
@@ -1880,6 +1909,10 @@
 
         // Modal Trocar Senha
         function abrirModalTrocarSenha() {
+            if (!usuarioLogado) {
+                alert('Você precisa estar logado para alterar a senha.');
+                return;
+            }
             document.getElementById('modalTrocarSenha').classList.add('active');
             document.getElementById('senhaAtual').value = '';
             document.getElementById('novaSenha').value = '';
@@ -1962,6 +1995,7 @@
             modal.className = 'modal-overlay';
             modal.innerHTML = `
                 <div class="modal-content">
+                    <button class="btn-close" onclick="fecharModalTemp(this)" style="float: right;">✕</button>
                     <h3>💬 Suporte</h3>
                     <p>Entre em contato com nossa equipe de suporte:</p>
                     <div style="margin: 20px 0;">

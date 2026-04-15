@@ -36,7 +36,7 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             background: var(--surface-dark);
             border-radius: 32px;
@@ -68,14 +68,13 @@
         .logo-animated {
             width: 50px;
             height: 50px;
-            background: linear-gradient(135deg, var(--primary-red), var(--primary-red-dark));
+            background: transparent;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
-            font-size: 1.4rem;
-            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+            transition: all 0.2s ease;
+            overflow: hidden;
         }
 
         .logo-text h2 { color: white; font-size: 1.6rem; margin: 0; }
@@ -213,7 +212,7 @@
         .btn-limpar-valores:hover { transform: translateY(-2px); filter: brightness(1.05); }
 
         .tabela-container { overflow-x: auto; }
-        .tabela-funcionarios { width: 100%; border-collapse: collapse; }
+        .tabela-funcionarios { width: 100%; border-collapse: collapse; min-width: 1200px; }
         .tabela-funcionarios th, .tabela-funcionarios td {
             padding: 14px 12px;
             text-align: left;
@@ -222,11 +221,11 @@
         .tabela-funcionarios th { 
             color: var(--primary-red); 
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        .tabela-funcionarios td { font-size: 0.9rem; }
+        .tabela-funcionarios td { font-size: 0.85rem; }
 
         .beneficio-checkbox {
             width: 18px;
@@ -258,26 +257,6 @@
             outline: none;
             border-color: var(--primary-red);
         }
-
-        .acoes-container {
-            display: flex;
-            flex-direction: row;
-            gap: 8px;
-            justify-content: center;
-        }
-        .btn-editar, .btn-excluir {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s;
-        }
-        .btn-editar { background: var(--accent-blue); color: white; }
-        .btn-editar:hover { background: #0066CC; transform: translateY(-1px); }
-        .btn-excluir { background: var(--primary-red); color: white; }
-        .btn-excluir:hover { background: var(--primary-red-dark); transform: translateY(-1px); }
 
         .contador {
             display: inline-flex;
@@ -314,7 +293,7 @@
             background: rgba(78, 205, 196, 0.2);
             border: 1px solid var(--accent-green);
             color: var(--accent-green);
-            padding: 5px 10px;
+            padding: 5px 12px;
             border-radius: 20px;
             font-size: 0.7rem;
             font-weight: 500;
@@ -323,6 +302,21 @@
             white-space: nowrap;
         }
         .btn-dep:hover { background: var(--accent-green); color: #1a1a1a; }
+
+        .pessoas-badge {
+            background: rgba(78, 205, 196, 0.15);
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 600;
+            color: var(--accent-green);
+        }
+
+        .total-plano {
+            color: var(--accent-green);
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
 
         .modal {
             display: none;
@@ -490,12 +484,10 @@
             .tab-btn { justify-content: center; }
             .filtros-grid { flex-direction: column; }
             .dependente-item { flex-direction: column; }
-            .tabela-funcionarios { font-size: 12px; }
+            .tabela-funcionarios { font-size: 11px; }
             .tabela-funcionarios th, .tabela-funcionarios td { padding: 8px 6px; }
             .footer { padding: 15px 20px; }
-            .acoes-container { flex-direction: column; gap: 4px; }
-            .btn-editar, .btn-excluir { justify-content: center; }
-            .valor-input { width: 70px; }
+            .valor-input { width: 65px; }
             .massa-input-group { flex-wrap: wrap; }
         }
     </style>
@@ -505,7 +497,9 @@
     <header class="header-moderno">
         <div class="header-content">
             <div class="logo-wrapper" onclick="window.location.href='/'">
-                <div class="logo-animated"><span>CS</span></div>
+                <div class="logo-animated">
+                    <img src="/static/img/gestao.png" alt="Creche El Shadday" style="width: 100%; height: 100%; object-fit: contain;">
+                </div>
                 <div class="logo-text">
                     <h2>Creche El Shadday</h2>
                     <p>Gestão de Benefícios</p>
@@ -606,6 +600,7 @@
                                 Plano Saúde
                             </th>
                             <th style="text-align:center">Valor Base</th>
+                            <th style="text-align:center">Dependentes</th>
                             <th style="text-align:center">Pessoas</th>
                             <th style="text-align:center">Total</th>
                             <th style="text-align:center">
@@ -613,8 +608,6 @@
                                 Vale Transp.
                             </th>
                             <th style="text-align:center">Valor</th>
-                            <th style="text-align:center">Dependentes</th>
-                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody id="listaFuncionarios"></tbody>
@@ -647,56 +640,8 @@
     </div>
 </div>
 
-<!-- Modal de Exclusão -->
-<div id="modalExclusao" class="modal">
-    <div class="modal-content">
-        <h3>Confirmar Exclusão</h3>
-        <p id="msgExclusao">Tem certeza que deseja excluir este funcionário?</p>
-        <p style="font-size: 0.8rem; color: var(--primary-red);">Esta ação não pode ser desfeita.</p>
-        <div class="modal-buttons">
-            <button class="btn-modal-cancel" onclick="fecharModalExclusao()">Cancelar</button>
-            <button class="btn-modal-save" style="background: var(--primary-red); color: white;" onclick="confirmarExclusao()">Excluir</button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal de Confirmação para Aplicação em Massa -->
-<div id="modalConfirmacaoAplicacao" class="modal">
-    <div class="modal-content">
-        <h3>Confirmar Operação</h3>
-        <div class="modal-mensagem" id="mensagemConfirmacao">
-            <p>Você está prestes a aplicar o valor</p>
-            <div class="valor-destaque" id="valorDestaque">R$ 0,00</div>
-            <p>para o campo <strong>Valor Base</strong> do <strong>Plano de Saúde</strong> de</p>
-            <div class="quantidade-destaque" id="quantidadeDestaque">0 funcionário(s)</div>
-            <p>Deseja continuar com esta operação?</p>
-        </div>
-        <div class="modal-buttons">
-            <button class="btn-modal-cancel" onclick="fecharModalConfirmacao()">Cancelar</button>
-            <button class="btn-modal-save" style="background: var(--primary-red); color: white;" onclick="confirmarAplicacaoMassa()">Confirmar</button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal de Confirmação para Limpar Valores -->
-<div id="modalConfirmacaoLimpar" class="modal">
-    <div class="modal-content">
-        <h3>Confirmar Operação</h3>
-        <div class="modal-mensagem">
-            <p>Você está prestes a <strong>ZERAR</strong> o campo <strong>Valor Base</strong> do <strong>Plano de Saúde</strong> de</p>
-            <div class="quantidade-destaque" id="quantidadeDestaqueLimpar">0 funcionário(s)</div>
-            <p>Deseja continuar com esta operação?</p>
-        </div>
-        <div class="modal-buttons">
-            <button class="btn-modal-cancel" onclick="fecharModalConfirmacaoLimpar()">Cancelar</button>
-            <button class="btn-modal-save" style="background: var(--primary-red); color: white;" onclick="confirmarLimparValores()">Confirmar</button>
-        </div>
-    </div>
-</div>
-
 <script>
     let funcionarios = [];
-    let rgmParaExcluir = null;
     let rgmDependentesAtual = null;
     let dependentesTemp = [];
     let tabAtual = 'todos';
@@ -1068,7 +1013,7 @@
     function exibirTabela(filtrados) {
         const tbody = document.getElementById('listaFuncionarios');
         if (filtrados.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 40px;">Nenhum funcionário encontrado</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 40px;">Nenhum funcionário encontrado</td></tr>';
             return;
         }
 
@@ -1076,6 +1021,7 @@
             const totalPessoas = calcularTotalPessoas(func.dependentes);
             const valorBase = func.valor_plano_saude || 0;
             const valorTotalPlano = calcularValorTotalPlanoSaude(func);
+            const qtdDependentes = (func.dependentes && func.dependentes.length) || 0;
             
             return `
                 <tr>
@@ -1100,10 +1046,15 @@
                             ${!func.beneficio_plano_saude ? 'disabled style="opacity:0.5"' : ''}>
                     </td>
                     <td style="text-align:center">
-                        <span style="background:rgba(78,205,196,0.1); padding:4px 8px; border-radius:20px;">${totalPessoas}</span>
+                        <button class="btn-dep" onclick="abrirDependentes('${func.rgm}', '${escapeHtml(func.nome || '')}')">
+                            ${qtdDependentes} ${qtdDependentes === 1 ? 'dependente' : 'dependentes'}
+                        </button>
                     </td>
                     <td style="text-align:center">
-                        <strong style="color: var(--accent-green);">${formatarMoeda(valorTotalPlano)}</strong>
+                        <span class="pessoas-badge">${totalPessoas} pessoa${totalPessoas !== 1 ? 's' : ''}</span>
+                    </td>
+                    <td style="text-align:center">
+                        <strong class="total-plano">${formatarMoeda(valorTotalPlano)}</strong>
                     </td>
                     <td style="text-align:center">
                         <input type="checkbox" class="beneficio-checkbox" 
@@ -1115,15 +1066,6 @@
                             value="${func.valor_vale_transporte || 0}" 
                             onchange="atualizarValor('${func.rgm}', 'valor_vale_transporte', this.value)"
                             ${!func.beneficio_vale_transporte ? 'disabled style="opacity:0.5"' : ''}>
-                    </td>
-                    <td style="text-align:center">
-                        <button class="btn-dep" onclick="abrirDependentes('${func.rgm}', '${escapeHtml(func.nome || '')}')">
-                            ${(func.dependentes && func.dependentes.length) || 0}
-                        </button>
-                    </td>
-                    <td class="acoes-container">
-                        <button class="btn-editar" onclick="window.location.href='/funcionarios/cadastro?editar=${func.rgm}'" title="Editar">Editar</button>
-                        <button class="btn-excluir" onclick="abrirModalExclusao('${func.rgm}', '${escapeHtml(func.nome || '')}')" title="Excluir">Excluir</button>
                     </td>
                 </tr>
             `;
@@ -1239,268 +1181,234 @@
         dependentesTemp = [];
     }
 
-    function abrirModalExclusao(rgm, nome) {
-        rgmParaExcluir = rgm;
-        document.getElementById('msgExclusao').innerHTML = `Tem certeza que deseja excluir o funcionário "${nome}"?`;
-        document.getElementById('modalExclusao').classList.add('active');
-    }
+    function gerarPDF() {
+        const filtroNome = document.getElementById('filtroNome').value.toLowerCase();
+        const filtroUnidade = document.getElementById('filtroUnidade').value;
+        const filtroFuncao = document.getElementById('filtroFuncao').value;
+        const filtroMes = document.getElementById('filtroMes').value;
+        const filtroAno = document.getElementById('filtroAno').value;
 
-    function fecharModalExclusao() {
-        document.getElementById('modalExclusao').classList.remove('active');
-        rgmParaExcluir = null;
-    }
+        let filtrados = funcionarios.filter(func => {
+            const matchNome = func.nome ? func.nome.toLowerCase().includes(filtroNome) : false;
+            const matchUnidade = !filtroUnidade || func.unidade === filtroUnidade;
+            const matchFuncao = !filtroFuncao || func.funcao === filtroFuncao;
+            return matchNome && matchUnidade && matchFuncao;
+        });
 
-    function confirmarExclusao() {
-        if (rgmParaExcluir) {
-            fetch('/api/funcionarios/excluir', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ rgm: rgmParaExcluir })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.sucesso) {
-                    mostrarNotificacao('Funcionário excluído com sucesso', 'success');
-                    carregarFuncionarios();
-                    fecharModalExclusao();
-                } else {
-                    mostrarNotificacao(data.erro || 'Erro ao excluir', 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                mostrarNotificacao('Erro de conexão', 'error');
-            });
-        }
-    }
-
-  function gerarPDF() {
-    const filtroNome = document.getElementById('filtroNome').value.toLowerCase();
-    const filtroUnidade = document.getElementById('filtroUnidade').value;
-    const filtroFuncao = document.getElementById('filtroFuncao').value;
-    const filtroMes = document.getElementById('filtroMes').value;
-    const filtroAno = document.getElementById('filtroAno').value;
-
-    let filtrados = funcionarios.filter(func => {
-        const matchNome = func.nome ? func.nome.toLowerCase().includes(filtroNome) : false;
-        const matchUnidade = !filtroUnidade || func.unidade === filtroUnidade;
-        const matchFuncao = !filtroFuncao || func.funcao === filtroFuncao;
-        return matchNome && matchUnidade && matchFuncao;
-    });
-
-    let titulo = '', corTema = '#E50914';
-    let mostrarValor = false;
-    
-    if (tabAtual === 'odontologico') {
-        filtrados = filtrados.filter(f => f.beneficio_odonto === true);
-        titulo = 'BENEFÍCIO ODONTOLÓGICO';
-        corTema = '#4ECDC4';
-    } else if (tabAtual === 'plano_saude') {
-        filtrados = filtrados.filter(f => f.beneficio_plano_saude === true);
-        titulo = 'PLANO DE SAÚDE';
-        corTema = '#0080FF';
-        mostrarValor = true;
-    } else if (tabAtual === 'vale_transporte') {
-        filtrados = filtrados.filter(f => f.beneficio_vale_transporte === true);
-        titulo = 'VALE TRANSPORTE';
-        corTema = '#FFD166';
-        mostrarValor = true;
-    } else {
-        titulo = 'LISTA DE FUNCIONÁRIOS';
-        corTema = '#E50914';
-    }
-
-    if (filtrados.length === 0) {
-        mostrarNotificacao('Nenhum funcionário para gerar PDF', 'warning');
-        return;
-    }
-
-    const mesTexto = filtroMes && mesesNomes[filtroMes] ? ` - ${mesesNomes[filtroMes]}` : '';
-    const anoTexto = filtroAno ? ` - ${filtroAno}` : '';
-    
-    const unidadeInfo = filtroUnidade ? UNIDADES_INFO[filtroUnidade] || UNIDADES_INFO["CEIC El Shadday"] : UNIDADES_INFO["CEIC El Shadday"];
-    
-    let totalGeral = 0;
-    if (mostrarValor) {
-        if (tabAtual === 'plano_saude') {
-            totalGeral = filtrados.reduce((acc, f) => acc + calcularValorTotalPlanoSaude(f), 0);
+        let titulo = '', corTema = '#E50914';
+        let mostrarValor = false;
+        
+        if (tabAtual === 'odontologico') {
+            filtrados = filtrados.filter(f => f.beneficio_odonto === true);
+            titulo = 'BENEFÍCIO ODONTOLÓGICO';
+            corTema = '#4ECDC4';
+        } else if (tabAtual === 'plano_saude') {
+            filtrados = filtrados.filter(f => f.beneficio_plano_saude === true);
+            titulo = 'PLANO DE SAÚDE';
+            corTema = '#0080FF';
+            mostrarValor = true;
+        } else if (tabAtual === 'vale_transporte') {
+            filtrados = filtrados.filter(f => f.beneficio_vale_transporte === true);
+            titulo = 'VALE TRANSPORTE';
+            corTema = '#FFD166';
+            mostrarValor = true;
         } else {
-            totalGeral = filtrados.reduce((acc, f) => acc + (f.valor_vale_transporte || 0), 0);
+            titulo = 'LISTA DE FUNCIONÁRIOS';
+            corTema = '#E50914';
         }
-    }
 
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>${titulo} - Creche El Shadday</title>
-            <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                body {
-                    font-family: 'Inter', Arial, Helvetica, sans-serif;
-                    padding: 10px;
-                    background: white;
-                    color: #333;
-                    font-size: 9px;
-                }
-                .header {
-                    text-align: center;
-                    margin-bottom: 10px;
-                    padding-bottom: 8px;
-                    border-bottom: 2px solid ${corTema};
-                }
-                .header h1 { 
-                    color: ${corTema}; 
-                    font-size: 16px;
-                    margin-bottom: 3px;
-                }
-                .info {
-                    background: #f8f9fa;
-                    padding: 8px 12px;
-                    border-radius: 6px;
-                    margin-bottom: 10px;
-                    border-left: 3px solid ${corTema};
-                    font-size: 8px;
-                    line-height: 1.4;
-                }
-                .info p {
-                    margin: 2px 0;
-                }
-                table { 
-                    width: 100%; 
-                    border-collapse: collapse; 
-                    margin-top: 8px;
-                    font-size: 8px;
-                }
-                th { 
-                    background: ${corTema}; 
-                    color: white; 
-                    padding: 5px 4px; 
-                    text-align: left; 
-                    font-weight: 600;
-                    font-size: 8px;
-                }
-                td { 
-                    padding: 4px 4px; 
-                    border-bottom: 1px solid #ddd;
-                }
-                .footer-pdf { 
-                    margin-top: 10px; 
-                    text-align: center; 
-                    font-size: 7px; 
-                    color: #999; 
-                    border-top: 1px solid #ddd; 
-                    padding-top: 8px; 
-                }
-                .total { 
-                    background: ${corTema}; 
-                    color: white; 
-                    padding: 4px 15px; 
-                    border-radius: 15px; 
-                    display: inline-block; 
-                    margin-top: 10px; 
-                    font-weight: bold;
-                    font-size: 8px;
-                }
-                td:nth-child(3) { 
-                    white-space: nowrap;
-                }
-                @media print {
-                    body { 
-                        padding: 0; 
-                        margin: 0;
+        if (filtrados.length === 0) {
+            mostrarNotificacao('Nenhum funcionário para gerar PDF', 'warning');
+            return;
+        }
+
+        const mesTexto = filtroMes && mesesNomes[filtroMes] ? ` - ${mesesNomes[filtroMes]}` : '';
+        const anoTexto = filtroAno ? ` - ${filtroAno}` : '';
+        
+        const unidadeInfo = filtroUnidade ? UNIDADES_INFO[filtroUnidade] || UNIDADES_INFO["CEIC El Shadday"] : UNIDADES_INFO["CEIC El Shadday"];
+        
+        let totalGeral = 0;
+        if (mostrarValor) {
+            if (tabAtual === 'plano_saude') {
+                totalGeral = filtrados.reduce((acc, f) => acc + calcularValorTotalPlanoSaude(f), 0);
+            } else {
+                totalGeral = filtrados.reduce((acc, f) => acc + (f.valor_vale_transporte || 0), 0);
+            }
+        }
+
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>${titulo} - Creche El Shadday</title>
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body {
+                        font-family: 'Inter', Arial, Helvetica, sans-serif;
+                        padding: 10px;
+                        background: white;
+                        color: #333;
+                        font-size: 9px;
                     }
-                    .no-print { 
-                        display: none; 
+                    .header {
+                        text-align: center;
+                        margin-bottom: 10px;
+                        padding-bottom: 8px;
+                        border-bottom: 2px solid ${corTema};
                     }
-                    @page {
-                        margin: 0.5cm;
+                    .header h1 { 
+                        color: ${corTema}; 
+                        font-size: 16px;
+                        margin-bottom: 3px;
                     }
-                }
-            </style>
-        </head>
-        <body>
-            <div class="header">
-                <h1>CRECHE EL SHADDAY</h1>
-            </div>
-            <div class="info">
-                <p><strong>Unidade:</strong> ${unidadeInfo.nome}</p>
-                <p><strong>CNPJ:</strong> ${unidadeInfo.cnpj}</p>
-                <p><strong>Período:</strong> ${mesTexto.substring(3) || 'Todos os meses'} ${anoTexto.substring(3) || ''}</p>
-                <p><strong>Relatório:</strong> ${titulo}${mesTexto}${anoTexto}</p>
-                <p><strong>Total de funcionários:</strong> ${filtrados.length} ${mostrarValor ? `| <strong>Valor Total:</strong> R$ ${totalGeral.toFixed(2).replace('.', ',')}` : ''}</p>
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width:5%">Nº</th>
-                        <th style="width:20%">Nome</th>
-                        <th style="width:10%">CPF</th>
-                        <th style="width:12%">Função</th>
-                        <th style="width:15%">Unidade</th>
-                        ${tabAtual === 'plano_saude' ? '<th style="width:8%">Valor Base</th><th style="width:6%">Pessoas</th><th style="width:10%">Valor Total</th><th style="width:14%">Dependentes</th>' : ''}
-                        ${tabAtual === 'vale_transporte' ? '<th style="width:10%">Valor Mensal</th>' : ''}
-                    </tr>
-                </thead>
-                <tbody>
-                    ${filtrados.map((f, i) => {
-                        if (tabAtual === 'plano_saude') {
-                            const totalPessoas = calcularTotalPessoas(f.dependentes);
-                            const valorTotal = calcularValorTotalPlanoSaude(f);
-                            return `<tr>
-                                <td style="text-align: center;">${i+1}</td>
-                                <td style="white-space: nowrap;">${escapeHtml(f.nome || '')}</td>
-                                <td style="white-space: nowrap;">${formatarCPF(f.cpf)}</td>
-                                <td style="white-space: nowrap;">${escapeHtml(f.funcao || '')}</td>
-                                <td style="white-space: nowrap;">${escapeHtml(f.unidade || '')}</td>
-                                <td style="text-align: center;">R$ ${(f.valor_plano_saude || 0).toFixed(2).replace('.', ',')}</td>
-                                <td style="text-align: center;">${totalPessoas}</td>
-                                <td style="text-align: center;">R$ ${valorTotal.toFixed(2).replace('.', ',')}</td>
-                                <td style="white-space: normal; font-size: 7px;">${(f.dependentes && f.dependentes.length) ? f.dependentes.map(d => `${d.nome} (${d.parentesco || '—'})`).join(', ') : '—'}</td>
-                            </tr>`;
-                        } else if (tabAtual === 'vale_transporte') {
-                            return `<tr>
-                                <td style="text-align: center;">${i+1}</td>
-                                <td style="white-space: nowrap;">${escapeHtml(f.nome || '')}</td>
-                                <td style="white-space: nowrap;">${formatarCPF(f.cpf)}</td>
-                                <td style="white-space: nowrap;">${escapeHtml(f.funcao || '')}</td>
-                                <td style="white-space: nowrap;">${escapeHtml(f.unidade || '')}</td>
-                                <td style="text-align: center;">R$ ${(f.valor_vale_transporte || 0).toFixed(2).replace('.', ',')}</td>
-                            </tr>`;
-                        } else {
-                            return `<tr>
-                                <td style="text-align: center;">${i+1}</td>
-                                <td style="white-space: nowrap;">${escapeHtml(f.nome || '')}</td>
-                                <td style="white-space: nowrap;">${formatarCPF(f.cpf)}</td>
-                                <td style="white-space: nowrap;">${escapeHtml(f.funcao || '')}</td>
-                                <td style="white-space: nowrap;">${escapeHtml(f.unidade || '')}</td>
-                            </tr>`;
+                    .info {
+                        background: #f8f9fa;
+                        padding: 8px 12px;
+                        border-radius: 6px;
+                        margin-bottom: 10px;
+                        border-left: 3px solid ${corTema};
+                        font-size: 8px;
+                        line-height: 1.4;
+                    }
+                    .info p {
+                        margin: 2px 0;
+                    }
+                    table { 
+                        width: 100%; 
+                        border-collapse: collapse; 
+                        margin-top: 8px;
+                        font-size: 8px;
+                    }
+                    th { 
+                        background: ${corTema}; 
+                        color: white; 
+                        padding: 5px 4px; 
+                        text-align: left; 
+                        font-weight: 600;
+                        font-size: 8px;
+                    }
+                    td { 
+                        padding: 4px 4px; 
+                        border-bottom: 1px solid #ddd;
+                    }
+                    .footer-pdf { 
+                        margin-top: 10px; 
+                        text-align: center; 
+                        font-size: 7px; 
+                        color: #999; 
+                        border-top: 1px solid #ddd; 
+                        padding-top: 8px; 
+                    }
+                    .total { 
+                        background: ${corTema}; 
+                        color: white; 
+                        padding: 4px 15px; 
+                        border-radius: 15px; 
+                        display: inline-block; 
+                        margin-top: 10px; 
+                        font-weight: bold;
+                        font-size: 8px;
+                    }
+                    td:nth-child(3) { 
+                        white-space: nowrap;
+                    }
+                    @media print {
+                        body { 
+                            padding: 0; 
+                            margin: 0;
                         }
-                    }).join('')}
-                </tbody>
-            </table>
-            <div style="text-align: center;"><div class="total">Total: ${filtrados.length} funcionário(s)</div></div>
-            <div class="footer-pdf">
-                <p>${unidadeInfo.nome} - CNPJ: ${unidadeInfo.cnpj}</p>
-                <p>${unidadeInfo.endereco} | Telefone: ${unidadeInfo.telefone}</p>
-                <p>Documento gerado eletronicamente - Creche El Shadday</p>
-            </div>
-            <div class="no-print" style="text-align:center; margin-top:10px; padding:8px; position:fixed; bottom:0; left:0; right:0; background:white; box-shadow:0 -1px 5px rgba(0,0,0,0.1);">
-                <button onclick="window.print()" style="padding:6px 25px; background:${corTema}; color:white; border:none; border-radius:5px; cursor:pointer; margin-right:8px; font-size:11px;">Imprimir</button>
-                <button onclick="window.close()" style="padding:6px 20px; background:#333; color:white; border:none; border-radius:5px; cursor:pointer; font-size:11px;">Fechar</button>
-            </div>
-            <script>
-                setTimeout(function() {
-                    window.print();
-                }, 500);
-            <\/script>
-        </body>
-        </html>
-    `);
-    printWindow.document.close();
-}
+                        .no-print { 
+                            display: none; 
+                        }
+                        @page {
+                            margin: 0.5cm;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>CRECHE EL SHADDAY</h1>
+                </div>
+                <div class="info">
+                    <p><strong>Unidade:</strong> ${unidadeInfo.nome}</p>
+                    <p><strong>CNPJ:</strong> ${unidadeInfo.cnpj}</p>
+                    <p><strong>Período:</strong> ${mesTexto.substring(3) || 'Todos os meses'} ${anoTexto.substring(3) || ''}</p>
+                    <p><strong>Relatório:</strong> ${titulo}${mesTexto}${anoTexto}</p>
+                    <p><strong>Total de funcionários:</strong> ${filtrados.length} ${mostrarValor ? `| <strong>Valor Total:</strong> R$ ${totalGeral.toFixed(2).replace('.', ',')}` : ''}</p>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:5%">Nº</th>
+                            <th style="width:20%">Nome</th>
+                            <th style="width:10%">CPF</th>
+                            <th style="width:12%">Função</th>
+                            <th style="width:15%">Unidade</th>
+                            ${tabAtual === 'plano_saude' ? '<th style="width:8%">Valor Base</th><th style="width:8%">Dependentes</th><th style="width:6%">Pessoas</th><th style="width:10%">Valor Total</th>' : ''}
+                            ${tabAtual === 'vale_transporte' ? '<th style="width:10%">Valor Mensal</th>' : ''}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filtrados.map((f, i) => {
+                            if (tabAtual === 'plano_saude') {
+                                const totalPessoas = calcularTotalPessoas(f.dependentes);
+                                const valorTotal = calcularValorTotalPlanoSaude(f);
+                                const qtdDependentes = (f.dependentes && f.dependentes.length) || 0;
+                                return `<tr>
+                                    <td style="text-align: center;">${i+1}</td>
+                                    <td style="white-space: nowrap;">${escapeHtml(f.nome || '')}</td>
+                                    <td style="white-space: nowrap;">${formatarCPF(f.cpf)}</td>
+                                    <td style="white-space: nowrap;">${escapeHtml(f.funcao || '')}</td>
+                                    <td style="white-space: nowrap;">${escapeHtml(f.unidade || '')}</td>
+                                    <td style="text-align: center;">R$ ${(f.valor_plano_saude || 0).toFixed(2).replace('.', ',')}</td>
+                                    <td style="text-align: center;">${qtdDependentes}</td>
+                                    <td style="text-align: center;">${totalPessoas}</td>
+                                    <td style="text-align: center;">R$ ${valorTotal.toFixed(2).replace('.', ',')}</td>
+                                </tr>`;
+                            } else if (tabAtual === 'vale_transporte') {
+                                return `<tr>
+                                    <td style="text-align: center;">${i+1}</td>
+                                    <td style="white-space: nowrap;">${escapeHtml(f.nome || '')}</td>
+                                    <td style="white-space: nowrap;">${formatarCPF(f.cpf)}</td>
+                                    <td style="white-space: nowrap;">${escapeHtml(f.funcao || '')}</td>
+                                    <td style="white-space: nowrap;">${escapeHtml(f.unidade || '')}</td>
+                                    <td style="text-align: center;">R$ ${(f.valor_vale_transporte || 0).toFixed(2).replace('.', ',')}</td>
+                                </tr>`;
+                            } else {
+                                return `<tr>
+                                    <td style="text-align: center;">${i+1}</td>
+                                    <td style="white-space: nowrap;">${escapeHtml(f.nome || '')}</td>
+                                    <td style="white-space: nowrap;">${formatarCPF(f.cpf)}</td>
+                                    <td style="white-space: nowrap;">${escapeHtml(f.funcao || '')}</td>
+                                    <td style="white-space: nowrap;">${escapeHtml(f.unidade || '')}</td>
+                                </tr>`;
+                            }
+                        }).join('')}
+                    </tbody>
+                </table>
+                <div style="text-align: center;"><div class="total">Total: ${filtrados.length} funcionário(s)</div></div>
+                <div class="footer-pdf">
+                    <p>${unidadeInfo.nome} - CNPJ: ${unidadeInfo.cnpj}</p>
+                    <p>${unidadeInfo.endereco} | Telefone: ${unidadeInfo.telefone}</p>
+                    <p>Documento gerado eletronicamente - Creche El Shadday</p>
+                </div>
+                <div class="no-print" style="text-align:center; margin-top:10px; padding:8px; position:fixed; bottom:0; left:0; right:0; background:white; box-shadow:0 -1px 5px rgba(0,0,0,0.1);">
+                    <button onclick="window.print()" style="padding:6px 25px; background:${corTema}; color:white; border:none; border-radius:5px; cursor:pointer; margin-right:8px; font-size:11px;">Imprimir</button>
+                    <button onclick="window.close()" style="padding:6px 20px; background:#333; color:white; border:none; border-radius:5px; cursor:pointer; font-size:11px;">Fechar</button>
+                </div>
+                <script>
+                    setTimeout(function() {
+                        window.print();
+                    }, 500);
+                <\/script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+    }
 
     function escapeHtml(text) {
         if (!text) return '';
