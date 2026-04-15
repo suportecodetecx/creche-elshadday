@@ -10,7 +10,119 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/processo-de-trabalho.png') }}">
     <style>
-        /* ===== TODO O CSS DO SEU INDEX ATUAL (mantido) ===== */
+        /* ===== SPLASH SCREEN ESTILO NETFLIX ===== */
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0f0f0f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        .splash-screen.hide {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* Animação das setas estilo Netflix */
+        .netflix-loader {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+
+        .netflix-loader span {
+            position: absolute;
+            width: 30px;
+            height: 100%;
+            background: linear-gradient(180deg, #E50914, #B81D24);
+            animation: netflixExpand 1.2s ease-in-out infinite;
+        }
+
+        .netflix-loader span:nth-child(1) {
+            left: 0;
+            animation-delay: 0s;
+        }
+
+        .netflix-loader span:nth-child(2) {
+            left: 45px;
+            animation-delay: 0.15s;
+        }
+
+        .netflix-loader span:nth-child(3) {
+            left: 90px;
+            animation-delay: 0.3s;
+        }
+
+        .netflix-loader .horizontal {
+            position: absolute;
+            width: 100%;
+            height: 30px;
+            top: 45px;
+            left: 0;
+            background: linear-gradient(90deg, #E50914, #B81D24);
+            animation: netflixHorizontal 1.2s ease-in-out infinite;
+            animation-delay: 0.45s;
+        }
+
+        @keyframes netflixExpand {
+            0% { transform: scaleY(0.2); opacity: 0; }
+            40% { transform: scaleY(1); opacity: 1; }
+            60% { transform: scaleY(0.9); opacity: 0.9; }
+            100% { transform: scaleY(0.8); opacity: 0.8; }
+        }
+
+        @keyframes netflixHorizontal {
+            0% { transform: scaleX(0); opacity: 0; }
+            40% { transform: scaleX(1); opacity: 1; }
+            60% { transform: scaleX(0.95); opacity: 0.9; }
+            100% { transform: scaleX(0.9); opacity: 0.8; }
+        }
+
+        /* Efeito de brilho */
+        .netflix-loader::before {
+            content: '';
+            position: absolute;
+            top: -30px;
+            left: -30px;
+            right: -30px;
+            bottom: -30px;
+            background: radial-gradient(circle, rgba(229,9,20,0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: netflixGlow 1.2s ease-in-out infinite;
+        }
+
+        @keyframes netflixGlow {
+            0%, 100% { opacity: 0; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Texto "CARREGANDO" */
+        .splash-text {
+            position: absolute;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #808080;
+            font-size: 0.8rem;
+            letter-spacing: 3px;
+            font-weight: 500;
+            text-transform: uppercase;
+            animation: blinkText 1.5s ease-in-out infinite;
+        }
+
+        @keyframes blinkText {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* ===== TODO O RESTO DO CSS DO SEU INDEX ATUAL ===== */
         * {
             margin: 0;
             padding: 0;
@@ -161,13 +273,11 @@
             box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3);
         }
 
-        /* EFEITO DE ÍCONE PULANDO - ESTILO SED */
         .card-acesso:hover .card-icon {
             transform: translateY(-18px) scale(1.02);
             box-shadow: 0 15px 30px -8px rgba(0,0,0,0.5);
         }
 
-        /* Efeito específico para cada card no hover do ícone */
         .card-acesso.pedagogico:hover .card-icon {
             background: linear-gradient(135deg, #F40612, #E50914);
         }
@@ -706,6 +816,9 @@
                 gap: 10px;
                 align-items: center;
             }
+            .netflix-loader {
+                transform: scale(0.8);
+            }
         }
 
         /* Avatar do usuário logado */
@@ -991,6 +1104,17 @@
     </style>
 </head>
 <body>
+    <!-- SPLASH SCREEN ESTILO NETFLIX -->
+    <div id="splashScreen" class="splash-screen">
+        <div class="netflix-loader">
+            <span></span>
+            <span></span>
+            <span></span>
+            <div class="horizontal"></div>
+            <div class="splash-text">CARREGANDO</div>
+        </div>
+    </div>
+
     <div class="container">
         <!-- Header -->
         <div class="header">
@@ -1285,6 +1409,19 @@
     </div>
 
     <script>
+        // ===== SPLASH SCREEN - ESCONDE APÓS 2 SEGUNDOS =====
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                const splash = document.getElementById('splashScreen');
+                if (splash) {
+                    splash.classList.add('hide');
+                    setTimeout(function() {
+                        splash.style.display = 'none';
+                    }, 800);
+                }
+            }, 2500);
+        });
+
         let alunosData = [];
         let usuarioLogado = null;
         let tipoAcesso = 'pedagogico';
@@ -1338,11 +1475,9 @@
             button.textContent = 'Preparando...';
             button.disabled = true;
             
-            // Buscar o aluno para capitalizar os dados
             const aluno = alunosData.find(a => a.num_inscricao === numInscricao);
             
             if (aluno) {
-                // Capitalizar os dados do aluno antes de enviar
                 const dadosCapitalizados = {
                     nome: capitalizarNome(aluno.dados_pessoais?.nome || ''),
                     ra: aluno.dados_pessoais?.ra || '',
@@ -1360,7 +1495,6 @@
                     sexo: aluno.dados_pessoais?.sexo === 'M' ? 'Masculino' : 'Feminino'
                 };
                 
-                // Salvar dados capitalizados para o backend
                 sessionStorage.setItem('dadosImpressao', JSON.stringify(dadosCapitalizados));
             }
             
@@ -1375,7 +1509,6 @@
             
             const url = urls[tipo];
             if (url) {
-                // Adicionar parâmetro para indicar capitalização
                 const urlComParams = url + (url.includes('?') ? '&' : '?') + 'capitalizar=true';
                 window.open(urlComParams, '_blank');
             }
@@ -1413,19 +1546,13 @@
             const isMaster = usuarioLogado.perfil === 'master' || usuarioLogado.usuario === 'master';
             const isAdmin = usuarioLogado.perfil === 'admin' && !isMaster;
             
-            console.log('isMaster:', isMaster);
-            console.log('isAdmin:', isAdmin);
-            
             if (isMaster) {
-                console.log('✅ MODO MASTER ATIVADO - 6 cards');
                 document.getElementById('cardsPedagogico').classList.add('active');
                 document.getElementById('cardsAdmin').classList.add('active');
             } else if (isAdmin) {
-                console.log('✅ MODO ADMIN - 4 cards');
                 document.getElementById('cardsPedagogico').classList.remove('active');
                 document.getElementById('cardsAdmin').classList.add('active');
             } else {
-                console.log('✅ MODO PEDAGÓGICO - 3 cards');
                 document.getElementById('cardsPedagogico').classList.add('active');
                 document.getElementById('cardsAdmin').classList.remove('active');
             }
@@ -1627,12 +1754,10 @@
                 });
         }
 
-        // ===== SELECT DE ALUNOS EM ORDEM ALFABÉTICA E CAPITALIZADO =====
         function atualizarSelectAlunos() {
             const select = document.getElementById('alunoSelect');
             let options = '<option value="">🔍 Selecione um aluno</option>';
             
-            // ORDENAR ALUNOS EM ORDEM ALFABÉTICA
             const alunosOrdenados = [...alunosData];
             alunosOrdenados.sort((a, b) => {
                 const nomeA = (a.dados_pessoais?.nome || '').toLowerCase();
@@ -1661,7 +1786,6 @@
             }
         }
 
-        // ===== FILTRAR ALUNOS COM ORDENAÇÃO =====
         function filtrarAlunos() {
             const termo = document.getElementById('searchTermos').value.toLowerCase().trim();
             if (!termo) {
@@ -1675,7 +1799,6 @@
                 return nome.includes(termo) || numInscricao.includes(termo);
             });
             
-            // ORDENAR OS FILTRADOS
             filtrados.sort((a, b) => {
                 const nomeA = (a.dados_pessoais?.nome || '').toLowerCase();
                 const nomeB = (b.dados_pessoais?.nome || '').toLowerCase();
@@ -1693,7 +1816,6 @@
             }
         }
 
-        // ===== LISTA DE ALUNOS COM CAPITALIZAÇÃO E ORDENAÇÃO =====
         function exibirListaAlunos(alunos) {
             let html = '<div class="lista-alunos">';
             alunos.forEach(aluno => {
@@ -1714,7 +1836,6 @@
             document.getElementById('alunos-termos').innerHTML = html;
         }
 
-        // ===== CARD DO ALUNO COM CAPITALIZAÇÃO =====
         function exibirCardAluno(aluno) {
             const nome = capitalizarNome(aluno.dados_pessoais?.nome || 'Sem nome');
             const turma = capitalizarTexto(aluno.turma?.turma || 'Sem turma');
