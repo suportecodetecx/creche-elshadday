@@ -778,8 +778,8 @@
                 <div class="header-buttons">
                     <a href="/" class="btn-nav btn-home">← Início</a>
                     <a href="/alunos/cadastro" class="btn-nav">+ Novo Cadastro</a>
-                    <button class="btn-pdf" onclick="gerarPDFListaAtual()">📄 Gerar PDF da Lista</button>
-                    <button class="btn-pdf btn-pdf-transporte" onclick="gerarPDFAlunosTransporte()">🚍 PDF Alunos com Transporte</button>
+                    <button class="btn-pdf" onclick="gerarPDFListaAtual()"> Gerar PDF da Lista</button>
+                    <button class="btn-pdf btn-pdf-transporte" onclick="gerarPDFAlunosTransporte()"> PDF Alunos com Transporte</button>
                 </div>
             </div>
         </header>
@@ -809,9 +809,9 @@
                         <option value="CEIM Prof. Egberto Malta Moreira">CEIM Prof. Egberto Malta Moreira</option>
                     </select>
                     <select class="filter-select" id="filterTransporte" onchange="buscarAlunos()">
-                        <option value="">📋 Todos os alunos</option>
-                        <option value="sim">🚍 Alunos com Transporte</option>
-                        <option value="nao">🚫 Alunos sem Transporte</option>
+                        <option value=""> Todos os alunos</option>
+                        <option value="sim"> Alunos com Transporte</option>
+                        <option value="nao"> Alunos sem Transporte</option>
                     </select>
                 </div>
             </div>
@@ -1185,7 +1185,7 @@ let alunosExibidosAtualmente = [];
                 }
                 
                 if (responsaveis.length > 0) {
-                    html += `<div class="secao-contatos"><div class="secao-titulo">👪 Responsáveis</div><div class="contatos-grid">`;
+                    html += `<div class="secao-contatos"><div class="secao-titulo"> Responsáveis</div><div class="contatos-grid">`;
                     responsaveis.forEach((resp, idx) => {
                         const fotoResp = getFotoUrl(aluno, 'responsavel' + (idx + 1)) || AVATAR_SVG;
                         html += `
@@ -1205,7 +1205,7 @@ let alunosExibidosAtualmente = [];
                 }
                 
                 if (terceiros.length > 0) {
-                    html += `<div class="secao-contatos"><div class="secao-titulo">👥 Terceiros Autorizados</div><div class="contatos-grid">`;
+                    html += `<div class="secao-contatos"><div class="secao-titulo"> Terceiros Autorizados</div><div class="contatos-grid">`;
                     terceiros.forEach((terc, idx) => {
                         const fotoTerc = getFotoUrl(aluno, 'terceiro' + (idx + 1)) || AVATAR_SVG;
                         html += `
@@ -1223,13 +1223,13 @@ let alunosExibidosAtualmente = [];
                 
                 if (temTransporte) {
                     const fotoTransp = getFotoUrl(aluno, 'transporte') || AVATAR_SVG;
-                    html += `<div class="secao-contatos"><div class="secao-titulo">🚍 Transporte Escolar</div><div class="contatos-grid">
+                    html += `<div class="secao-contatos"><div class="secao-titulo"> Transporte Escolar</div><div class="contatos-grid">
                         <div class="contato-card">
                             <img src="${fotoTransp}" class="foto-contato" onerror="this.src='${AVATAR_SVG}'">
                             <div class="contato-info">
                                 <h4>${formatarTexto(transporte.nome, true)}</h4>
                                 <div class="contato-telefone"><i>📞</i> ${formatarTexto(transporte.telefone || '---')}</div>
-                                ${transporte.placa ? `<div class="contato-telefone"><i>🚗</i> Placa: ${formatarTexto(transporte.placa)}</div>` : ''}
+                                ${transporte.placa ? `<div class="contato-telefone"><i></i> Placa: ${formatarTexto(transporte.placa)}</div>` : ''}
                             </div>
                         </div>
                     </div></div>`;
@@ -1238,7 +1238,7 @@ let alunosExibidosAtualmente = [];
                 html += `
             <div class="documentos-area-unificado">
                 <div class="documentos-header-unificado">
-                    <div class="secao-titulo" style="margin-bottom:0;">📄 Documentos Anexados</div>
+                    <div class="secao-titulo" style="margin-bottom:0;"> Documentos Anexados</div>
                     <button class="btn-documentos-unificado" onclick="toggleDocumentosUnificado('${alunoId}', this)">Ver documentos ▼</button>
                 </div>
                 <div class="documentos-lista-unificado" id="documentos-lista-unificado-${alunoId}">
@@ -1252,8 +1252,8 @@ let alunosExibidosAtualmente = [];
         </div>
         
         <div class="card-unificado-footer">
-            <button class="btn-card-unificado btn-edit-unificado" onclick="editarAlunoCard('${aluno.num_inscricao}')">✏️ Editar Cadastro</button>
-            <button class="btn-card-unificado btn-delete-unificado" onclick="confirmarExclusaoCard('${aluno.num_inscricao}')">🗑️ Excluir Cadastro</button>
+            <button class="btn-card-unificado btn-edit-unificado" onclick="editarAlunoCard('${aluno.num_inscricao}')"> Editar Cadastro</button>
+            <button class="btn-card-unificado btn-delete-unificado" onclick="confirmarExclusaoCard('${aluno.num_inscricao}')"> Excluir Cadastro</button>
         </div>
     </div>
 `;
@@ -1444,7 +1444,7 @@ let alunosExibidosAtualmente = [];
                                     const dadosPessoais = aluno.dados_pessoais || {};
                                     const turma = aluno.turma || {};
                                     const transporte = aluno.transporte || {};
-                                    return `<tr><td style="text-align: center;">${index + 1}</td><td><strong>${capitalizarNome(dadosPessoais.nome || '---')}</strong><br><span class="badge-transporte">🚍 ${capitalizarTexto(transporte.nome || 'Transporte')}</span></td><td>${capitalizarTexto(dadosPessoais.ra || '---')}</td><td>${capitalizarTexto(turma.unidade || '---')}</td><td>${capitalizarTexto(turma.turma || '---')}</td></tr>`;
+                                    return `<tr><td style="text-align: center;">${index + 1}</td><td><strong>${capitalizarNome(dadosPessoais.nome || '---')}</strong><br><span class="badge-transporte"> ${capitalizarTexto(transporte.nome || 'Transporte')}</span></td><td>${capitalizarTexto(dadosPessoais.ra || '---')}</td><td>${capitalizarTexto(turma.unidade || '---')}</td><td>${capitalizarTexto(turma.turma || '---')}</td></tr>`;
                                 }).join('')}
                             </tbody>
                         </table>
@@ -1607,7 +1607,7 @@ let alunosExibidosAtualmente = [];
                                     const turma = aluno.turma || {};
                                     const idade = calcularIdade(dadosPessoais.data_nasc);
                                     const temTransporte = verificarTransporte(aluno);
-                                    const transporteBadge = temTransporte ? '<span class="badge-transporte">🚍 Transporte</span>' : '';
+                                    const transporteBadge = temTransporte ? '<span class="badge-transporte"> Transporte</span>' : '';
                                     return `<tr><td style="text-align: center;">${index + 1}</td><td><strong>${capitalizarNome(dadosPessoais.nome || '---')}</strong> ${transporteBadge}</td><td>${capitalizarTexto(dadosPessoais.ra || '---')}</td><td>${capitalizarTexto(turma.unidade || '---')}</td><td>${capitalizarTexto(turma.turma || '---')}</td><td>${idade}</td></tr>`;
                                 }).join('')}
                             </tbody>
