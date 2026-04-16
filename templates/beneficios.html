@@ -444,6 +444,7 @@
             padding: 5px 15px;
             border-radius: 40px;
             align-items: center;
+            flex-wrap: wrap;
         }
         .massa-input-group label {
             font-size: 0.8rem;
@@ -640,6 +641,43 @@
     </div>
 </div>
 
+<!-- MODAL DE CONFIRMAÇÃO PARA APLICAR VALOR EM MASSA -->
+<div id="modalConfirmacaoAplicacao" class="modal">
+    <div class="modal-content">
+        <h3>Confirmar Aplicação em Massa</h3>
+        <div class="modal-mensagem">
+            <p>Tem certeza que deseja aplicar o valor</p>
+            <div class="valor-destaque" id="valorDestaque">R$ 0,00</div>
+            <p>para</p>
+            <div class="quantidade-destaque" id="quantidadeDestaque">0 funcionário(s)</div>
+            <p>no campo <strong>Valor Base do Plano de Saúde</strong>?</p>
+            <p style="font-size: 0.8rem; color: #ffaa00;">⚠️ Esta ação irá sobrescrever os valores existentes.</p>
+        </div>
+        <div class="modal-buttons">
+            <button class="btn-modal-cancel" onclick="fecharModalConfirmacao()">Cancelar</button>
+            <button class="btn-modal-save" onclick="confirmarAplicacaoMassa()">Confirmar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DE CONFIRMAÇÃO PARA LIMPAR VALORES -->
+<div id="modalConfirmacaoLimpar" class="modal">
+    <div class="modal-content">
+        <h3>Confirmar Limpeza de Valores</h3>
+        <div class="modal-mensagem">
+            <p>Tem certeza que deseja <strong>ZERAR</strong> o campo</p>
+            <div class="valor-destaque" style="font-size: 1.2rem;">Valor Base do Plano de Saúde</div>
+            <p>para</p>
+            <div class="quantidade-destaque" id="quantidadeDestaqueLimpar">0 funcionário(s)</div>
+            <p style="font-size: 0.8rem; color: #ffaa00;">⚠️ Esta ação irá remover todos os valores cadastrados.</p>
+        </div>
+        <div class="modal-buttons">
+            <button class="btn-modal-cancel" onclick="fecharModalConfirmacaoLimpar()">Cancelar</button>
+            <button class="btn-modal-save" onclick="confirmarLimparValores()">Confirmar</button>
+        </div>
+    </div>
+</div>
+
 <script>
     let funcionarios = [];
     let rgmDependentesAtual = null;
@@ -749,12 +787,14 @@
             return;
         }
 
-        document.getElementById('modalConfirmacaoAplicacao').setAttribute('data-valor', valor);
-        document.getElementById('modalConfirmacaoAplicacao').setAttribute('data-funcionarios', JSON.stringify(funcionariosFiltradosAtuais.map(f => f.rgm)));
+        // Guarda os dados no modal
+        const modal = document.getElementById('modalConfirmacaoAplicacao');
+        modal.setAttribute('data-valor', valor);
+        modal.setAttribute('data-funcionarios', JSON.stringify(funcionariosFiltradosAtuais.map(f => f.rgm)));
         
         document.getElementById('valorDestaque').textContent = `R$ ${valor.toFixed(2).replace('.', ',')}`;
         document.getElementById('quantidadeDestaque').textContent = `${funcionariosFiltradosAtuais.length} funcionário(s)`;
-        document.getElementById('modalConfirmacaoAplicacao').classList.add('active');
+        modal.classList.add('active');
     }
 
     function abrirModalConfirmacaoLimpar() {
@@ -763,9 +803,10 @@
             return;
         }
 
-        document.getElementById('modalConfirmacaoLimpar').setAttribute('data-funcionarios', JSON.stringify(funcionariosFiltradosAtuais.map(f => f.rgm)));
+        const modal = document.getElementById('modalConfirmacaoLimpar');
+        modal.setAttribute('data-funcionarios', JSON.stringify(funcionariosFiltradosAtuais.map(f => f.rgm)));
         document.getElementById('quantidadeDestaqueLimpar').textContent = `${funcionariosFiltradosAtuais.length} funcionário(s)`;
-        document.getElementById('modalConfirmacaoLimpar').classList.add('active');
+        modal.classList.add('active');
     }
 
     function fecharModalConfirmacao() {
@@ -828,6 +869,8 @@
             mostrarNotificacao(`Aplicação parcial: ${sucessos} sucesso(s), ${falhas} falha(s)`, 'warning');
         }
         
+        // Recarrega os dados para garantir consistência
+        await carregarFuncionarios();
         exibirTabela(funcionariosFiltradosAtuais);
         calcularTotal();
     }
@@ -883,6 +926,8 @@
             mostrarNotificacao(`Limpeza parcial: ${sucessos} sucesso(s), ${falhas} falha(s)`, 'warning');
         }
         
+        // Recarrega os dados para garantir consistência
+        await carregarFuncionarios();
         exibirTabela(funcionariosFiltradosAtuais);
         calcularTotal();
     }
