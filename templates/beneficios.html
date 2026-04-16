@@ -787,7 +787,6 @@
             return;
         }
 
-        // Guarda os dados no modal
         const modal = document.getElementById('modalConfirmacaoAplicacao');
         modal.setAttribute('data-valor', valor);
         modal.setAttribute('data-funcionarios', JSON.stringify(funcionariosFiltradosAtuais.map(f => f.rgm)));
@@ -869,10 +868,8 @@
             mostrarNotificacao(`Aplicação parcial: ${sucessos} sucesso(s), ${falhas} falha(s)`, 'warning');
         }
         
-        // Recarrega os dados para garantir consistência
-        await carregarFuncionarios();
-        exibirTabela(funcionariosFiltradosAtuais);
-        calcularTotal();
+        // 🔥 CORREÇÃO: Apenas reaplica os filtros para atualizar a tabela
+        filtrar();
     }
 
     async function confirmarLimparValores() {
@@ -926,10 +923,8 @@
             mostrarNotificacao(`Limpeza parcial: ${sucessos} sucesso(s), ${falhas} falha(s)`, 'warning');
         }
         
-        // Recarrega os dados para garantir consistência
-        await carregarFuncionarios();
-        exibirTabela(funcionariosFiltradosAtuais);
-        calcularTotal();
+        // 🔥 CORREÇÃO: Apenas reaplica os filtros para atualizar a tabela
+        filtrar();
     }
 
     function selecionarTodos(tipo, valor) {
