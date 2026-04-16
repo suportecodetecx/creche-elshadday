@@ -3040,7 +3040,7 @@ async function salvarCadastro() {
                     <button type="button" class="btn-nav btn-save" onclick="salvarCadastro()" id="btnSave" style="display: none;">Finalizar Cadastro</button>
                 </div>
 
-                <script>
+                               <script>
                 function marcarArquivoAnexado(cardId) {
                     const card = document.getElementById(cardId);
                     if (card) card.classList.add('has-file');
@@ -3480,32 +3480,110 @@ async function salvarCadastro() {
                     else { btnNext.style.display = 'inline-flex'; btnSave.style.display = 'none'; }
                 }
 
+                // 🔥 FUNÇÃO CORRIGIDA - Agora verifica documentos existentes no banco de dados
                 function contarDocumentosAnexados() {
                     let docs = { aluno: [], responsavel: [], terceiros: [], transporte: [] };
+                    
+                    // Verifica se está em modo edição
+                    const isEditing = typeof alunoParaEditar !== 'undefined' && alunoParaEditar && alunoParaEditar !== 'null';
+                    const arquivosExistentes = isEditing ? (alunoParaEditar.arquivos_ids || {}) : {};
+                    
+                    // ===== DOCUMENTOS DO ALUNO =====
+                    // Certidão
                     const alunoCertidao = document.getElementById('aluno_certidao');
+                    const certidaoCard = document.getElementById('certidao-card');
+                    if ((alunoCertidao && alunoCertidao.files.length > 0) || 
+                        (certidaoCard && certidaoCard.classList.contains('has-file')) ||
+                        arquivosExistentes['aluno_certidao']) {
+                        docs.aluno.push('Certidão');
+                    }
+                    
+                    // RG do Aluno
                     const alunoRg = document.getElementById('aluno_rg');
+                    const rgCard = document.getElementById('rg-card');
+                    if ((alunoRg && alunoRg.files.length > 0) || 
+                        (rgCard && rgCard.classList.contains('has-file')) ||
+                        arquivosExistentes['aluno_rg']) {
+                        docs.aluno.push('RG');
+                    }
+                    
+                    // Vacinação
                     const alunoVacinacao = document.getElementById('aluno_vacinacao');
+                    const vacinacaoCard = document.getElementById('vacinacao-card');
+                    if ((alunoVacinacao && alunoVacinacao.files.length > 0) || 
+                        (vacinacaoCard && vacinacaoCard.classList.contains('has-file')) ||
+                        arquivosExistentes['aluno_vacinacao']) {
+                        docs.aluno.push('Vacinação');
+                    }
+                    
+                    // Laudos
                     const alunoLaudos = document.getElementById('aluno_laudos');
-                    if (alunoCertidao && alunoCertidao.files.length > 0) docs.aluno.push('Certidão');
-                    if (alunoRg && alunoRg.files.length > 0) docs.aluno.push('RG');
-                    if (alunoVacinacao && alunoVacinacao.files.length > 0) docs.aluno.push('Vacinação');
-                    if (alunoLaudos && alunoLaudos.files.length > 0) docs.aluno.push('Laudos');
                     const laudosCard = document.getElementById('laudos-card');
-                    if (laudosCard && laudosCard.classList.contains('has-file') && !docs.aluno.includes('Laudos')) docs.aluno.push('Laudos');
+                    if ((alunoLaudos && alunoLaudos.files.length > 0) || 
+                        (laudosCard && laudosCard.classList.contains('has-file')) ||
+                        arquivosExistentes['aluno_laudos']) {
+                        docs.aluno.push('Laudos');
+                    }
+                    
+                    // ===== DOCUMENTOS DO RESPONSÁVEL =====
+                    // RG do Responsável
                     const respRg = document.getElementById('resp_rg');
+                    const respRgCard = document.getElementById('resp-rg-card');
+                    if ((respRg && respRg.files.length > 0) || 
+                        (respRgCard && respRgCard.classList.contains('has-file')) ||
+                        arquivosExistentes['resp_rg']) {
+                        docs.responsavel.push('RG');
+                    }
+                    
+                    // Comprovante de Residência
                     const respComprovante = document.getElementById('resp_comprovante');
-                    if (respRg && respRg.files.length > 0) docs.responsavel.push('RG');
-                    if (respComprovante && respComprovante.files.length > 0) docs.responsavel.push('Comprovante');
+                    const respComprovanteCard = document.getElementById('resp-comprovante-card');
+                    if ((respComprovante && respComprovante.files.length > 0) || 
+                        (respComprovanteCard && respComprovanteCard.classList.contains('has-file')) ||
+                        arquivosExistentes['resp_comprovante']) {
+                        docs.responsavel.push('Comprovante');
+                    }
+                    
+                    // RG do 2º Responsável (se existir)
+                    const resp2Rg = document.getElementById('resp2_rg');
+                    const resp2RgCard = document.getElementById('resp2-rg-card');
+                    if ((resp2Rg && resp2Rg.files.length > 0) || 
+                        (resp2RgCard && resp2RgCard.classList.contains('has-file')) ||
+                        arquivosExistentes['resp2_rg']) {
+                        docs.responsavel.push('RG 2º Resp.');
+                    }
+                    
+                    // ===== DOCUMENTOS DOS TERCEIROS =====
                     if (terceirosAtivos) {
                         const terceiroRg = document.getElementById('terceiro_rg');
-                        if (terceiroRg && terceiroRg.files.length > 0) docs.terceiros.push('RG');
+                        const terceiroRgCard = document.getElementById('terceiro-rg-card');
+                        if ((terceiroRg && terceiroRg.files.length > 0) || 
+                            (terceiroRgCard && terceiroRgCard.classList.contains('has-file')) ||
+                            arquivosExistentes['terceiro_rg']) {
+                            docs.terceiros.push('RG');
+                        }
                     }
+                    
+                    // ===== DOCUMENTOS DO TRANSPORTE =====
                     if (transporteAtivo) {
                         const transporteRg = document.getElementById('transporte_rg');
+                        const transporteRgCard = document.getElementById('transporte-rg-card');
+                        if ((transporteRg && transporteRg.files.length > 0) || 
+                            (transporteRgCard && transporteRgCard.classList.contains('has-file')) ||
+                            arquivosExistentes['transporte_rg']) {
+                            docs.transporte.push('RG');
+                        }
+                        
                         const transporteCnh = document.getElementById('transporte_cnh');
-                        if (transporteRg && transporteRg.files.length > 0) docs.transporte.push('RG');
-                        if (transporteCnh && transporteCnh.files.length > 0) docs.transporte.push('CNH');
+                        const transporteCnhCard = document.getElementById('transporte-cnh-card');
+                        if ((transporteCnh && transporteCnh.files.length > 0) || 
+                            (transporteCnhCard && transporteCnhCard.classList.contains('has-file')) ||
+                            arquivosExistentes['transporte_cnh']) {
+                            docs.transporte.push('CNH');
+                        }
                     }
+                    
+                    console.log('📋 Documentos encontrados:', docs);
                     return docs;
                 }
 
