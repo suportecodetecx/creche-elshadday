@@ -90,18 +90,18 @@
         }
 
         .logo-animated {
-    width: 50px;
-    height: 50px;
-    background: transparent;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: 700;
-    font-size: 1.4rem;
-    transition: all 0.2s ease;
-}
+            width: 50px;
+            height: 50px;
+            background: transparent;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.4rem;
+            transition: all 0.2s ease;
+        }
 
         .logo-wrapper:hover .logo-animated {
             transform: scale(1.05);
@@ -2359,18 +2359,18 @@ async function salvarCadastro() {
 <body>
     <div class="container">
         <header class="header-moderno">
-    <div class="header-content">
-        <div class="logo-wrapper" onclick="window.location.href='/'">
-            <div class="logo-animated">
-                <img src="/static/img/gestao.png" alt="Creche El Shadday" style="width: 100%; height: 100%; object-fit: contain;">
+            <div class="header-content">
+                <div class="logo-wrapper" onclick="window.location.href='/'">
+                    <div class="logo-animated">
+                        <img src="/static/img/gestao.png" alt="Creche El Shadday" style="width: 100%; height: 100%; object-fit: contain;">
+                    </div>
+                    <div class="logo-text">
+                        <h2>Creche El Shadday</h2>
+                        <p class="logo-subtitle">Sistema de Cadastro</p>
+                    </div>
+                </div>
             </div>
-            <div class="logo-text">
-                <h2>Creche El Shadday</h2>
-                <p class="logo-subtitle">Sistema de Cadastro</p>
-            </div>
-        </div>
-    </div>
-</header>
+        </header>
 
         <main>
             <form id="formCadastroAluno" class="form-elegante" onsubmit="event.preventDefault(); salvarCadastro();">
@@ -2642,6 +2642,7 @@ async function salvarCadastro() {
                                     <label for="deficiencia_desc">Descreva a deficiência <span class="required">*</span></label>
                                     <textarea id="deficiencia_desc" name="deficiencia_desc" rows="2" placeholder="Descreva a deficiência" class="textarea-moderno"></textarea>
                                     <small class="small-text">Ex: TDH, Autismo, Deficiência Física, etc.</small>
+                                    <div class="field-message" id="msg-deficiencia-desc">Por favor, descreva a deficiência</div>
                                 </div>
                             </div>
                         </div>
@@ -3040,7 +3041,7 @@ async function salvarCadastro() {
                     <button type="button" class="btn-nav btn-save" onclick="salvarCadastro()" id="btnSave" style="display: none;">Finalizar Cadastro</button>
                 </div>
 
-                               <script>
+                <script>
                 function marcarArquivoAnexado(cardId) {
                     const card = document.getElementById(cardId);
                     if (card) card.classList.add('has-file');
@@ -3092,6 +3093,16 @@ async function salvarCadastro() {
                             if (this.id) { const msg = document.getElementById(`msg-${this.id}`); if (msg) msg.style.display = 'none'; }
                         });
                     });
+                    
+                    // Reset do campo deficiência
+                    const deficienciaDesc = document.getElementById('deficiencia_desc');
+                    if (deficienciaDesc) {
+                        deficienciaDesc.addEventListener('input', function() {
+                            this.classList.remove('input-error');
+                            const msg = document.getElementById('msg-deficiencia-desc');
+                            if (msg) msg.style.display = 'none';
+                        });
+                    }
                 }
 
                 function toggleTerceiros() {
@@ -3142,6 +3153,13 @@ async function salvarCadastro() {
                             const elemento = document.getElementById(campo);
                             if (elemento && !elemento.value) { elemento.scrollIntoView({ behavior: 'smooth', block: 'center' }); elemento.focus(); break; }
                         }
+                        // Verifica se deficiência está selecionada e descrição vazia
+                        const deficienciaSelect = document.getElementById('deficiencia');
+                        const deficienciaDesc = document.getElementById('deficiencia_desc');
+                        if (deficienciaSelect && deficienciaSelect.value === 'sim' && deficienciaDesc && !deficienciaDesc.value) {
+                            deficienciaDesc.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            deficienciaDesc.focus();
+                        }
                     } else if (passo === 2) {
                         const respNome = document.querySelector('input[name="responsavel1_nome"]');
                         if (respNome && !respNome.value) { respNome.scrollIntoView({ behavior: 'smooth', block: 'center' }); respNome.focus(); return; }
@@ -3178,7 +3196,16 @@ async function salvarCadastro() {
                 function verificarPassoCompleto(passo) {
                     if (passo === 1) {
                         const campos = ['nome', 'data_nasc', 'sexo', 'cep', 'endereco', 'numero', 'bairro', 'cidade', 'uf', 'unidade', 'turma', 'periodo', 'ano_letivo', 'tipo_sanguineo'];
-                        return campos.every(campo => { const elemento = document.getElementById(campo); return elemento && elemento.value; });
+                        const basicValid = campos.every(campo => { const elemento = document.getElementById(campo); return elemento && elemento.value; });
+                        if (!basicValid) return false;
+                        
+                        // Verifica deficiência
+                        const deficienciaSelect = document.getElementById('deficiencia');
+                        const deficienciaDesc = document.getElementById('deficiencia_desc');
+                        if (deficienciaSelect && deficienciaSelect.value === 'sim') {
+                            return deficienciaDesc && deficienciaDesc.value.trim() !== '';
+                        }
+                        return true;
                     }
                     if (passo === 2) {
                         const respNome = document.querySelector('input[name="responsavel1_nome"]');
@@ -3247,6 +3274,23 @@ async function salvarCadastro() {
                                 valido = false; 
                             }
                         });
+                        
+                        // VALIDAÇÃO DA DEFICIÊNCIA
+                        const deficienciaSelect = document.getElementById('deficiencia');
+                        const deficienciaDesc = document.getElementById('deficiencia_desc');
+                        const msgDeficiencia = document.getElementById('msg-deficiencia-desc');
+                        
+                        if (deficienciaSelect && deficienciaSelect.value === 'sim') {
+                            if (!deficienciaDesc || !deficienciaDesc.value.trim()) {
+                                if (msgDeficiencia) {
+                                    msgDeficiencia.style.display = 'block';
+                                }
+                                if (deficienciaDesc) {
+                                    deficienciaDesc.classList.add('input-error');
+                                }
+                                valido = false;
+                            }
+                        }
                     }
                     
                     if (passo === 2) {
@@ -3598,7 +3642,8 @@ async function salvarCadastro() {
                     document.getElementById('review-plano-saude').textContent = document.getElementById('plano_saude').value || '-';
                     document.getElementById('review-alergias').textContent = document.getElementById('alergias').value || '-';
                     const deficiencia = document.getElementById('deficiencia').value;
-                    document.getElementById('review-deficiencia').textContent = deficiencia === 'sim' ? 'Sim' : 'Não';
+                    const deficienciaDesc = document.getElementById('deficiencia_desc').value;
+                    document.getElementById('review-deficiencia').textContent = deficiencia === 'sim' ? `Sim - ${deficienciaDesc}` : 'Não';
                     document.getElementById('review-resp-nome').textContent = document.querySelector('input[name="responsavel1_nome"]').value || '-';
                     document.getElementById('review-resp-parentesco').textContent = document.querySelector('select[name="responsavel1_parentesco"]').value || '-';
                     document.getElementById('review-resp-telefone').textContent = document.querySelector('input[name="responsavel1_telefone"]').value || '-';
@@ -3627,6 +3672,10 @@ async function salvarCadastro() {
                     document.getElementById('terceiros-docs-section').style.display = 'none';
                     document.getElementById('transporte-container').style.display = 'none';
                     document.getElementById('transporte_docs_section').style.display = 'none';
+                    // Reset deficiência
+                    document.getElementById('deficiencia').value = 'nao';
+                    document.getElementById('deficiencia-descricao').style.display = 'none';
+                    document.getElementById('deficiencia_desc').value = '';
                     passoAtual = 1; atualizarPasso(1); atualizarBotoes();
                     const isEditing = typeof alunoParaEditar !== 'undefined' && alunoParaEditar && alunoParaEditar !== 'null';
                     if (!isEditing) gerarNumeroInscricao();
@@ -3703,6 +3752,11 @@ async function salvarCadastro() {
                 function toggleDeficiencia(select) {
                     const divDescricao = document.getElementById('deficiencia-descricao');
                     divDescricao.style.display = select.value === 'sim' ? 'block' : 'none';
+                    // Limpa erro ao mudar
+                    const msg = document.getElementById('msg-deficiencia-desc');
+                    if (msg) msg.style.display = 'none';
+                    const campoDesc = document.getElementById('deficiencia_desc');
+                    if (campoDesc) campoDesc.classList.remove('input-error');
                 }
 
                 function formatarCEP(input) {
