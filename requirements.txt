@@ -7,3 +7,7 @@ dnspython==2.4.2
 certifi==2023.11.17
 bcrypt==5.0.0
 reportlab==4.0.4
+flask-socketio==5.6.1
+eventlet==0.40.4
+python-socketio==5.16.1
+python-engineio==4.13.1

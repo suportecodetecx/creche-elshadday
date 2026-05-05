@@ -4,7 +4,8 @@ import os
 import logging
 import sys
 from dotenv import load_dotenv
-from datetime import timedelta
+from datetime import datetime, timedelta
+from functools import wraps
 
 # Configurar logging
 logging.basicConfig(
@@ -30,10 +31,109 @@ app = Flask(__name__)
 CORS(app)
 
 # ============================================================
+# 🔒 CONFIGURAÇÃO DE LICENÇA - TRAVA POR EXPIRAÇÃO
+# ============================================================
+# Data de expiração do sistema (ALTERE AQUI A DATA DESEJADA)
+# Formato: datetime(ANO, MES, DIA)
+DATA_EXPIRACAO_PADRAO = datetime(2026, 5, 4)  # Expira em 04/05/2026
+
+def verificar_licenca():
+    """Verifica se a licença está válida"""
+    try:
+        from database.mongo import db
+        licenca_col = db.get_collection('licenca')
+        config = licenca_col.find_one({'_id': 'config'})
+        
+        if config and config.get('data_expiracao'):
+            data_expiracao = config['data_expiracao']
+        else:
+            data_expiracao = DATA_EXPIRACAO_PADRAO
+        
+        hoje = datetime.now()
+        
+        if hoje > data_expiracao:
+            dias_expirado = (hoje - data_expiracao).days
+            return {
+                'valida': False,
+                'mensagem': f'Sistema expirado há {dias_expirado} dias. Entre em contato com o suporte.',
+                'dias_restantes': 0,
+                'data_expiracao': data_expiracao.strftime('%d/%m/%Y')
+            }
+        
+        dias_restantes = (data_expiracao - hoje).days
+        return {
+            'valida': True,
+            'mensagem': f'Sistema válido por mais {dias_restantes} dias',
+            'dias_restantes': dias_restantes,
+            'data_expiracao': data_expiracao.strftime('%d/%m/%Y')
+        }
+        
+    except Exception as e:
+        logger.warning(f"Erro ao verificar licença (modo seguro): {e}")
+        return {
+            'valida': True,
+            'mensagem': 'Modo seguro - sistema ativo',
+            'dias_restantes': 999,
+            'data_expiracao': DATA_EXPIRACAO_PADRAO.strftime('%d/%m/%Y')
+        }
+
+# ============================================================
+# 🔒 MIDDLEWARE GLOBAL - VERIFICA LICENÇA EM TODAS AS REQUISIÇÕES
+# ============================================================
+@app.before_request
+def verificar_licenca_global():
+    """Verifica licença em todas as requisições (mesmo usuários logados)"""
+    # Rotas que NÃO devem ser bloqueadas (sempre livres)
+    rotas_livres = [
+        '/login', '/licenca-expirada', '/api/verificar-licenca',
+        '/api/configurar-licenca', '/admin/licenca', '/static', 
+        '/teste_uploads', '/logout', '/api/test'
+    ]
+    
+    for rota_livre in rotas_livres:
+        if request.path.startswith(rota_livre):
+            return None
+    
+    # Se já está na página de expirada, não redirecionar novamente
+    if request.path.startswith('/licenca-expirada'):
+        return None
+    
+    # Verificar licença
+    status = verificar_licenca()
+    
+    if not status['valida']:
+        logger.warning(f"🔒 Licença expirada! Bloqueando acesso a: {request.path}")
+        return render_template('licenca_expirada.html', status=status), 403
+    
+    return None
+
+def licenca_obrigatoria(f):
+    """Decorator que exige licença válida para acessar a rota (fallback)"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Verificar licença
+        status = verificar_licenca()
+        
+        if not status['valida']:
+            # Se for API, retorna JSON
+            if request.path.startswith('/api/'):
+                return jsonify({
+                    'sucesso': False,
+                    'erro': 'licenca_expirada',
+                    'mensagem': status['mensagem'],
+                    'data_expiracao': status['data_expiracao']
+                }), 403
+            
+            # Se for página HTML, redireciona para página de expiração
+            return render_template('licenca_expirada.html', status=status)
+        
+        return f(*args, **kwargs)
+    return decorated_function
+# ============================================================
+
+# ============================================================
 # 🔧 CONFIGURAÇÃO CRÍTICA - AUMENTAR LIMITE DE UPLOAD
 # ============================================================
-# O erro HTTP 413 acontece porque o Flask rejeita arquivos > 16MB
-# Com esta linha, permitimos arquivos de até 50MB
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB
 # ============================================================
 
@@ -72,7 +172,8 @@ app.register_blueprint(documentos_bp)
 def index():
     """Página inicial"""
     try:
-        return render_template('index.html')
+        status_licenca = verificar_licenca()
+        return render_template('index.html', licenca=status_licenca)
     except Exception as e:
         logger.error(f"Erro ao renderizar index: {e}")
         return jsonify({'erro': str(e)}), 500
@@ -80,7 +181,7 @@ def index():
 
 @app.route('/login')
 def login_page():
-    """Página de login"""
+    """Página de login (sempre livre)"""
     try:
         return render_template('login.html')
     except Exception as e:
@@ -322,6 +423,50 @@ def pai_cadastro():
         return jsonify({'erro': str(e)}), 500
 
 
+# ==================== ROTAS DE LICENÇA ====================
+
+@app.route('/licenca-expirada')
+def licenca_expirada():
+    """Página de licença expirada"""
+    status = verificar_licenca()
+    return render_template('licenca_expirada.html', status=status)
+
+@app.route('/api/verificar-licenca')
+def api_verificar_licenca():
+    """API para verificar status da licença"""
+    status = verificar_licenca()
+    return jsonify(status)
+
+@app.route('/api/configurar-licenca', methods=['POST'])
+def api_configurar_licenca():
+    """API para configurar data de expiração (apenas admin)"""
+    try:
+        data = request.get_json()
+        nova_data = data.get('data_expiracao')
+        
+        if not nova_data:
+            return jsonify({'sucesso': False, 'erro': 'Data não informada'}), 400
+        
+        from database.mongo import db
+        licenca_col = db.get_collection('licenca')
+        
+        nova_data_obj = datetime.strptime(nova_data, '%Y-%m-%d')
+        licenca_col.update_one(
+            {'_id': 'config'},
+            {'$set': {'data_expiracao': nova_data_obj}},
+            upsert=True
+        )
+        return jsonify({'sucesso': True, 'mensagem': f'Licença atualizada para {nova_data}'})
+    except Exception as e:
+        return jsonify({'sucesso': False, 'erro': str(e)}), 400
+
+@app.route('/admin/licenca')
+def admin_licenca():
+    """Página administrativa para configurar licença"""
+    status = verificar_licenca()
+    return render_template('admin_licenca.html', status=status)
+
+
 # ==================== ROTA DE TESTE PARA DIAGNÓSTICO ====================
 
 @app.route('/api/test', methods=['GET'])
@@ -412,10 +557,25 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     debug_mode = os.environ.get('FLASK_ENV', 'development') == 'development'
     
+    # Criar configuração de licença no banco se não existir
+    try:
+        from database.mongo import db
+        licenca_col = db.get_collection('licenca')
+        if not licenca_col.find_one({'_id': 'config'}):
+            licenca_col.insert_one({
+                '_id': 'config',
+                'data_expiracao': DATA_EXPIRACAO_PADRAO,
+                'criado_em': datetime.now()
+            })
+            logger.info(f"✅ Licença configurada com expiração em: {DATA_EXPIRACAO_PADRAO.strftime('%d/%m/%Y')}")
+    except Exception as e:
+        logger.warning(f"⚠️ Não foi possível configurar licença no banco: {e}")
+    
     logger.info("🚀 Iniciando servidor Flask...")
     logger.info(f"📁 Pasta do projeto: {os.getcwd()}")
     logger.info(f"🔧 Debug mode: {debug_mode}")
     logger.info(f"🌐 Port: {port}")
     logger.info(f"📦 Limite de upload: 50MB")
+    logger.info(f"🔒 Licença expira em: {DATA_EXPIRACAO_PADRAO.strftime('%d/%m/%Y')}")
     
     app.run(debug=debug_mode, host='0.0.0.0', port=port)

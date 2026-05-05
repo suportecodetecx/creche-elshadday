@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Configurar Licença</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: rgba(255,255,255,0.02);
+            border-radius: 24px;
+            padding: 40px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        h1 { color: #E50914; margin-bottom: 10px; }
+        .status-card {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 16px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        .status-ativa { color: #4ECDC4; }
+        .status-expirada { color: #E50914; }
+        .dias { font-size: 2rem; font-weight: bold; }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ccc;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #E50914;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        button:hover { background: #ff1a2e; }
+        .mensagem {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .success { background: rgba(78,205,196,0.2); color: #4ECDC4; }
+        .error { background: rgba(229,9,20,0.2); color: #E50914; }
+        .voltar {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #888;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚙️ Configurar Licença</h1>
+        <p style="color: #aaa; margin-bottom: 10px;">Gerencie a data de expiração do sistema</p>
+        
+        <div class="status-card">
+            <p>Status atual:</p>
+            {% if status.valida %}
+                <div class="status-ativa">✅ LICENÇA ATIVA</div>
+                <div class="dias">{{ status.dias_restantes }}</div>
+                <p>dias restantes</p>
+            {% else %}
+                <div class="status-expirada">❌ LICENÇA EXPIRADA</div>
+                <p>Expirada em: {{ status.data_expiracao }}</p>
+            {% endif %}
+            <p style="margin-top: 10px; font-size: 0.8rem;">Expira em: <strong>{{ status.data_expiracao }}</strong></p>
+        </div>
+        
+        <label>Nova data de expiração:</label>
+        <input type="date" id="novaData" value="{{ status.data_expiracao|replace('/', '-') }}">
+        <button onclick="salvarLicenca()">💾 Salvar Data</button>
+        
+        <div id="mensagem"></div>
+        <a href="/" class="voltar">← Voltar para o sistema</a>
+    </div>
+    
+    <script>
+        function salvarLicenca() {
+            const novaData = document.getElementById('novaData').value;
+            const msgDiv = document.getElementById('mensagem');
+            
+            fetch('/api/configurar-licenca', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data_expiracao: novaData })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.sucesso) {
+                    msgDiv.innerHTML = '<div class="mensagem success">✅ ' + data.mensagem + '</div>';
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    msgDiv.innerHTML = '<div class="mensagem error">❌ ' + data.erro + '</div>';
+                }
+            })
+            .catch(err => {
+                msgDiv.innerHTML = '<div class="mensagem error">❌ Erro ao conectar</div>';
+            });
+        }
+    </script>
+</body>
+</html>
