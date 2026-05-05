@@ -90,7 +90,7 @@
                 <div class="dias">{{ status.dias_restantes }}</div>
                 <p>dias restantes</p>
             {% else %}
-                <div class="status-expirada">❌ LICENÇA EXPIRADA</div>
+                <div class="status-expirada">LICENÇA EXPIRADA</div>
                 <p>Expirada em: {{ status.data_expiracao }}</p>
             {% endif %}
             <p style="margin-top: 10px; font-size: 0.8rem;">Expira em: <strong>{{ status.data_expiracao }}</strong></p>
@@ -98,7 +98,7 @@
         
         <label>Nova data de expiração:</label>
         <input type="date" id="novaData" value="{{ status.data_expiracao|replace('/', '-') }}">
-        <button onclick="salvarLicenca()">💾 Salvar Data</button>
+        <button onclick="salvarLicenca()">Salvar Data</button>
         
         <div id="mensagem"></div>
         <a href="/" class="voltar">← Voltar para o sistema</a>

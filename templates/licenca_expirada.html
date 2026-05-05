@@ -18,31 +18,31 @@
         }
         .container {
             text-align: center;
-            max-width: 550px;
-            padding: 40px;
+            max-width: 500px;
+            padding: 30px;
             background: rgba(255,255,255,0.02);
             border-radius: 24px;
             border: 1px solid rgba(255,255,255,0.05);
         }
-        .icon { font-size: 80px; margin-bottom: 20px; }
-        h1 { color: #E50914; margin-bottom: 15px; font-size: 2rem; }
+        h1 { color: #E50914; margin-bottom: 15px; font-size: 1.8rem; }
         .data-expiracao {
             background: rgba(229,9,20,0.1);
-            padding: 12px;
+            padding: 10px;
             border-radius: 12px;
-            margin: 20px 0;
+            margin: 15px 0;
             border: 1px solid rgba(229,9,20,0.3);
         }
-        p { color: #aaa; margin-bottom: 15px; line-height: 1.6; }
+        p { color: #aaa; margin-bottom: 15px; line-height: 1.5; font-size: 0.9rem; }
         .btn {
             display: inline-block;
-            padding: 12px 30px;
+            padding: 10px 25px;
             background: #E50914;
             color: white;
             text-decoration: none;
             border-radius: 30px;
             margin: 5px;
             transition: all 0.3s;
+            font-size: 0.9rem;
         }
         .btn:hover { background: #ff1a2e; transform: translateY(-2px); }
         .btn-outline {
@@ -51,22 +51,277 @@
         }
         .btn-outline:hover { background: rgba(229,9,20,0.2); }
         .info {
-            margin-top: 30px;
-            padding: 20px;
+            margin-top: 20px;
+            padding: 15px;
             background: rgba(255,255,255,0.03);
             border-radius: 12px;
         }
-        .info p { margin: 5px 0; font-size: 0.8rem; }
+        .info p { margin: 3px 0; font-size: 0.75rem; }
+        
+        /* ===== ROBOZINHO MENOR ===== */
+        .robot-container {
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .robot {
+            position: relative;
+            width: 80px;
+            height: 95px;
+            animation: robotFloat 2s ease-in-out infinite;
+        }
+        
+        @keyframes robotFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        /* Cabeça do robô */
+        .robot-head {
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            border-radius: 15px;
+            position: relative;
+            margin: 0 auto;
+            border: 2px solid #E50914;
+            box-shadow: 0 0 10px rgba(229,9,20,0.3);
+        }
+        
+        /* Antena */
+        .antenna {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 12px;
+            background: #E50914;
+        }
+        
+        .antenna-ball {
+            position: absolute;
+            top: -16px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background: #E50914;
+            border-radius: 50%;
+            animation: antennaBlink 1s ease-in-out infinite;
+        }
+        
+        @keyframes antennaBlink {
+            0%, 100% { opacity: 1; box-shadow: 0 0 5px #E50914; }
+            50% { opacity: 0.5; box-shadow: 0 0 10px #E50914; }
+        }
+        
+        /* Olhos de X */
+        .eyes {
+            position: absolute;
+            top: 22px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-around;
+            padding: 0 12px;
+        }
+        
+        .eye {
+            width: 16px;
+            height: 16px;
+            position: relative;
+        }
+        
+        .eye-x {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .eye-x::before,
+        .eye-x::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: #E50914;
+            top: 50%;
+            left: 0;
+            border-radius: 2px;
+        }
+        
+        .eye-x::before {
+            transform: rotate(45deg);
+        }
+        
+        .eye-x::after {
+            transform: rotate(-45deg);
+        }
+        
+        /* Boca triste */
+        .mouth {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 25px;
+            height: 12px;
+            border-radius: 0 0 12px 12px;
+            border: 1.5px solid #E50914;
+            border-top: none;
+        }
+        
+        /* Corpo do robô */
+        .robot-body {
+            width: 50px;
+            height: 25px;
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            border-radius: 10px;
+            margin: 8px auto 0;
+            position: relative;
+            border: 1px solid rgba(229,9,20,0.5);
+        }
+        
+        /* Botões do corpo */
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            padding-top: 6px;
+        }
+        
+        .button {
+            width: 6px;
+            height: 6px;
+            background: #E50914;
+            border-radius: 50%;
+            animation: buttonBlink 1.5s ease-in-out infinite;
+        }
+        
+        .button:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+        
+        .button:nth-child(3) {
+            animation-delay: 1s;
+        }
+        
+        @keyframes buttonBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        /* Braços */
+        .arm {
+            position: absolute;
+            width: 10px;
+            height: 22px;
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            border-radius: 6px;
+            top: 12px;
+        }
+        
+        .arm-left {
+            left: -10px;
+            transform: rotate(15deg);
+            animation: armWaveLeft 2s ease-in-out infinite;
+        }
+        
+        .arm-right {
+            right: -10px;
+            transform: rotate(-15deg);
+            animation: armWaveRight 2s ease-in-out infinite;
+        }
+        
+        @keyframes armWaveLeft {
+            0%, 100% { transform: rotate(15deg); }
+            50% { transform: rotate(25deg); }
+        }
+        
+        @keyframes armWaveRight {
+            0%, 100% { transform: rotate(-15deg); }
+            50% { transform: rotate(-25deg); }
+        }
+        
+        /* Pernas */
+        .legs {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 3px;
+        }
+        
+        .leg {
+            width: 8px;
+            height: 15px;
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            border-radius: 4px;
+        }
+        
+        /* Lágrima */
+        .tear {
+            position: absolute;
+            bottom: -3px;
+            right: -3px;
+            width: 5px;
+            height: 8px;
+            background: #4ECDC4;
+            border-radius: 50%;
+            animation: tearDrop 2s ease-in-out infinite;
+            opacity: 0;
+        }
+        
+        @keyframes tearDrop {
+            0% { opacity: 0; transform: translateY(0) scale(0); }
+            20% { opacity: 1; transform: translateY(0) scale(1); }
+            80% { opacity: 1; transform: translateY(15px) scale(1); }
+            100% { opacity: 0; transform: translateY(20px) scale(0.5); }
+        }
+        
         @media (max-width: 500px) {
-            .container { padding: 25px; }
-            h1 { font-size: 1.5rem; }
-            .icon { font-size: 60px; }
+            .container { padding: 20px; }
+            h1 { font-size: 1.4rem; }
+            .robot { transform: scale(0.9); }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="icon">🔒</div>
+        <!-- ROBOZINHO TRISTE MENOR -->
+        <div class="robot-container">
+            <div class="robot">
+                <div class="robot-head">
+                    <div class="antenna"></div>
+                    <div class="antenna-ball"></div>
+                    <div class="eyes">
+                        <div class="eye">
+                            <div class="eye-x"></div>
+                        </div>
+                        <div class="eye">
+                            <div class="eye-x"></div>
+                        </div>
+                    </div>
+                    <div class="mouth"></div>
+                    <div class="tear"></div>
+                </div>
+                <div class="robot-body">
+                    <div class="buttons">
+                        <div class="button"></div>
+                        <div class="button"></div>
+                        <div class="button"></div>
+                    </div>
+                    <div class="arm arm-left"></div>
+                    <div class="arm arm-right"></div>
+                </div>
+                <div class="legs">
+                    <div class="leg"></div>
+                    <div class="leg"></div>
+                </div>
+            </div>
+        </div>
+        
         <h1>Licença Expirada</h1>
         
         <div class="data-expiracao">
@@ -77,14 +332,14 @@
         <p>Entre em contato com o suporte para renovar sua licença.</p>
         
         <div>
-            <a href="https://wa.me/551151230349" class="btn">📱 WhatsApp Suporte</a>
-            <a href="mailto:suporte@codetecx.com" class="btn btn-outline">✉️ E-mail</a>
+            <a href="https://wa.me/551151230349" class="btn"> WhatsApp Suporte</a>
+            <a href="mailto:suporte@codetecx.com" class="btn btn-outline"> E-mail</a>
         </div>
         
         <div class="info">
-            <p>📞 Telefone: (11) 5123-0349</p>
-            <p>🕐 Horário: Segunda a Sexta, 8h às 18h</p>
-            <p>⚠️ Caso já tenha renovado, aguarde a ativação ou contate o suporte.</p>
+            <p> Telefone: (11) 5123-0349</p>
+            <p> Horário: Segunda a Sexta, 8h às 18h</p>
+            <p> Caso já tenha renovado, aguarde a ativação ou contate o suporte.</p>
         </div>
     </div>
 </body>
