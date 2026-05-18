@@ -49,7 +49,7 @@ class MongoDB:
                 # Criar índices para as coleções
                 cls._instance._criar_indices()
                 
-                # CRIAR USUÁRIOS PADRÃO
+                # CRIAR USUÁRIOS PADRÃO (APENAS SE NÃO EXISTIREM)
                 cls._instance._criar_usuarios_padrao()
                 
             except Exception as e:
@@ -106,7 +106,7 @@ class MongoDB:
             print(f"⚠️ Erro ao criar índices: {e}")
     
     def _criar_usuarios_padrao(self):
-        """Cria usuários padrão se não existirem"""
+        """Cria usuários padrão SOMENTE SE NÃO EXISTIREM (NÃO SOBRESCREVE SENHAS)"""
         try:
             # Garantir que a coleção usuarios existe
             if 'usuarios' not in self.db.list_collection_names():
@@ -171,42 +171,39 @@ class MongoDB:
                 # Verificar se usuário já existe
                 existing = self.db.usuarios.find_one({'usuario': user_data['usuario']})
                 
-                # Gerar hash da senha
-                senha_hash = bcrypt.hashpw(user_data['senha_plana'].encode('utf-8'), bcrypt.gensalt())
-                
-                dados_usuario = {
-                    'email': user_data['email'],
-                    'senha': senha_hash,
-                    'nome': user_data['nome'],
-                    'perfil': user_data['perfil'],
-                    'unidade': user_data['unidade'],
-                    'status': user_data['status'],
-                    'ativo': user_data['ativo'],
-                    'data_atualizacao': datetime.now()
-                }
-                
                 if existing:
-                    # Atualizar usuário existente
-                    self.db.usuarios.update_one(
-                        {'usuario': user_data['usuario']},
-                        {'$set': dados_usuario}
-                    )
-                    print(f"✅ Usuário {user_data['usuario']} ATUALIZADO")
+                    # ⚠️ NÃO ATUALIZA! Mantém os dados existentes (incluindo senha)
+                    print(f"ℹ️ Usuário {user_data['usuario']} já existe, mantendo dados atuais (senha inalterada)")
                 else:
-                    # Criar novo usuário
-                    dados_usuario['usuario'] = user_data['usuario']
-                    dados_usuario['data_criacao'] = datetime.now()
-                    self.db.usuarios.insert_one(dados_usuario)
+                    # Criar novo usuário APENAS se não existir
+                    senha_hash = bcrypt.hashpw(user_data['senha_plana'].encode('utf-8'), bcrypt.gensalt())
+                    
+                    novo_usuario = {
+                        'usuario': user_data['usuario'],
+                        'email': user_data['email'],
+                        'senha': senha_hash,
+                        'nome': user_data['nome'],
+                        'perfil': user_data['perfil'],
+                        'unidade': user_data['unidade'],
+                        'status': user_data['status'],
+                        'ativo': user_data['ativo'],
+                        'data_criacao': datetime.now(),
+                        'data_atualizacao': datetime.now()
+                    }
+                    self.db.usuarios.insert_one(novo_usuario)
                     print(f"✅ Usuário {user_data['usuario']} CRIADO")
             
-            print("\n🔑 CREDENCIAIS DOS USUÁRIOS:")
-            print("-" * 40)
+            print("\n🔑 CREDENCIAIS PADRÃO (APENAS PARA PRIMEIRA EXECUÇÃO):")
+            print("-" * 50)
             print("👑 master / code@@ (Administrador Master - TODOS os cards)")
             print("👨‍💼 admin / admin123 (Administrador - 2 cards)")
             print("👩‍🏫 pedagogico / pedagogo123 (Pedagógico - 3 cards)")
             print("👩‍🏫 pedagogaceic / 1234@@ (CEIC El Shadday - 3 cards)")
             print("👩‍🏫 pedagogaceim / 1234@@ (CEIM - 3 cards)")
-            print("=" * 40)
+            print("=" * 50)
+            print("⚠️ IMPORTANTE: Essas senhas só valem na PRIMEIRA execução!")
+            print("   Depois que alguém mudar a senha, ela NÃO será sobrescrita.")
+            print("=" * 50)
             
         except Exception as e:
             print(f"⚠️ Erro ao criar usuários padrão: {e}")
