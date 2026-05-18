@@ -20,6 +20,8 @@ def listar_funcionarios():
                 func['cpf'] = ''
             if 'telefone' not in func:
                 func['telefone'] = ''
+            if 'endereco' not in func:
+                func['endereco'] = ''
         
         return jsonify({'sucesso': True, 'funcionarios': funcionarios})
     except Exception as e:
@@ -37,6 +39,7 @@ def cadastrar_funcionario():
         cpf = dados.get('cpf', '').strip()
         rgm = dados.get('rgm', '').strip()
         telefone = dados.get('telefone', '').strip()
+        endereco = dados.get('endereco', '').strip()
         unidade = dados.get('unidade', '')
         funcao = dados.get('funcao', '')
         
@@ -46,6 +49,8 @@ def cadastrar_funcionario():
             return jsonify({'sucesso': False, 'erro': 'CPF é obrigatório'}), 400
         if not rgm:
             return jsonify({'sucesso': False, 'erro': 'RGM é obrigatório'}), 400
+        if not endereco:
+            return jsonify({'sucesso': False, 'erro': 'Endereço é obrigatório'}), 400
         if not unidade:
             return jsonify({'sucesso': False, 'erro': 'Unidade é obrigatória'}), 400
         if not funcao:
@@ -66,6 +71,7 @@ def cadastrar_funcionario():
             'cpf': cpf,
             'rgm': rgm,
             'telefone': telefone if telefone else '',
+            'endereco': endereco,
             'unidade': unidade,
             'funcao': funcao,
             'beneficio_odonto': False,
@@ -95,6 +101,7 @@ def atualizar_funcionario():
         nome = dados.get('nome', '').strip()
         cpf = dados.get('cpf', '').strip()
         telefone = dados.get('telefone', '').strip()
+        endereco = dados.get('endereco', '').strip()
         unidade = dados.get('unidade', '')
         funcao = dados.get('funcao', '')
         
@@ -104,6 +111,8 @@ def atualizar_funcionario():
             return jsonify({'sucesso': False, 'erro': 'Nome é obrigatório'}), 400
         if not cpf:
             return jsonify({'sucesso': False, 'erro': 'CPF é obrigatório'}), 400
+        if not endereco:
+            return jsonify({'sucesso': False, 'erro': 'Endereço é obrigatório'}), 400
         if not unidade:
             return jsonify({'sucesso': False, 'erro': 'Unidade é obrigatória'}), 400
         if not funcao:
@@ -128,6 +137,7 @@ def atualizar_funcionario():
                 'nome': nome,
                 'cpf': cpf,
                 'telefone': telefone if telefone else '',
+                'endereco': endereco,
                 'unidade': unidade,
                 'funcao': funcao,
                 'data_atualizacao': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -191,6 +201,8 @@ def listar_beneficios():
                 func['cpf'] = ''
             if 'telefone' not in func:
                 func['telefone'] = ''
+            if 'endereco' not in func:
+                func['endereco'] = ''
         
         return jsonify({'sucesso': True, 'funcionarios': funcionarios})
     except Exception as e:
@@ -332,6 +344,8 @@ def buscar_funcionario_beneficios(rgm):
             funcionario['cpf'] = ''
         if 'telefone' not in funcionario:
             funcionario['telefone'] = ''
+        if 'endereco' not in funcionario:
+            funcionario['endereco'] = ''
         
         return jsonify({'sucesso': True, 'funcionario': funcionario})
         

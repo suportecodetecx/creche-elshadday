@@ -250,11 +250,25 @@
             border-color: var(--netflix-red);
         }
 
-        /* Formulário Grid */
+        /* Formulário Grid - 2 colunas */
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 20px;
+        }
+
+        /* Endereço em grid interno */
+        .endereco-grid {
+            grid-column: span 2;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 15px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+
+        .endereco-grid .input-wrapper:first-child {
+            grid-column: span 1;
         }
 
         .input-wrapper {
@@ -555,6 +569,7 @@
             main { padding: 20px; }
             .form-card { padding: 20px; }
             .form-grid { grid-template-columns: 1fr; }
+            .endereco-grid { grid-template-columns: 1fr; grid-column: span 1; }
             .btn-group { flex-direction: column; }
             .btn { width: 100%; justify-content: center; }
             .header-content { flex-direction: column; text-align: center; }
@@ -631,6 +646,13 @@
                         <small class="small-text">Opcional - Não é obrigatório</small>
                     </div>
 
+                    <!-- CAMPO ENDEREÇO - OCUPA AS 2 COLUNAS -->
+                    <div class="input-wrapper" style="grid-column: span 2;">
+                        <label for="endereco">Endereço Completo <span class="required">*</span></label>
+                        <input type="text" id="endereco" class="input-moderno" placeholder="Rua, número, complemento, bairro, cidade - UF">
+                        <small class="small-text">Exemplo: Rua das Flores, 123, Apto 45, Jardim América, São Paulo - SP</small>
+                    </div>
+
                     <div class="input-wrapper">
                         <label for="unidade">Unidade <span class="required">*</span></label>
                         <select id="unidade" class="select-moderno">
@@ -690,6 +712,7 @@
                                 <th>CPF</th>
                                 <th>RGM</th>
                                 <th>Telefone</th>
+                                <th>Endereço</th>
                                 <th>Unidade</th>
                                 <th>Função</th>
                                 <th>Ações</th>
@@ -697,7 +720,7 @@
                         </thead>
                         <tbody id="listaFuncionarios">
                             <tr>
-                                <td colspan="7" style="text-align: center;">Carregando...</td>
+                                <td colspan="8" style="text-align: center;">Carregando...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -838,7 +861,7 @@
                         });
                         aplicarFiltros();
                     } else {
-                        document.getElementById('listaFuncionarios').innerHTML = '<tr><td colspan="7" style="text-align: center;">Nenhum funcionário cadastrado</td></tr>';
+                        document.getElementById('listaFuncionarios').innerHTML = '<tr><td colspan="8" style="text-align: center;">Nenhum funcionário cadastrado</td></tr>';
                         atualizarContador(0);
                     }
                 })
@@ -885,7 +908,8 @@
                         <td>${escapeHtml(func.nome)}</td>
                         <td>${func.cpf ? escapeHtml(func.cpf) : '—'}</td>
                         <td>${escapeHtml(func.rgm)}</td>
-                        <td>${escapeHtml(func.telefone && func.telefone.trim() !== '' ? func.telefone : '—')}</td>
+                        <td>${func.telefone && func.telefone.trim() !== '' ? escapeHtml(func.telefone) : '—'}</td>
+                        <td>${func.endereco ? escapeHtml(func.endereco) : '—'}</td>
                         <td>${escapeHtml(func.unidade)}</td>
                         <td>${escapeHtml(func.funcao)}</td>
                         <td class="acoes-container">
@@ -895,7 +919,7 @@
                     </tr>
                 `).join('');
             } else {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Nenhum funcionário encontrado</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Nenhum funcionário encontrado</td></tr>';
             }
         }
 
@@ -1006,13 +1030,14 @@
                         
                         <table>
                             <thead>
-                                <tr><th style="width: 5%;">Nº</th><th style="width: 30%;">Nome Completo</th><th style="width: 12%;">CPF</th><th style="width: 12%;">RGM</th><th style="width: 20%;">Função</th><th style="width: 21%;">Telefone</th></tr>
+                                <tr><th style="width: 3%;">Nº</th><th style="width: 22%;">Nome Completo</th><th style="width: 10%;">CPF</th><th style="width: 8%;">RGM</th><th style="width: 20%;">Função</th><th style="width: 15%;">Telefone</th><th style="width: 22%;">Endereço</th></tr>
                             </thead>
                             <tbody>
                                 ${funcionariosUnidade.map((func, index) => {
                                     let telefoneDisplay = (!func.telefone || func.telefone.trim() === '' || func.telefone === 'null') ? 
                                         '<span class="telefone-vazio">_________________________</span>' : func.telefone;
                                     let cpfDisplay = func.cpf || '_________________';
+                                    let enderecoDisplay = func.endereco ? escapeHtml(func.endereco) : '________________________________________';
                                     return `
                                     <tr>
                                         <td style="text-align: center;">${index + 1}</td>
@@ -1021,6 +1046,7 @@
                                         <td>${escapeHtml(func.rgm)}</td>
                                         <td>${escapeHtml(func.funcao)}</td>
                                         <td>${telefoneDisplay}</td>
+                                        <td>${enderecoDisplay}</td>
                                     </tr>
                                 `}).join('')}
                             </tbody>
@@ -1113,6 +1139,7 @@
                 document.getElementById('cpf').value = funcionario.cpf || '';
                 document.getElementById('rgm').value = funcionario.rgm;
                 document.getElementById('telefone').value = funcionario.telefone || '';
+                document.getElementById('endereco').value = funcionario.endereco || '';
                 document.getElementById('unidade').value = funcionario.unidade;
                 document.getElementById('funcao').value = funcionario.funcao;
                 
@@ -1126,6 +1153,7 @@
             const cpf = document.getElementById('cpf').value.trim();
             const rgm = document.getElementById('rgm').value.trim();
             const telefone = document.getElementById('telefone').value.trim();
+            const endereco = document.getElementById('endereco').value.trim();
             const unidade = document.getElementById('unidade').value;
             const funcao = document.getElementById('funcao').value;
 
@@ -1153,6 +1181,12 @@
                 return;
             }
             
+            if (!endereco) {
+                mostrarNotificacao('Endereço é obrigatório!', 'warning');
+                document.getElementById('endereco').focus();
+                return;
+            }
+            
             if (!unidade) {
                 mostrarNotificacao('Unidade é obrigatória!', 'warning');
                 document.getElementById('unidade').focus();
@@ -1170,6 +1204,7 @@
                 cpf: cpf.replace(/\D/g, ''),
                 rgm: rgm, 
                 telefone: telefone || '', 
+                endereco: endereco,
                 unidade: unidade, 
                 funcao: funcao 
             };
@@ -1210,6 +1245,7 @@
             document.getElementById('cpf').value = '';
             document.getElementById('rgm').value = '';
             document.getElementById('telefone').value = '';
+            document.getElementById('endereco').value = '';
             document.getElementById('unidade').value = '';
             document.getElementById('funcao').value = '';
         }
