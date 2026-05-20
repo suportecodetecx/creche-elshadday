@@ -2311,28 +2311,49 @@ async function salvarCadastro() {
         
         // Para edição, precisamos enviar no formato que o servidor espera
         if (isEditing) {
-            console.log('   📝 Coletando dados para EDIÇÃO (form-data)');
-            
-            // Pega o formulário original
-            const form = document.getElementById('formCadastroAluno');
-            const formData = new FormData(form);
-            
-            // Adiciona o número de inscrição original (OBRIGATÓRIO)
-            const numInscricao = document.getElementById('num_inscricao').value;
-            formData.append('num_inscricao_original', numInscricao);
-            formData.append('modo_edicao', 'true');
-            
-            // Adiciona os IDs dos arquivos como JSON string
-            formData.append('arquivos_ids', JSON.stringify(arquivosIds));
-            
-            console.log('   📤 Campos do FormData:', Array.from(formData.keys()));
-            console.log('   🆔 num_inscricao_original:', formData.get('num_inscricao_original'));
-            
-            const response = await fetch('/api/alunos/atualizar', {
-                method: 'POST',
-                body: formData
-            });
-            
+    console.log('   📝 Coletando dados para EDIÇÃO (form-data)');
+    
+    const form = document.getElementById('formCadastroAluno');
+    const formData = new FormData(form);
+    
+    // 🔥 CORREÇÃO: Remover TODOS os arquivos do FormData (eles já foram enviados)
+    const camposArquivo = [
+        'foto_aluno', 'foto_responsavel1', 'foto_responsavel2', 'foto_responsavel3',
+        'foto_responsavel4', 'foto_responsavel5', 'foto_terceiro1', 'foto_terceiro2',
+        'foto_terceiro3', 'foto_transporte', 'aluno_certidao', 'aluno_rg',
+        'aluno_vacinacao', 'aluno_laudos', 'resp_rg', 'resp_comprovante',
+        'resp2_rg', 'terceiro_rg', 'transporte_rg', 'transporte_cnh'
+    ];
+    
+    // Remove TODOS os arquivos do FormData
+    for (const campo of camposArquivo) {
+        formData.delete(campo);
+        console.log(`   🗑️ Removido do FormData: ${campo}`);
+    }
+    
+    // Adiciona o número de inscrição original
+    const numInscricao = document.getElementById('num_inscricao').value;
+    formData.append('num_inscricao_original', numInscricao);
+    formData.append('modo_edicao', 'true');
+    
+    // Adiciona apenas os IDs dos arquivos (não os arquivos em si)
+    formData.append('arquivos_ids', JSON.stringify(arquivosIds));
+    
+    // Verificar tamanho do FormData (agora deve ser pequeno)
+    let totalSize = 0;
+    for (let [key, value] of formData.entries()) {
+        if (value instanceof File) {
+            totalSize += value.size;
+            console.log(`   ⚠️ AINDA TEM ARQUIVO: ${key} (${(value.size / 1024).toFixed(1)}KB)`);
+        }
+    }
+    console.log(`   📊 Tamanho do FormData (sem arquivos): ${(totalSize / 1024).toFixed(1)}KB`);
+    
+    const response = await fetch('/api/alunos/atualizar', {
+        method: 'POST',
+        body: formData
+    });
+    
             const resultado = await response.json();
             console.log('\n📥 RESPOSTA:', JSON.stringify(resultado, null, 2));
             
