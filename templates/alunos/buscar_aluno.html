@@ -87,16 +87,16 @@
         }
 
        .logo-animated {
-    width: 50px;
-    height: 50px;
-    background: transparent;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    overflow: hidden;
-}
+            width: 50px;
+            height: 50px;
+            background: transparent;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            overflow: hidden;
+        }
 
         .logo-wrapper:hover .logo-animated {
             transform: scale(1.05);
@@ -768,8 +768,8 @@
             <div class="header-content">
                 <div class="logo-wrapper" onclick="limparPesquisaEVoltar()">
                     <div class="logo-animated">
-    <img src="/static/img/gestao.png" alt="Creche El Shadday" style="width: 100%; height: 100%; object-fit: contain;">
-</div>
+                        <img src="/static/img/gestao.png" alt="Creche El Shadday" style="width: 100%; height: 100%; object-fit: contain;">
+                    </div>
                     <div class="logo-text">
                         <h2>Creche El Shadday</h2>
                         <p class="logo-subtitle">Sistema de Gestão</p>
@@ -778,8 +778,8 @@
                 <div class="header-buttons">
                     <a href="/" class="btn-nav btn-home">← Início</a>
                     <a href="/alunos/cadastro" class="btn-nav">+ Novo Cadastro</a>
-                    <button class="btn-pdf" onclick="gerarPDFListaAtual()"> Gerar PDF da Lista</button>
-                    <button class="btn-pdf btn-pdf-transporte" onclick="gerarPDFAlunosTransporte()"> PDF Alunos com Transporte</button>
+                    <button class="btn-pdf" onclick="gerarPDFListaAtual()">📄 Gerar PDF da Lista</button>
+                    <button class="btn-pdf btn-pdf-transporte" onclick="gerarPDFAlunosTransporte()">🚍 PDF Alunos com Transporte</button>
                 </div>
             </div>
         </header>
@@ -944,34 +944,34 @@ let alunosExibidosAtualmente = [];
         }
 
         function carregarListaAlunos() {
-    fetch('/api/alunos/buscar')
-        .then(response => response.json())
-        .then(data => {
-            if (data.sucesso) {
-                alunosData = data.alunos || [];
-                
-                // ORDENAR ALUNOS EM ORDEM ALFABÉTICA PELO NOME
-                const alunosOrdenados = [...alunosData];
-                alunosOrdenados.sort((a, b) => {
-                    const nomeA = (a.dados_pessoais?.nome || '').toLowerCase();
-                    const nomeB = (b.dados_pessoais?.nome || '').toLowerCase();
-                    return nomeA.localeCompare(nomeB, 'pt-BR');
-                });
-                
-                const select = document.getElementById('alunoSelect');
-                let options = '<option value="">Selecione um aluno...</option>';
-                
-                alunosOrdenados.forEach(aluno => {
-                    const nome = capitalizarNome(aluno.dados_pessoais?.nome || 'Sem nome');
-                    const numInscricao = aluno.num_inscricao || '000-0000';
-                    options += `<option value="${numInscricao}">${nome} - ${numInscricao}</option>`;
-                });
-                
-                select.innerHTML = options;
-            }
-        })
-        .catch(error => console.error('Erro ao carregar lista:', error));
-}
+            fetch('/api/alunos/buscar')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sucesso) {
+                        alunosData = data.alunos || [];
+                        
+                        // ORDENAR ALUNOS EM ORDEM ALFABÉTICA PELO NOME
+                        const alunosOrdenados = [...alunosData];
+                        alunosOrdenados.sort((a, b) => {
+                            const nomeA = (a.dados_pessoais?.nome || '').toLowerCase();
+                            const nomeB = (b.dados_pessoais?.nome || '').toLowerCase();
+                            return nomeA.localeCompare(nomeB, 'pt-BR');
+                        });
+                        
+                        const select = document.getElementById('alunoSelect');
+                        let options = '<option value="">Selecione um aluno...</option>';
+                        
+                        alunosOrdenados.forEach(aluno => {
+                            const nome = capitalizarNome(aluno.dados_pessoais?.nome || 'Sem nome');
+                            const numInscricao = aluno.num_inscricao || '000-0000';
+                            options += `<option value="${numInscricao}">${nome} - ${numInscricao}</option>`;
+                        });
+                        
+                        select.innerHTML = options;
+                    }
+                })
+                .catch(error => console.error('Erro ao carregar lista:', error));
+        }
 
         function buscarAlunoPorSelect(numInscricao) {
             if (!numInscricao) {
@@ -1064,6 +1064,50 @@ let alunosExibidosAtualmente = [];
         function verificarTransporte(aluno) {
             const transporte = aluno.transporte || {};
             return transporte.nome && transporte.nome.trim() !== '';
+        }
+
+        // ===== FUNÇÕES CORRIGIDAS PARA PAI, MÃE E TERCEIRO =====
+        
+        // Função para obter o nome do PAI (baseado no parentesco)
+        function getNomePai(aluno) {
+            const responsaveis = aluno.responsaveis || [];
+            // Procura especificamente por parentesco "pai" (case insensitive)
+            const pai = responsaveis.find(r => r.parentesco && r.parentesco.toLowerCase() === 'pai');
+            if (pai && pai.nome && pai.nome.trim() !== '') {
+                return capitalizarNome(pai.nome);
+            }
+            // Se não encontrou pai, retorna "---" (não preenche com outro responsável)
+            return '---';
+        }
+
+        // Função para obter o nome da MÃE (baseado no parentesco)
+        function getNomeMae(aluno) {
+            const responsaveis = aluno.responsaveis || [];
+            // Procura especificamente por parentesco "mae" ou "mãe" (case insensitive)
+            const mae = responsaveis.find(r => r.parentesco && (r.parentesco.toLowerCase() === 'mae' || r.parentesco.toLowerCase() === 'mãe'));
+            if (mae && mae.nome && mae.nome.trim() !== '') {
+                return capitalizarNome(mae.nome);
+            }
+            // Se não encontrou mãe, retorna "---" (não preenche com outro responsável)
+            return '---';
+        }
+
+        // Função para obter o nome do primeiro TERCEIRO autorizado
+        function getNomeTerceiro(aluno) {
+            const terceiros = aluno.terceiros || [];
+            if (terceiros.length > 0 && terceiros[0].nome && terceiros[0].nome.trim() !== '') {
+                return capitalizarNome(terceiros[0].nome);
+            }
+            return '---';
+        }
+
+        // Função para obter o nome do responsável principal (para exibição em cards)
+        function getNomeResponsavelPrincipal(aluno) {
+            const responsaveis = aluno.responsaveis || [];
+            if (responsaveis.length > 0 && responsaveis[0].nome) {
+                return capitalizarNome(responsaveis[0].nome);
+            }
+            return '---';
         }
 
         function buscarAlunos() {
@@ -1185,7 +1229,7 @@ let alunosExibidosAtualmente = [];
                 }
                 
                 if (responsaveis.length > 0) {
-                    html += `<div class="secao-contatos"><div class="secao-titulo"> Responsáveis</div><div class="contatos-grid">`;
+                    html += `<div class="secao-contatos"><div class="secao-titulo"> 👨‍👩‍👧 Responsáveis</div><div class="contatos-grid">`;
                     responsaveis.forEach((resp, idx) => {
                         const fotoResp = getFotoUrl(aluno, 'responsavel' + (idx + 1)) || AVATAR_SVG;
                         html += `
@@ -1205,7 +1249,7 @@ let alunosExibidosAtualmente = [];
                 }
                 
                 if (terceiros.length > 0) {
-                    html += `<div class="secao-contatos"><div class="secao-titulo"> Terceiros Autorizados</div><div class="contatos-grid">`;
+                    html += `<div class="secao-contatos"><div class="secao-titulo"> 👤 Terceiros Autorizados</div><div class="contatos-grid">`;
                     terceiros.forEach((terc, idx) => {
                         const fotoTerc = getFotoUrl(aluno, 'terceiro' + (idx + 1)) || AVATAR_SVG;
                         html += `
@@ -1223,13 +1267,13 @@ let alunosExibidosAtualmente = [];
                 
                 if (temTransporte) {
                     const fotoTransp = getFotoUrl(aluno, 'transporte') || AVATAR_SVG;
-                    html += `<div class="secao-contatos"><div class="secao-titulo"> Transporte Escolar</div><div class="contatos-grid">
+                    html += `<div class="secao-contatos"><div class="secao-titulo"> 🚌 Transporte Escolar</div><div class="contatos-grid">
                         <div class="contato-card">
                             <img src="${fotoTransp}" class="foto-contato" onerror="this.src='${AVATAR_SVG}'">
                             <div class="contato-info">
                                 <h4>${formatarTexto(transporte.nome, true)}</h4>
                                 <div class="contato-telefone"><i>📞</i> ${formatarTexto(transporte.telefone || '---')}</div>
-                                ${transporte.placa ? `<div class="contato-telefone"><i></i> Placa: ${formatarTexto(transporte.placa)}</div>` : ''}
+                                ${transporte.placa ? `<div class="contato-telefone"><i>🚗</i> Placa: ${formatarTexto(transporte.placa)}</div>` : ''}
                             </div>
                         </div>
                     </div></div>`;
@@ -1238,7 +1282,7 @@ let alunosExibidosAtualmente = [];
                 html += `
             <div class="documentos-area-unificado">
                 <div class="documentos-header-unificado">
-                    <div class="secao-titulo" style="margin-bottom:0;"> Documentos Anexados</div>
+                    <div class="secao-titulo" style="margin-bottom:0;"> 📄 Documentos Anexados</div>
                     <button class="btn-documentos-unificado" onclick="toggleDocumentosUnificado('${alunoId}', this)">Ver documentos ▼</button>
                 </div>
                 <div class="documentos-lista-unificado" id="documentos-lista-unificado-${alunoId}">
@@ -1252,8 +1296,8 @@ let alunosExibidosAtualmente = [];
         </div>
         
         <div class="card-unificado-footer">
-            <button class="btn-card-unificado btn-edit-unificado" onclick="editarAlunoCard('${aluno.num_inscricao}')"> Editar Cadastro</button>
-            <button class="btn-card-unificado btn-delete-unificado" onclick="confirmarExclusaoCard('${aluno.num_inscricao}')"> Excluir Cadastro</button>
+            <button class="btn-card-unificado btn-edit-unificado" onclick="editarAlunoCard('${aluno.num_inscricao}')"> ✏️ Editar Cadastro</button>
+            <button class="btn-card-unificado btn-delete-unificado" onclick="confirmarExclusaoCard('${aluno.num_inscricao}')"> 🗑️ Excluir Cadastro</button>
         </div>
     </div>
 `;
@@ -1404,7 +1448,7 @@ let alunosExibidosAtualmente = [];
                     <style>
                         * { margin: 0; padding: 0; box-sizing: border-box; }
                         body { font-family: 'Inter', Arial, Helvetica, sans-serif; margin: 0; padding: 30px; background: white; color: #333; }
-                        .pdf-container { max-width: 1200px; margin: 0 auto; background: white; }
+                        .pdf-container { max-width: 1400px; margin: 0 auto; background: white; }
                         .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #E50914; }
                         .header h1 { color: #E50914; margin: 0 0 5px 0; font-size: 28px; font-weight: 700; }
                         .header h2 { color: #333; margin: 0 0 10px 0; font-size: 18px; font-weight: 500; }
@@ -1417,9 +1461,9 @@ let alunosExibidosAtualmente = [];
                         .info-item { font-size: 12px; line-height: 1.5; }
                         .info-item strong { color: #333; font-weight: 600; }
                         .titulo-tabela { margin: 25px 0 15px 0; font-size: 16px; font-weight: 600; color: #E50914; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
-                        th { background: #E50914; color: white; padding: 12px 8px; text-align: left; font-weight: 600; border: 1px solid #c40812; }
-                        td { padding: 10px 8px; border: 1px solid #ddd; vertical-align: top; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; }
+                        th { background: #E50914; color: white; padding: 10px 6px; text-align: left; font-weight: 600; border: 1px solid #c40812; }
+                        td { padding: 8px 6px; border: 1px solid #ddd; vertical-align: top; }
                         .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #ddd; padding-top: 20px; }
                         .total-alunos { background: #FF9800; color: white; padding: 8px 20px; border-radius: 20px; display: inline-block; margin-top: 20px; font-weight: bold; font-size: 13px; }
                         .assinatura { margin-top: 40px; text-align: center; }
@@ -1438,13 +1482,24 @@ let alunosExibidosAtualmente = [];
                         ${unidadeInfoHTML}
                         <div class="titulo-tabela">👥 Relação De Alunos Com Transporte Escolar</div>
                         <table>
-                            <thead><tr><th style="width: 5%;">Nº</th><th style="width: 45%;">Nome Do Aluno</th><th style="width: 15%;">Ra</th><th style="width: 20%;">Unidade</th><th style="width: 15%;">Turma</th></tr></thead>
+                            <thead><tr><th>Nº</th><th>Nome Do Aluno</th><th>RA</th><th>Nome do Pai</th><th>Nome da Mãe</th><th>Terceiro Autorizado</th><th>Unidade</th><th>Turma</th></tr></thead>
                             <tbody>
                                 ${alunosComTransporte.map((aluno, index) => {
                                     const dadosPessoais = aluno.dados_pessoais || {};
                                     const turma = aluno.turma || {};
                                     const transporte = aluno.transporte || {};
-                                    return `<tr><td style="text-align: center;">${index + 1}</td><td><strong>${capitalizarNome(dadosPessoais.nome || '---')}</strong><br><span class="badge-transporte"> ${capitalizarTexto(transporte.nome || 'Transporte')}</span></td><td>${capitalizarTexto(dadosPessoais.ra || '---')}</td><td>${capitalizarTexto(turma.unidade || '---')}</td><td>${capitalizarTexto(turma.turma || '---')}</td></tr>`;
+                                    const nomePai = getNomePai(aluno);
+                                    const nomeMae = getNomeMae(aluno);
+                                    const nomeTerceiro = getNomeTerceiro(aluno);
+                                    return `<tr><td style="text-align: center;">${index + 1}</td>
+                                        <td><strong>${capitalizarNome(dadosPessoais.nome || '---')}</strong><br><span class="badge-transporte">🚍 ${capitalizarTexto(transporte.nome || 'Transporte')}</span></td>
+                                        <td>${capitalizarTexto(dadosPessoais.ra || '---')}</td>
+                                        <td>${nomePai}</td>
+                                        <td>${nomeMae}</td>
+                                        <td>${nomeTerceiro}</td>
+                                        <td>${capitalizarTexto(turma.unidade || '---')}</td>
+                                        <td>${capitalizarTexto(turma.turma || '---')}</td>
+                                    </tr>`;
                                 }).join('')}
                             </tbody>
                         </table>
@@ -1465,7 +1520,7 @@ let alunosExibidosAtualmente = [];
             mostrarNotificacao(`📄 Gerando PDF com ${alunosComTransporte.length} aluno(s) com transporte...`, 'success');
         }
 
-        // ========== FUNÇÃO PARA GERAR PDF DA LISTA ATUAL ==========
+        // ========== FUNÇÃO PARA GERAR PDF DA LISTA ATUAL (CORRIGIDA) ==========
         function gerarPDFListaAtual() {
             // Ordenar em ordem alfabética
             const alunosOrdenados = [...alunosExibidosAtualmente];
@@ -1566,22 +1621,22 @@ let alunosExibidosAtualmente = [];
                     <style>
                         * { margin: 0; padding: 0; box-sizing: border-box; }
                         body { font-family: 'Inter', Arial, Helvetica, sans-serif; margin: 0; padding: 30px; background: white; color: #333; }
-                        .pdf-container { max-width: 1200px; margin: 0 auto; background: white; }
+                        .pdf-container { max-width: 1400px; margin: 0 auto; background: white; }
                         .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #E50914; }
                         .header h1 { color: #E50914; margin: 0 0 5px 0; font-size: 28px; font-weight: 700; }
                         .header h2 { color: #333; margin: 0 0 10px 0; font-size: 18px; font-weight: 500; }
                         .header .subtitulo { color: #666; font-size: 14px; margin-top: 5px; }
                         .header .data-hora { color: #999; font-size: 11px; margin-top: 5px; }
-                        .badge-transporte { background: #FF9800; color: white; padding: 2px 8px; border-radius: 12px; font-size: 9px; font-weight: bold; margin-left: 5px; }
+                        .badge-transporte { background: #FF9800; color: white; padding: 2px 8px; border-radius: 12px; font-size: 9px; font-weight: bold; margin-left: 5px; white-space: nowrap; }
                         .unidade-info { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #E50914; }
                         .unidade-info h3 { color: #E50914; margin: 0 0 15px 0; font-size: 16px; font-weight: 600; }
                         .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
                         .info-item { font-size: 12px; line-height: 1.5; }
                         .info-item strong { color: #333; font-weight: 600; }
                         .titulo-tabela { margin: 25px 0 15px 0; font-size: 16px; font-weight: 600; color: #E50914; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
-                        th { background: #E50914; color: white; padding: 12px 8px; text-align: left; font-weight: 600; border: 1px solid #c40812; }
-                        td { padding: 10px 8px; border: 1px solid #ddd; vertical-align: top; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 9px; }
+                        th { background: #E50914; color: white; padding: 10px 6px; text-align: left; font-weight: 600; border: 1px solid #c40812; }
+                        td { padding: 8px 6px; border: 1px solid #ddd; vertical-align: top; }
                         .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #ddd; padding-top: 20px; }
                         .total-alunos { background: #E50914; color: white; padding: 8px 20px; border-radius: 20px; display: inline-block; margin-top: 20px; font-weight: bold; font-size: 13px; }
                         .assinatura { margin-top: 40px; text-align: center; }
@@ -1600,15 +1655,39 @@ let alunosExibidosAtualmente = [];
                         ${unidadeInfoHTML}
                         <div class="titulo-tabela">👥 Relação De Alunos</div>
                         <table>
-                            <thead><tr><th style="width: 5%;">Nº</th><th style="width: 35%;">Nome Do Aluno</th><th style="width: 15%;">Ra</th><th style="width: 20%;">Unidade</th><th style="width: 15%;">Turma</th><th style="width: 10%;">Idade</th></tr></thead>
+                            <thead>
+                                <tr>
+                                    <th style="width: 3%;">Nº</th>
+                                    <th style="width: 20%;">Nome Do Aluno</th>
+                                    <th style="width: 8%;">RA</th>
+                                    <th style="width: 15%;">Nome do Pai</th>
+                                    <th style="width: 15%;">Nome da Mãe</th>
+                                    <th style="width: 15%;">Terceiro Autorizado</th>
+                                    <th style="width: 8%;">Transporte</th>
+                                    <th style="width: 8%;">Idade</th>
+                                    <th style="width: 8%;">Turma</th>
+                                </tr>
+                            </thead>
                             <tbody>
                                 ${alunosOrdenados.map((aluno, index) => {
                                     const dadosPessoais = aluno.dados_pessoais || {};
                                     const turma = aluno.turma || {};
                                     const idade = calcularIdade(dadosPessoais.data_nasc);
                                     const temTransporte = verificarTransporte(aluno);
-                                    const transporteBadge = temTransporte ? '<span class="badge-transporte"> Transporte</span>' : '';
-                                    return `<tr><td style="text-align: center;">${index + 1}</td><td><strong>${capitalizarNome(dadosPessoais.nome || '---')}</strong> ${transporteBadge}</td><td>${capitalizarTexto(dadosPessoais.ra || '---')}</td><td>${capitalizarTexto(turma.unidade || '---')}</td><td>${capitalizarTexto(turma.turma || '---')}</td><td>${idade}</td></tr>`;
+                                    const nomePai = getNomePai(aluno);
+                                    const nomeMae = getNomeMae(aluno);
+                                    const nomeTerceiro = getNomeTerceiro(aluno);
+                                    const transporteBadge = temTransporte ? '<span class="badge-transporte">Sim</span>' : '<span style="color:#999;">Não</span>';
+                                    return `<tr><td style="text-align: center;">${index + 1}</td>
+                                        <td><strong>${capitalizarNome(dadosPessoais.nome || '---')}</strong><br><span style="font-size: 8px; color: #666;">${capitalizarTexto(turma.unidade || '---')}</span></td>
+                                        <td>${capitalizarTexto(dadosPessoais.ra || '---')}</td>
+                                        <td>${nomePai}</td>
+                                        <td>${nomeMae}</td>
+                                        <td>${nomeTerceiro}</td>
+                                        <td>${transporteBadge}</td>
+                                        <td>${idade}</td>
+                                        <td>${capitalizarTexto(turma.turma || '---')}</td>
+                                    </tr>`;
                                 }).join('')}
                             </tbody>
                         </table>
@@ -1626,7 +1705,7 @@ let alunosExibidosAtualmente = [];
             `);
             
             printWindow.document.close();
-            mostrarNotificacao('📄 Gerando PDF...', 'success');
+            mostrarNotificacao('📄 Gerando PDF com informações completas...', 'success');
         }
 
         function mostrarNotificacao(mensagem, tipo = 'success') {

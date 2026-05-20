@@ -1640,17 +1640,19 @@ async function processarUploadsArquivos() {
         statusSpan.className = 'status uploading';
         statusSpan.innerHTML = '⏫';
         currentFileSpan.textContent = `${item.nome} (${i+1} de ${totalArquivos})`;
-            // COMPRIMIR PDF SE FOR GRANDE
-    if (item.file && item.file.type === 'application/pdf' && item.file.size > 2 * 1024 * 1024) {
-        console.log(`📄 Comprimindo PDF: ${item.nome}`);
-        item.file = await comprimirPDF(item.file, 2);
-    }
-    
-    // COMPRIMIR IMAGEM SE FOR GRANDE
-    if (item.file && item.file.type.startsWith('image/') && item.file.size > 1.5 * 1024 * 1024) {
-        console.log(`🖼️ Comprimindo imagem: ${item.nome}`);
-        item.file = await comprimirImagem(item.file, 500);
-    }
+        
+        // COMPRIMIR PDF SE FOR GRANDE
+        if (item.file && item.file.type === 'application/pdf' && item.file.size > 2 * 1024 * 1024) {
+            console.log(`📄 Comprimindo PDF: ${item.nome}`);
+            item.file = await comprimirPDF(item.file, 2);
+        }
+        
+        // COMPRIMIR IMAGEM SE FOR GRANDE
+        if (item.file && item.file.type.startsWith('image/') && item.file.size > 1.5 * 1024 * 1024) {
+            console.log(`🖼️ Comprimindo imagem: ${item.nome}`);
+            item.file = await comprimirImagem(item.file, 500);
+        }
+        
         try {
             const resultado = await uploadArquivoParaGridFS(item.file, item.campo);
             
@@ -1855,6 +1857,7 @@ async function comprimirPDF(file, tamanhoMaximoMB = 2) {
         return file;
     }
 }
+
 // ===== FUNÇÃO CORRIGIDA PARA CARREGAR FOTOS VIA GRIDFS NA EDIÇÃO =====
 function carregarFotosExistentes(aluno) {
     console.log('📸 Carregando fotos e documentos existentes via GridFS...');
@@ -2008,7 +2011,7 @@ function preencherFormulario(aluno) {
         setValue('ano_letivo', aluno.ano_letivo);
     }
 
-    // SAÚDE
+        // SAÚDE (CORRIGIDO - DEFICIÊNCIA)
     if (aluno.saude) {
         setValue('tipo_sanguineo', aluno.saude.tipo_sanguineo);
         setValue('plano_saude', aluno.saude.plano_saude);
@@ -2018,13 +2021,22 @@ function preencherFormulario(aluno) {
         setValue('pediatra', aluno.saude.pediatra);
         setValue('contato_pediatra', aluno.saude.contato_pediatra);
         
-        if (aluno.saude.deficiencia) {
+        // CORREÇÃO: Deficiência
+        const temDeficiencia = aluno.saude.deficiencia === true || 
+                               aluno.saude.deficiencia === 'sim' || 
+                               aluno.saude.deficiencia === 'Sim' ||
+                               aluno.saude.deficiencia === 1;
+        
+        if (temDeficiencia) {
             setValue('deficiencia', 'sim');
             const divDescricao = document.getElementById('deficiencia-descricao');
             if (divDescricao) divDescricao.style.display = 'block';
-            setValue('deficiencia_desc', aluno.saude.deficiencia_desc);
+            setValue('deficiencia_desc', aluno.saude.deficiencia_desc || '');
         } else {
             setValue('deficiencia', 'nao');
+            const divDescricao = document.getElementById('deficiencia-descricao');
+            if (divDescricao) divDescricao.style.display = 'none';
+            setValue('deficiencia_desc', ''); // Limpa a descrição
         }
     } else {
         setValue('tipo_sanguineo', aluno.tipo_sanguineo);
@@ -2035,13 +2047,21 @@ function preencherFormulario(aluno) {
         setValue('pediatra', aluno.pediatra);
         setValue('contato_pediatra', aluno.contato_pediatra);
         
-        if (aluno.deficiencia === 'sim') {
+        // CORREÇÃO: Deficiência - verifica o valor diretamente
+        const temDeficiencia = aluno.deficiencia === 'sim' || 
+                               aluno.deficiencia === true ||
+                               aluno.deficiencia === 1;
+        
+        if (temDeficiencia) {
             setValue('deficiencia', 'sim');
             const divDescricao = document.getElementById('deficiencia-descricao');
             if (divDescricao) divDescricao.style.display = 'block';
-            setValue('deficiencia_desc', aluno.deficiencia_desc);
+            setValue('deficiencia_desc', aluno.deficiencia_desc || '');
         } else {
             setValue('deficiencia', 'nao');
+            const divDescricao = document.getElementById('deficiencia-descricao');
+            if (divDescricao) divDescricao.style.display = 'none';
+            setValue('deficiencia_desc', '');
         }
     }
 
@@ -2226,28 +2246,28 @@ function preencherFormulario(aluno) {
             console.log(`   ✅ Número de inscrição: ${aluno.num_inscricao}`);
         }
     }
-// ===== ATIVAR CARDS NA EDIÇÃO =====
-console.log('🔧 Ativando cards para edição...');
 
-// Ativa container de terceiros se houver terceiros
-if (aluno.terceiros && aluno.terceiros.length > 0 && !terceirosAtivos) {
-    toggleTerceiros();
-    console.log('   ✅ Container de terceiros ativado');
-}
+    // ===== ATIVAR CARDS NA EDIÇÃO =====
+    console.log('🔧 Ativando cards para edição...');
 
-// Ativa container de transporte se houver transporte
-if (aluno.transporte && aluno.transporte.nome) {
-    const checkbox = document.querySelector('input[name="utiliza_transporte"]');
-    if (checkbox && !checkbox.checked) {
-        checkbox.checked = true;
-        toggleTransporte({ checked: true });
-        console.log('   ✅ Container de transporte ativado');
+    // Ativa container de terceiros se houver terceiros
+    if (aluno.terceiros && aluno.terceiros.length > 0 && !terceirosAtivos) {
+        toggleTerceiros();
+        console.log('   ✅ Container de terceiros ativado');
     }
-}
 
-// CARREGAR FOTOS E DOCUMENTOS
-carregarFotosExistentes(aluno);
-    
+    // Ativa container de transporte se houver transporte
+    if (aluno.transporte && aluno.transporte.nome) {
+        const checkbox = document.querySelector('input[name="utiliza_transporte"]');
+        if (checkbox && !checkbox.checked) {
+            checkbox.checked = true;
+            toggleTransporte({ checked: true });
+            console.log('   ✅ Container de transporte ativado');
+        }
+    }
+
+    // CARREGAR FOTOS E DOCUMENTOS
+    carregarFotosExistentes(aluno);
     
     console.log('✅ Formulário preenchido com sucesso!');
     mostrarNotificacao('✅ Dados carregados para edição', 'success');
@@ -2512,15 +2532,15 @@ async function salvarCadastro() {
                                 <label for="uf">UF <span class="required">*</span></label>
                                 <select id="uf" name="uf" required class="select-moderno">
                                     <option value="" disabled selected>Selecione</option>
-                                    <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option>
-                                    <option value="AM">AM</option><option value="BA">BA</option><option value="CE">CE</option>
+                                    <option value="AC">AC</option><option value="AL">AL</option><option value="AM">AM</option>
+                                    <option value="AP">AP</option><option value="BA">BA</option><option value="CE">CE</option>
                                     <option value="DF">DF</option><option value="ES">ES</option><option value="GO">GO</option>
-                                    <option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option>
-                                    <option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option>
-                                    <option value="PR">PR</option><option value="PE">PE</option><option value="PI">PI</option>
-                                    <option value="RJ">RJ</option><option value="RN">RN</option><option value="RS">RS</option>
-                                    <option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option>
-                                    <option value="SP">SP</option><option value="SE">SE</option><option value="TO">TO</option>
+                                    <option value="MA">MA</option><option value="MG">MG</option><option value="MS">MS</option>
+                                    <option value="MT">MT</option><option value="PA">PA</option><option value="PB">PB</option>
+                                    <option value="PE">PE</option><option value="PI">PI</option><option value="PR">PR</option>
+                                    <option value="RJ">RJ</option><option value="RN">RN</option><option value="RO">RO</option>
+                                    <option value="RR">RR</option><option value="RS">RS</option><option value="SC">SC</option>
+                                    <option value="SE">SE</option><option value="SP">SP</option><option value="TO">TO</option>
                                 </select>
                                 <div class="field-message" id="msg-uf">Campo obrigatório</div>
                             </div>
@@ -2641,7 +2661,7 @@ async function salvarCadastro() {
                                 <div class="input-wrapper">
                                     <label for="deficiencia_desc">Descreva a deficiência <span class="required">*</span></label>
                                     <textarea id="deficiencia_desc" name="deficiencia_desc" rows="2" placeholder="Descreva a deficiência" class="textarea-moderno"></textarea>
-                                    <small class="small-text">Ex: TDH, Autismo, Deficiência Física, etc.</small>
+                                    <small class="small-text">Ex: TDAH, Autismo, Deficiência Física, etc.</small>
                                     <div class="field-message" id="msg-deficiencia-desc">Por favor, descreva a deficiência</div>
                                 </div>
                             </div>
@@ -2879,29 +2899,40 @@ async function salvarCadastro() {
                     </section>
 
                     <!-- Documentos do Aluno -->
-                    <section class="form-card">
-                        <div class="card-header">
-                            <div class="header-icon">📄</div>
-                            <h2>Documentos do Aluno</h2>
-                        </div>
+<section class="form-card">
+    <div class="card-header">
+        <div class="header-icon">📄</div>
+        <h2>Documentos do Aluno</h2>
+    </div>
 
-                        <div class="upload-grid-clean">
-                            <div class="upload-card-clean" id="certidao-card" onclick="document.getElementById('aluno_certidao').click()">Certidão de Nascimento</div>
-                            <input type="file" id="aluno_certidao" name="aluno_certidao" accept=".pdf,.jpg,.png" style="display: none;" onchange="marcarArquivoAnexado('certidao-card')">
-                            <div class="field-message" id="msg-aluno-certidao">Documento obrigatório</div>
-                            
-                            <div class="upload-card-clean" id="rg-card" onclick="document.getElementById('aluno_rg').click()">Documento com foto (RG/CNH)</div>
-                            <input type="file" id="aluno_rg" name="aluno_rg" accept=".pdf,.jpg,.png" style="display: none;" onchange="marcarArquivoAnexado('rg-card')">
-                            <div class="field-message" id="msg-aluno-rg">Documento obrigatório</div>
-                            
-                            <div class="upload-card-clean" id="vacinacao-card" onclick="document.getElementById('aluno_vacinacao').click()">Carteira de Vacinação</div>
-                            <input type="file" id="aluno_vacinacao" name="aluno_vacinacao" accept=".pdf,.jpg,.png" style="display: none;" onchange="marcarArquivoAnexado('vacinacao-card')">
-                            <div class="field-message" id="msg-aluno-vacinacao">Documento obrigatório</div>
-                            
-                            <div class="upload-card-clean" id="laudos-card" onclick="document.getElementById('aluno_laudos').click()">Laudos Médicos</div>
-                            <input type="file" id="aluno_laudos" name="aluno_laudos" accept=".pdf,.jpg,.png" style="display: none;" onchange="marcarArquivoAnexado('laudos-card')">
-                        </div>
-                    </section>
+    <!-- Mensagem informativa sobre RG/CNH -->
+    <div style="background: rgba(255, 209, 102, 0.1); border-left: 4px solid var(--accent-yellow); padding: 12px 16px; border-radius: 12px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.1rem;">i</span>
+            <span style="color: var(--accent-yellow); font-weight: 500;">Informacao importante:</span>
+        </div>
+        <p style="color: rgba(255,255,255,0.8); font-size: 0.85rem; margin-top: 8px;">
+            O campo <strong>"Documento com foto (RG/CIN)"</strong> é <strong style="color: var(--accent-yellow);">OPCIONAL</strong> para alunos que ainda não possuem RG/CIN.
+        </p>
+    </div>
+
+    <div class="upload-grid-clean">
+        <div class="upload-card-clean" id="certidao-card" onclick="document.getElementById('aluno_certidao').click()">Certidao de Nascimento <span style="color: var(--netflix-red);">*</span></div>
+        <input type="file" id="aluno_certidao" name="aluno_certidao" accept=".pdf,.jpg,.png" style="display: none;" onchange="marcarArquivoAnexado('certidao-card')">
+        <div class="field-message" id="msg-aluno-certidao">Documento obrigatorio</div>
+        
+        <div class="upload-card-clean" id="rg-card" onclick="document.getElementById('aluno_rg').click()">Documento com foto (RG/CIN) <span style="color: var(--accent-yellow);">(Opcional para Aluno)</span></div>
+        <input type="file" id="aluno_rg" name="aluno_rg" accept=".pdf,.jpg,.png" style="display: none;" onchange="marcarArquivoAnexado('rg-card')">
+        <div class="field-message" id="msg-aluno-rg" style="color: var(--accent-yellow);">Documento opcional - pode deixar em branco</div>
+        
+        <div class="upload-card-clean" id="vacinacao-card" onclick="document.getElementById('aluno_vacinacao').click()">Carteira de Vacinação <span style="color: var(--netflix-red);">*</span></div>
+        <input type="file" id="aluno_vacinacao" name="aluno_vacinacao" accept=".pdf,.jpg,.png" style="display: none;" onchange="marcarArquivoAnexado('vacinacao-card')">
+        <div class="field-message" id="msg-aluno-vacinação">Documento obrigatorio</div>
+        
+        <div class="upload-card-clean" id="laudos-card" onclick="document.getElementById('aluno_laudos').click()">Laudos Médicos</div>
+        <input type="file" id="aluno_laudos" name="aluno_laudos" accept=".pdf,.jpg,.png" style="display: none;" onchange="marcarArquivoAnexado('laudos-card')">
+    </div>
+</section>
 
                     <!-- Documentos dos Responsáveis (SEM CPF) -->
                     <section class="form-card">
@@ -2921,19 +2952,19 @@ async function salvarCadastro() {
                         </div>
                     </section>
 
-                    <!-- Documentos do Segundo Responsável (SEM CPF) -->
-                    <section class="form-card" id="responsavel2-docs-section">
-                        <div class="card-header">
-                            <div class="header-icon">👤</div>
-                            <h2>Documentos do 2º Responsável</h2>
-                            <span class="badge badge-warning">Opcional</span>
-                        </div>
+                    <!-- Documentos do Segundo Responsável (SÓ APARECE SE TIVER 2º RESPONSÁVEL) -->
+<section class="form-card" id="responsavel2-docs-section" style="display: none;">
+    <div class="card-header">
+        <div class="header-icon">👤</div>
+        <h2>Documentos do 2º Responsável</h2>
+        <span class="badge badge-warning">Opcional</span>
+    </div>
 
-                        <div class="upload-grid-clean">
-                            <div class="upload-card-clean" id="resp2-rg-card" onclick="document.getElementById('resp2_rg').click()">Documento com foto (RG/CNH)</div>
-                            <input type="file" id="resp2_rg" name="resp2_rg" accept=".pdf,.jpg,.png" style="display: none;" onchange="marcarArquivoAnexado('resp2-rg-card')">
-                        </div>
-                    </section>
+    <div class="upload-grid-clean">
+        <div class="upload-card-clean" id="resp2-rg-card" onclick="document.getElementById('resp2_rg').click()">Documento com foto (RG/CNH)</div>
+        <input type="file" id="resp2_rg" name="resp2_rg" accept=".pdf,.jpg,.png" style="display: none;" onchange="marcarArquivoAnexado('resp2-rg-card')">
+    </div>
+</section>
 
                     <!-- Documentos dos Terceiros (SEM CPF) -->
                     <section class="form-card" id="terceiros-docs-section" style="display: none;">
@@ -3789,12 +3820,29 @@ async function salvarCadastro() {
                 }
 
                 function adicionarResponsavel() {
-                    const container = document.getElementById('responsaveis-adicionais');
-                    const numero = container.children.length + 2;
-                    const div = document.createElement('div'); div.className = 'responsavel-card';
-                    div.innerHTML = `<button type="button" class="btn-remover" onclick="this.parentElement.remove()">×</button><h3>Responsável Adicional ${numero - 1}</h3><div class="form-grid"><div class="input-wrapper"><label>Nome Completo</label><input type="text" name="responsavel${numero}_nome" placeholder="Nome do responsável" class="input-moderno"></div><div class="input-wrapper"><label>Parentesco</label><select name="responsavel${numero}_parentesco" class="select-moderno"><option value="">Selecione...</option><option value="pai">Pai</option><option value="mae">Mãe</option><option value="avo">Avô/Avó</option><option value="tio">Tio/Tia</option><option value="outro">Outro</option></select></div><div class="input-wrapper"><label>Telefone</label><input type="text" name="responsavel${numero}_telefone" placeholder="(00) 00000-0000" maxlength="15" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div><div class="input-wrapper"><label>Telefone de Contato</label><input type="text" name="responsavel${numero}_telefone_contato" placeholder="(00) 00000-0000" maxlength="15" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')"><small class="small-text">Telefone alternativo para contato</small></div><div class="input-wrapper"><label>CPF</label><input type="text" name="responsavel${numero}_cpf" placeholder="Apenas números" maxlength="11" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div><div class="input-wrapper"><label>RG / CIN</label><input type="text" name="responsavel${numero}_rg" placeholder="RG ou CIN" class="input-moderno"></div><div class="input-wrapper"><label>E-mail</label><input type="email" name="responsavel${numero}_email" placeholder="email@exemplo.com" class="input-moderno"></div></div><div class="camera-section"><label class="section-label">Foto do Responsável</label><div class="camera-controls"><button type="button" class="btn-clean" onclick="abrirCamera('resp${numero}_foto')">Abrir Câmera</button><button type="button" class="btn-clean primary" onclick="capturarFoto('resp${numero}_foto')">Capturar</button><button type="button" class="btn-clean" onclick="document.getElementById('resp${numero}_foto_arquivo').click()">Anexar Arquivo</button></div><video id="resp${numero}_foto_video" class="camera-preview" autoplay></video><canvas id="resp${numero}_foto_canvas" style="display: none;"></canvas><img id="resp${numero}_foto_img" class="foto-capturada" onload="mostrarFotoPreview(this, 'resp${numero}')"><input type="file" id="resp${numero}_foto_arquivo" name="foto_responsavel${numero}" accept="image/*" style="display: none;" onchange="previewArquivo(this, 'resp${numero}_foto_img')"></div>`;
-                    container.appendChild(div);
-                }
+    const container = document.getElementById('responsaveis-adicionais');
+    const numero = container.children.length + 2;
+    const div = document.createElement('div'); 
+    div.className = 'responsavel-card';
+    div.innerHTML = `<button type="button" class="btn-remover" onclick="this.parentElement.remove(); verificarMostrarDocsSegundoResponsavel()">×</button><h3>Responsável Adicional ${numero - 1}</h3><div class="form-grid"><div class="input-wrapper"><label>Nome Completo</label><input type="text" name="responsavel${numero}_nome" placeholder="Nome do responsável" class="input-moderno"></div><div class="input-wrapper"><label>Parentesco</label><select name="responsavel${numero}_parentesco" class="select-moderno"><option value="">Selecione...</option><option value="pai">Pai</option><option value="mae">Mãe</option><option value="avo">Avô/Avó</option><option value="tio">Tio/Tia</option><option value="outro">Outro</option></select></div><div class="input-wrapper"><label>Telefone</label><input type="text" name="responsavel${numero}_telefone" placeholder="(00) 00000-0000" maxlength="15" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div><div class="input-wrapper"><label>Telefone de Contato</label><input type="text" name="responsavel${numero}_telefone_contato" placeholder="(00) 00000-0000" maxlength="15" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')"><small class="small-text">Telefone alternativo para contato</small></div><div class="input-wrapper"><label>CPF</label><input type="text" name="responsavel${numero}_cpf" placeholder="Apenas números" maxlength="11" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div><div class="input-wrapper"><label>RG / CIN</label><input type="text" name="responsavel${numero}_rg" placeholder="RG ou CIN" class="input-moderno"></div><div class="input-wrapper"><label>E-mail</label><input type="email" name="responsavel${numero}_email" placeholder="email@exemplo.com" class="input-moderno"></div></div><div class="camera-section"><label class="section-label">Foto do Responsável</label><div class="camera-controls"><button type="button" class="btn-clean" onclick="abrirCamera('resp${numero}_foto')">Abrir Câmera</button><button type="button" class="btn-clean primary" onclick="capturarFoto('resp${numero}_foto')">Capturar</button><button type="button" class="btn-clean" onclick="document.getElementById('resp${numero}_foto_arquivo').click()">Anexar Arquivo</button></div><video id="resp${numero}_foto_video" class="camera-preview" autoplay></video><canvas id="resp${numero}_foto_canvas" style="display: none;"></canvas><img id="resp${numero}_foto_img" class="foto-capturada" onload="mostrarFotoPreview(this, 'resp${numero}')"><input type="file" id="resp${numero}_foto_arquivo" name="foto_responsavel${numero}" accept="image/*" style="display: none;" onchange="previewArquivo(this, 'resp${numero}_foto_img')"></div>`;
+    container.appendChild(div);
+    
+    // Mostrar seção de documentos do 2º responsável
+    verificarMostrarDocsSegundoResponsavel();
+}
+
+function verificarMostrarDocsSegundoResponsavel() {
+    const container = document.getElementById('responsaveis-adicionais');
+    const docsSection = document.getElementById('responsavel2-docs-section');
+    if (container && docsSection) {
+        // Se tem pelo menos um responsável adicional, mostra os docs
+        if (container.children.length > 0) {
+            docsSection.style.display = 'block';
+        } else {
+            docsSection.style.display = 'none';
+        }
+    }
+}
 
                 function adicionarTerceiro() {
                     const container = document.getElementById('terceiros-container');
