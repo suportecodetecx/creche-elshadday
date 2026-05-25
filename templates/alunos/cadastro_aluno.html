@@ -3741,23 +3741,96 @@ async function salvarCadastro() {
                 }
 
                 async function abrirCamera(id) {
-                    console.log(`📷 Abrindo câmera: ${id}`);
-                    fecharCamera(id);
-                    const video = document.getElementById(id + '_video');
-                    if (!video) { console.error(`❌ Video não encontrado: ${id}_video`); mostrarNotificacao('Erro: elemento de vídeo não encontrado', 'error'); return; }
-                    try {
-                        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                        video.srcObject = stream; video.classList.add('active'); cameraStreams[id] = stream;
-                        console.log(`✅ Câmera aberta: ${id}`); mostrarNotificacao('Câmera aberta! Clique em "Capturar"', 'success');
-                    } catch (err) {
-                        console.error(`❌ Erro ao abrir câmera:`, err);
-                        let mensagem = 'Erro ao acessar câmera. ';
-                        if (err.name === 'NotAllowedError') mensagem += 'Permissão negada. Autorize o acesso.';
-                        else if (err.name === 'NotFoundError') mensagem += 'Nenhuma câmera encontrada.';
-                        else mensagem += err.message;
-                        mostrarNotificacao(mensagem, 'error');
-                    }
-                }
+    console.log(`📷 Abrindo câmera: ${id}`);
+    fecharCamera(id);
+    
+    const video = document.getElementById(id + '_video');
+    if (!video) {
+        console.error(`❌ Video não encontrado: ${id}_video`);
+        mostrarNotificacao('Erro: elemento de vídeo não encontrado', 'error');
+        return;
+    }
+    
+    try {
+        // 🔥 NOVO: Primeiro, lista todos os dispositivos de vídeo disponíveis
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        
+        console.log('📹 Câmeras encontradas:', videoDevices.map(d => ({
+            label: d.label || 'Sem nome',
+            deviceId: d.deviceId
+        })));
+        
+        // Configuração padrão
+        let constraints = { video: true };
+        
+        // 🔥 PRIORIDADE: Se encontrar câmera USB/Externa
+        if (videoDevices.length > 1) {
+            // Procura por câmera externa (padrões comuns)
+            const cameraExterna = videoDevices.find(device => {
+                const label = device.label.toLowerCase();
+                // Verifica se é câmera externa por palavras-chave
+                return label.includes('usb') || 
+                       label.includes('external') || 
+                       label.includes('câmera') ||
+                       label.includes('camera') ||
+                       (label.includes('logitech')) ||
+                       (label.includes('hd') && !label.includes('integrated')) ||
+                       (!label.includes('integrated') && !label.includes('facetime') && !label.includes('built-in'));
+            });
+            
+            // Se não encontrou por nome, pega a última (geralmente a externa)
+            const cameraSelecionada = cameraExterna || videoDevices[videoDevices.length - 1];
+            
+            if (cameraSelecionada) {
+                console.log(`🎯 Selecionando câmera: ${cameraSelecionada.label || 'Externa'}`);
+                constraints = {
+                    video: { deviceId: { exact: cameraSelecionada.deviceId } }
+                };
+            } else {
+                console.log('⚠️ Usando câmera padrão');
+            }
+        }
+        
+        // Abre a câmera com as constraints selecionadas
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        video.srcObject = stream;
+        video.classList.add('active');
+        cameraStreams[id] = stream;
+        
+        // Mostra qual câmera está sendo usada
+        const track = stream.getVideoTracks()[0];
+        const cameraLabel = track.label;
+        mostrarNotificacao(`📷 Câmera ativa: ${cameraLabel}`, 'success');
+        
+        console.log(`✅ Câmera aberta: ${id} - ${cameraLabel}`);
+        
+    } catch (err) {
+        console.error(`❌ Erro ao abrir câmera:`, err);
+        let mensagem = 'Erro ao acessar câmera. ';
+        if (err.name === 'NotAllowedError') {
+            mensagem += 'Permissão negada. Autorize o acesso.';
+        } else if (err.name === 'NotFoundError') {
+            mensagem += 'Nenhuma câmera encontrada.';
+        } else if (err.name === 'OverconstrainedError') {
+            mensagem += 'Câmera externa não encontrada. Tentando câmera padrão...';
+            // Fallback: tenta qualquer câmera
+            try {
+                const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = fallbackStream;
+                video.classList.add('active');
+                cameraStreams[id] = fallbackStream;
+                mostrarNotificacao('Usando câmera padrão', 'warning');
+                return;
+            } catch (fallbackErr) {
+                mensagem += 'Falha ao acessar qualquer câmera.';
+            }
+        } else {
+            mensagem += err.message;
+        }
+        mostrarNotificacao(mensagem, 'error');
+    }
+}
 
                 function capturarFoto(id) {
                     const video = document.getElementById(id + '_video');
