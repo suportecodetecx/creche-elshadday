@@ -1056,6 +1056,104 @@
         .termo-link.transporte { background: #A06CD5; color: white; }
         .termo-link.terceiros { background: #FF6B6B; color: white; }
         
+        /* Estilos para o modal de seleção de terceiros - CORRIGIDO */
+        .modal-terceiros {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(8px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-terceiros.active {
+            display: flex;
+        }
+
+        .modal-terceiros-box {
+            background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
+            border-radius: 24px;
+            padding: 25px;
+            width: 100%;
+            max-width: 450px;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: slideUp 0.3s ease;
+        }
+
+        .terceiros-lista {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .terceiro-item {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .terceiro-item:hover {
+            background: rgba(229,9,20,0.15);
+            border-color: #E50914;
+        }
+
+        .terceiro-foto {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: linear-gradient(135deg, #FF6B6B, #EE5A5A);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .terceiro-info {
+            flex: 1;
+        }
+
+        .terceiro-info .nome {
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 4px;
+            font-size: 1rem;
+        }
+
+        .terceiro-info .telefone {
+            font-size: 0.75rem;
+            color: #aaa;
+        }
+
+        .terceiro-badge {
+            font-size: 0.7rem;
+            background: rgba(255,255,255,0.1);
+            padding: 4px 10px;
+            border-radius: 20px;
+            color: #FF6B6B;
+            flex-shrink: 0;
+        }
+
+        .modal-terceiros-box .modal-buttons {
+            margin-top: 20px;
+        }
+        
         .lista-alunos {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -1123,6 +1221,9 @@
             .termo-detalhes { grid-template-columns: 1fr; }
             .termos-section { padding: 20px; }
             .termo-card { padding: 20px; }
+            .terceiro-item { flex-wrap: wrap; }
+            .terceiro-foto { width: 45px; height: 45px; font-size: 1.2rem; }
+            .terceiro-info .nome { font-size: 0.9rem; }
         }
     </style>
 </head>
@@ -1339,6 +1440,17 @@
             <div id="alunos-termos" class="termos-resultado"></div>
         </div>
 
+        <!-- Modal de Seleção de Terceiros (CORRIGIDO - sem título e com foto) -->
+        <div id="modalTerceiros" class="modal-terceiros">
+            <div class="modal-terceiros-box">
+                <button class="btn-close" onclick="fecharModalTerceiros()">✕</button>
+                <div id="terceirosLista" class="terceiros-lista"></div>
+                <div class="modal-buttons">
+                    <button class="btn-modal-primary" onclick="fecharModalTerceiros()">Cancelar</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Modal de Login -->
         <div id="modalLogin" class="modal-login">
             <div class="login-box">
@@ -1450,6 +1562,7 @@
         let alunosData = [];
         let usuarioLogado = null;
         let tipoAcesso = 'pedagogico';
+        let alunoSelecionadoGlobal = null;
 
         // ===== FUNÇÕES DE CAPITALIZAÇÃO =====
         function capitalizarTexto(texto) {
@@ -1493,8 +1606,168 @@
             return palavras.join(' ');
         }
 
-        // ===== FUNÇÃO PARA IMPRIMIR TERMO COM CAPITALIZAÇÃO =====
+        // Função para obter a foto do terceiro
+        function getFotoTerceiroUrl(aluno, index) {
+            if (!aluno) return null;
+            
+            const arquivosIds = aluno.arquivos_ids || {};
+            const campoFoto = `foto_terceiro${index + 1}`;
+            
+            if (campoFoto && arquivosIds[campoFoto]) {
+                const fileId = arquivosIds[campoFoto];
+                return `/api/alunos/arquivo/${fileId}`;
+            }
+            
+            if (aluno.arquivos && aluno.arquivos.length > 0) {
+                const arquivoFoto = aluno.arquivos.find(a => a.campo === campoFoto);
+                if (arquivoFoto) {
+                    if (arquivoFoto.data_url && arquivoFoto.data_url.startsWith('data:')) {
+                        return arquivoFoto.data_url;
+                    }
+                    if (arquivoFoto.caminho) return arquivoFoto.caminho;
+                }
+            }
+            
+            return null;
+        }
+
+        // Função para obter a foto do responsável
+        function getFotoUrl(aluno, tipo) {
+            if (!aluno) return null;
+            
+            const arquivosIds = aluno.arquivos_ids || {};
+            
+            const campoMap = {
+                'aluno': 'foto_aluno',
+                'responsavel1': 'foto_responsavel1',
+                'responsavel2': 'foto_responsavel2',
+                'responsavel3': 'foto_responsavel3',
+                'terceiro1': 'foto_terceiro1',
+                'terceiro2': 'foto_terceiro2',
+                'transporte': 'foto_transporte'
+            };
+            
+            const campoFoto = campoMap[tipo] || (tipo === 'aluno' ? 'foto_aluno' : null);
+            
+            if (campoFoto && arquivosIds[campoFoto]) {
+                const fileId = arquivosIds[campoFoto];
+                return `/api/alunos/arquivo/${fileId}`;
+            }
+            
+            if (aluno.arquivos && aluno.arquivos.length > 0) {
+                const arquivoFoto = aluno.arquivos.find(a => a.campo === campoFoto);
+                if (arquivoFoto) {
+                    if (arquivoFoto.data_url && arquivoFoto.data_url.startsWith('data:')) {
+                        return arquivoFoto.data_url;
+                    }
+                    if (arquivoFoto.caminho) return arquivoFoto.caminho;
+                    if (arquivoFoto.url) return arquivoFoto.url;
+                }
+            }
+            
+            return null;
+        }
+
+        // ===== FUNÇÃO CORRIGIDA: Abrir modal para selecionar qual terceiro imprimir =====
+        function abrirModalTerceiros(event, numInscricao) {
+            const button = event.currentTarget;
+            const textoOriginal = button.textContent;
+            button.textContent = 'Carregando...';
+            button.disabled = true;
+            
+            const aluno = alunosData.find(a => a.num_inscricao === numInscricao);
+            alunoSelecionadoGlobal = aluno;
+            
+            if (!aluno || !aluno.terceiros || aluno.terceiros.length === 0) {
+                mostrarNotificacao('Este aluno não possui terceiros autorizados cadastrados.', 'warning');
+                button.textContent = textoOriginal;
+                button.disabled = false;
+                return;
+            }
+            
+            const listaDiv = document.getElementById('terceirosLista');
+            listaDiv.innerHTML = '';
+            
+            aluno.terceiros.forEach((terceiro, index) => {
+                const nomeTerceiro = capitalizarNome(terceiro.nome || 'Terceiro sem nome');
+                const telefone = terceiro.telefone || 'Telefone não informado';
+                const parentesco = terceiro.parentesco || 'Autorizado';
+                const fotoUrl = getFotoTerceiroUrl(aluno, index);
+                
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'terceiro-item';
+                itemDiv.onclick = () => {
+                    fecharModalTerceiros();
+                    gerarTermoTerceiro(aluno, terceiro, index + 1);
+                };
+                
+                // Foto do terceiro
+                let fotoHtml = '';
+                if (fotoUrl) {
+                    fotoHtml = `<img src="${fotoUrl}" class="terceiro-foto" style="object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">`;
+                    fotoHtml += `<div class="terceiro-foto" style="display: none;">${nomeTerceiro.charAt(0).toUpperCase()}</div>`;
+                } else {
+                    fotoHtml = `<div class="terceiro-foto">${nomeTerceiro.charAt(0).toUpperCase()}</div>`;
+                }
+                
+                itemDiv.innerHTML = `
+                    ${fotoHtml}
+                    <div class="terceiro-info">
+                        <div class="nome">${nomeTerceiro}</div>
+                        <div class="telefone">📞 ${telefone}</div>
+                    </div>
+                    <div class="terceiro-badge">Terceiro ${index + 1}</div>
+                `;
+                listaDiv.appendChild(itemDiv);
+            });
+            
+            document.getElementById('modalTerceiros').classList.add('active');
+            
+            button.textContent = textoOriginal;
+            button.disabled = false;
+        }
+
+        function fecharModalTerceiros() {
+            document.getElementById('modalTerceiros').classList.remove('active');
+        }
+
+        function gerarTermoTerceiro(aluno, terceiro, numero) {
+            const dadosCapitalizados = {
+                nome: capitalizarNome(aluno.dados_pessoais?.nome || ''),
+                ra: aluno.dados_pessoais?.ra || '',
+                turma: capitalizarTexto(aluno.turma?.turma || ''),
+                unidade: capitalizarTexto(aluno.turma?.unidade || ''),
+                endereco: capitalizarTexto(aluno.endereco?.logradouro || ''),
+                numero: aluno.endereco?.numero || '',
+                bairro: capitalizarTexto(aluno.endereco?.bairro || ''),
+                cidade: capitalizarTexto(aluno.endereco?.cidade || ''),
+                uf: aluno.endereco?.uf || '',
+                cep: aluno.endereco?.cep || '',
+                responsavel: capitalizarNome(aluno.responsaveis?.[0]?.nome || ''),
+                telefone: aluno.responsaveis?.[0]?.telefone || '',
+                data_nasc: aluno.dados_pessoais?.data_nasc || '',
+                sexo: aluno.dados_pessoais?.sexo === 'M' ? 'Masculino' : 'Feminino',
+                terceiro_nome: capitalizarNome(terceiro.nome || ''),
+                terceiro_telefone: terceiro.telefone || '',
+                terceiro_cpf: terceiro.cpf || '',
+                terceiro_rg: terceiro.rg || '',
+                terceiro_numero: numero
+            };
+            
+            sessionStorage.setItem('dadosImpressao', JSON.stringify(dadosCapitalizados));
+            
+            const url = `/visualizar/termo/terceiro/${aluno.num_inscricao}?terceiro=${numero}&capitalizar=true`;
+            window.open(url, '_blank');
+        }
+
+        // ===== FUNÇÃO MODIFICADA PARA IMPRIMIR TERMO =====
         function imprimirTermo(event, tipo, numInscricao) {
+            // Se for terceiro, abre o modal de seleção
+            if (tipo === 'terceiro') {
+                abrirModalTerceiros(event, numInscricao);
+                return;
+            }
+            
             const button = event.currentTarget;
             const textoOriginal = button.textContent;
             button.textContent = 'Preparando...';
@@ -1527,7 +1800,6 @@
                 'matricula': `/visualizar/termo/matricula/${numInscricao}`,
                 'imagem': `/visualizar/termo/imagem/${numInscricao}`,
                 'transporte': `/visualizar/termo/transporte/${numInscricao}`,
-                'terceiro': `/visualizar/termo/terceiro/${numInscricao}`,
                 'regulamento': `/visualizar/termo/regulamento/${numInscricao}`,
                 'saude': `/visualizar/termo/saude/${numInscricao}`
             };
@@ -1542,6 +1814,25 @@
                 button.textContent = textoOriginal; 
                 button.disabled = false; 
             }, 1000);
+        }
+
+        function mostrarNotificacao(mensagem, tipo) {
+            const notificacao = document.createElement('div');
+            notificacao.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: ${tipo === 'warning' ? '#FF9800' : tipo === 'error' ? '#E50914' : '#4CAF50'};
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                z-index: 10001;
+                animation: slideIn 0.3s ease;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            `;
+            notificacao.textContent = mensagem;
+            document.body.appendChild(notificacao);
+            setTimeout(() => notificacao.remove(), 3000);
         }
 
         // Verificar se já tem usuário logado (sessionStorage)
@@ -1662,7 +1953,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.sucesso) {
-                    if (tipoAcesso === 'admin' && data.usuario.perfil !== 'admin') {
+                    if (tipoAcesso === 'admin' && data.usuario.perfil !== 'admin' && data.usuario.usuario !== 'master') {
                         mostrarErroLogin('Acesso negado! Esta área é restrita para administradores.');
                         return;
                     }
@@ -1710,42 +2001,6 @@
             } else {
                 section.style.display = 'none';
             }
-        }
-
-        function getFotoUrl(aluno, tipo) {
-            if (!aluno) return null;
-            
-            const arquivosIds = aluno.arquivos_ids || {};
-            
-            const campoMap = {
-                'aluno': 'foto_aluno',
-                'responsavel1': 'foto_responsavel1',
-                'responsavel2': 'foto_responsavel2',
-                'responsavel3': 'foto_responsavel3',
-                'terceiro1': 'foto_terceiro1',
-                'terceiro2': 'foto_terceiro2',
-                'transporte': 'foto_transporte'
-            };
-            
-            const campoFoto = campoMap[tipo] || (tipo === 'aluno' ? 'foto_aluno' : null);
-            
-            if (campoFoto && arquivosIds[campoFoto]) {
-                const fileId = arquivosIds[campoFoto];
-                return `/api/alunos/arquivo/${fileId}`;
-            }
-            
-            if (aluno.arquivos && aluno.arquivos.length > 0) {
-                const arquivoFoto = aluno.arquivos.find(a => a.campo === campoFoto);
-                if (arquivoFoto) {
-                    if (arquivoFoto.data_url && arquivoFoto.data_url.startsWith('data:')) {
-                        return arquivoFoto.data_url;
-                    }
-                    if (arquivoFoto.caminho) return arquivoFoto.caminho;
-                    if (arquivoFoto.url) return arquivoFoto.url;
-                }
-            }
-            
-            return null;
         }
 
         function handleImageError(img) {
@@ -1875,7 +2130,7 @@
             const bairro = capitalizarTexto(aluno.endereco?.bairro || '');
             const responsavel = capitalizarNome(aluno.responsaveis?.[0]?.nome || 'Não informado');
             const telefone = aluno.responsaveis?.[0]?.telefone || 'Não informado';
-            const temTransporte = !!(aluno.transporte && Object.keys(aluno.transporte).length > 0);
+            const temTransporte = !!(aluno.transporte && Object.keys(aluno.transporte).length > 0 && aluno.transporte.nome);
             const temTerceiros = !!(aluno.terceiros && aluno.terceiros.length > 0);
             const fotoUrl = getFotoUrl(aluno, 'aluno');
             
