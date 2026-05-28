@@ -1434,7 +1434,6 @@ function coletarDadosFormulario() {
     
     return alunoData;
 }
-
 // ===== FUNÇÃO: Processar uploads de arquivos COM BARRA DE PROGRESSO E RETRY =====
 async function processarUploadsArquivos() {
     console.log('\n📸 INICIANDO UPLOAD DOS ARQUIVOS...');
@@ -1478,18 +1477,52 @@ async function processarUploadsArquivos() {
         fotos.push({ id: `terceiro${i}_foto_img`, campo: `foto_terceiro${i}`, nome: `📸 Foto Terceiro ${i}`, obrigatorio: false, tipo: 'foto' });
     }
     
-    const documentos = [
-        { id: 'aluno_certidao', campo: 'aluno_certidao', nome: '📄 Certidão de Nascimento', obrigatorio: !isEditing, tipo: 'doc' },
-        { id: 'aluno_rg', campo: 'aluno_rg', nome: '📄 Documento com foto (RG/CNH) - Aluno', obrigatorio: !isEditing, tipo: 'doc' },
-        { id: 'aluno_vacinacao', campo: 'aluno_vacinacao', nome: '📄 Carteira de Vacinação', obrigatorio: !isEditing, tipo: 'doc' },
-        { id: 'aluno_laudos', campo: 'aluno_laudos', nome: '📄 Laudos Médicos', obrigatorio: false, tipo: 'doc' },
-        { id: 'resp_rg', campo: 'resp_rg', nome: '📄 Documento com foto (RG/CNH) - Responsável', obrigatorio: !isEditing, tipo: 'doc' },
-        { id: 'resp_comprovante', campo: 'resp_comprovante', nome: '📄 Comprovante de Residência', obrigatorio: !isEditing, tipo: 'doc' },
-        { id: 'resp2_rg', campo: 'resp2_rg', nome: '📄 Documento com foto (RG/CNH) - 2º Responsável', obrigatorio: false, tipo: 'doc' },
-        { id: 'terceiro_rg', campo: 'terceiro_rg', nome: '📄 Documento com foto (RG/CNH) - Terceiro', obrigatorio: (terceirosAtivos && !isEditing), tipo: 'doc' },
-        { id: 'transporte_rg', campo: 'transporte_rg', nome: '📄 Documento com foto (RG/CNH) - Transporte', obrigatorio: (transporteAtivo && !isEditing), tipo: 'doc' },
-        { id: 'transporte_cnh', campo: 'transporte_cnh', nome: '📄 CNH - Transporte', obrigatorio: (transporteAtivo && !isEditing), tipo: 'doc' }
-    ];
+   const documentos = [
+    // Documentos do aluno
+    { id: 'aluno_certidao', campo: 'aluno_certidao', nome: '📄 Certidão de Nascimento', obrigatorio: !isEditing, tipo: 'doc' },
+    { id: 'aluno_rg', campo: 'aluno_rg', nome: '📄 Documento com foto (RG/CNH) - Aluno', obrigatorio: !isEditing, tipo: 'doc' },
+    { id: 'aluno_vacinacao', campo: 'aluno_vacinacao', nome: '📄 Carteira de Vacinação', obrigatorio: !isEditing, tipo: 'doc' },
+    { id: 'aluno_laudos', campo: 'aluno_laudos', nome: '📄 Laudos Médicos', obrigatorio: false, tipo: 'doc' },
+    
+    // Documentos do responsável
+    { id: 'resp_rg', campo: 'resp_rg', nome: '📄 Documento com foto (RG/CNH) - Responsável', obrigatorio: !isEditing, tipo: 'doc' },
+    { id: 'resp_comprovante', campo: 'resp_comprovante', nome: '📄 Comprovante de Residência', obrigatorio: !isEditing, tipo: 'doc' },
+    { id: 'resp2_rg', campo: 'resp2_rg', nome: '📄 Documento com foto (RG/CNH) - 2º Responsável', obrigatorio: false, tipo: 'doc' },
+    
+    // Documentos do transporte
+    { id: 'transporte_rg', campo: 'transporte_rg', nome: '📄 Documento com foto (RG/CNH) - Transporte', obrigatorio: (transporteAtivo && !isEditing), tipo: 'doc' },
+    { id: 'transporte_cnh', campo: 'transporte_cnh', nome: '📄 CNH - Transporte', obrigatorio: (transporteAtivo && !isEditing), tipo: 'doc' }
+];
+
+// 🔥 ADICIONAR DOCUMENTOS DE CADA TERCEIRO INDIVIDUALMENTE
+for (let i = 1; i <= 10; i++) {
+    // Verificar se o terceiro existe (tem nome preenchido)
+    const nomeInput = document.querySelector(`input[name="terceiro${i}_nome"]`);
+    if (nomeInput && nomeInput.value && nomeInput.value.trim()) {
+        // Adicionar documento RG do terceiro
+        documentos.push({
+            id: `terceiro${i}_rg`,
+            campo: `terceiro${i}_rg`,
+            nome: `📄 Documento com foto (RG/CNH) - Terceiro ${i}`,
+            obrigatorio: false,
+            tipo: 'doc'
+        });
+        
+        // Adicionar documento CPF do terceiro (se existir)
+        const cpfInput = document.getElementById(`terceiro${i}_cpf_arquivo`);
+        if (cpfInput) {
+            documentos.push({
+                id: `terceiro${i}_cpf_arquivo`,
+                campo: `terceiro${i}_cpf`,
+                nome: `📄 CPF - Terceiro ${i}`,
+                obrigatorio: false,
+                tipo: 'doc'
+            });
+        }
+    }
+}
+
+console.log(`📎 Total de documentos a processar: ${documentos.length}`);
     
     // Função para adicionar item à lista
     function adicionarItem(item) {
@@ -1926,31 +1959,35 @@ function carregarFotosExistentes(aluno) {
         }
     }
     
-    // Mapa de documentos
-    const mapaCards = {
-        'aluno_certidao': 'certidao-card',
-        'aluno_rg': 'rg-card',
-        'aluno_vacinacao': 'vacinacao-card',
-        'aluno_laudos': 'laudos-card',
-        'resp_rg': 'resp-rg-card',
-        'resp_comprovante': 'resp-comprovante-card',
-        'resp2_rg': 'resp2-rg-card',
-        'terceiro_rg': 'terceiro-rg-card',
-        'transporte_rg': 'transporte-rg-card',
-        'transporte_cnh': 'transporte-cnh-card'
-    };
+    // Mapa de documentos base
+const mapaCards = {
+    'aluno_certidao': 'certidao-card',
+    'aluno_rg': 'rg-card',
+    'aluno_vacinacao': 'vacinacao-card',
+    'aluno_laudos': 'laudos-card',
+    'resp_rg': 'resp-rg-card',
+    'resp_comprovante': 'resp-comprovante-card',
+    'resp2_rg': 'resp2-rg-card',
+    'transporte_rg': 'transporte-rg-card',
+    'transporte_cnh': 'transporte-cnh-card'
+};
+
+// 🔥 ADICIONAR DOCUMENTOS DOS TERCEIROS DINAMICAMENTE
+for (let i = 1; i <= 10; i++) {
+    mapaCards[`terceiro${i}_rg`] = `terceiro${i}-rg-card`;
+}
     
     // Marcar documentos como anexados
-    for (const [campo, cardId] of Object.entries(mapaCards)) {
-        const fileId = arquivosIds[campo];
-        if (fileId) {
-            const card = document.getElementById(cardId);
-            if (card) {
-                card.classList.add('has-file');
-                console.log(`   ✅ Documento marcado: ${campo}`);
-            }
+for (const [campo, cardId] of Object.entries(mapaCards)) {
+    const fileId = arquivosIds[campo];
+    if (fileId) {
+        const card = document.getElementById(cardId);
+        if (card) {
+            card.classList.add('has-file');
+            console.log(`   ✅ Documento marcado: ${campo}`);
         }
     }
+}
     
     console.log('✅ Fotos e documentos carregados com sucesso via GridFS!');
 }
@@ -2206,47 +2243,49 @@ function preencherFormulario(aluno) {
         });
     }
 
-    // TRANSPORTE
-    console.log('📌 Processando transporte...');
-    let transporte = null;
-    
-    if (aluno.transporte && aluno.transporte.nome) {
-        transporte = aluno.transporte;
-        console.log('   ✅ Transporte encontrado em aluno.transporte');
-    } else if (aluno.dados_pessoais && aluno.dados_pessoais.transporte) {
-        transporte = aluno.dados_pessoais.transporte;
-        console.log('   ✅ Transporte encontrado em dados_pessoais.transporte');
+   // TRANSPORTE
+console.log('📌 Processando transporte...');
+let transporte = null;
+
+if (aluno.transporte && aluno.transporte.nome) {
+    transporte = aluno.transporte;
+    console.log('   ✅ Transporte encontrado em aluno.transporte');
+    console.log('   📌 Conteúdo completo do transporte:', JSON.stringify(transporte, null, 2));  // 🔥 ADICIONE ESTE LOG
+} else if (aluno.dados_pessoais && aluno.dados_pessoais.transporte) {
+    transporte = aluno.dados_pessoais.transporte;
+    console.log('   ✅ Transporte encontrado em dados_pessoais.transporte');
+    console.log('   📌 Conteúdo completo do transporte:', JSON.stringify(transporte, null, 2));  // 🔥 ADICIONE ESTE LOG
+}
+
+if (transporte && transporte.nome) {
+    const checkbox = document.querySelector('input[name="utiliza_transporte"]');
+    if (checkbox) {
+        checkbox.checked = true;
+        toggleTransporte({ checked: true });
+        
+        setValueByName('transporte_nome', transporte.nome);
+        setValueByName('transporte_cnpj', transporte.cnpj);
+        setValueByName('transporte_cpf', transporte.cpf);
+        setValueByName('transporte_rg', transporte.rg || '');  // 🔥 ADICIONE fallback
+        setValueByName('transporte_telefone', transporte.telefone);
+        setValueByName('transporte_email', transporte.email);
+        console.log('   ✅ Transporte preenchido, RG:', transporte.rg);  // 🔥 ADICIONE ESTE LOG
     }
-    
-    if (transporte && transporte.nome) {
-        const checkbox = document.querySelector('input[name="utiliza_transporte"]');
-        if (checkbox) {
-            checkbox.checked = true;
-            toggleTransporte({ checked: true });
-            
-            setValueByName('transporte_nome', transporte.nome);
-            setValueByName('transporte_cnpj', transporte.cnpj);
-            setValueByName('transporte_cpf', transporte.cpf);
-            setValueByName('transporte_rg', transporte.rg);
-            setValueByName('transporte_telefone', transporte.telefone);
-            setValueByName('transporte_email', transporte.email);
-            console.log('   ✅ Transporte preenchido');
-        }
-    } else if (aluno.utiliza_transporte === '1' || aluno.utiliza_transporte === 1) {
-        const checkbox = document.querySelector('input[name="utiliza_transporte"]');
-        if (checkbox) {
-            checkbox.checked = true;
-            toggleTransporte({ checked: true });
-            
-            setValueByName('transporte_nome', aluno.transporte_nome);
-            setValueByName('transporte_cnpj', aluno.transporte_cnpj);
-            setValueByName('transporte_cpf', aluno.transporte_cpf);
-            setValueByName('transporte_rg', aluno.transporte_rg);
-            setValueByName('transporte_telefone', aluno.transporte_telefone);
-            setValueByName('transporte_email', aluno.transporte_email);
-            console.log('   ✅ Transporte preenchido (fallback)');
-        }
+} else if (aluno.utiliza_transporte === '1' || aluno.utiliza_transporte === 1) {
+    const checkbox = document.querySelector('input[name="utiliza_transporte"]');
+    if (checkbox) {
+        checkbox.checked = true;
+        toggleTransporte({ checked: true });
+        
+        setValueByName('transporte_nome', aluno.transporte_nome);
+        setValueByName('transporte_cnpj', aluno.transporte_cnpj);
+        setValueByName('transporte_cpf', aluno.transporte_cpf);
+        setValueByName('transporte_rg', aluno.transporte_rg || '');  // 🔥 ADICIONE fallback
+        setValueByName('transporte_telefone', aluno.transporte_telefone);
+        setValueByName('transporte_email', aluno.transporte_email);
+        console.log('   ✅ Transporte preenchido (fallback), RG:', aluno.transporte_rg);  // 🔥 ADICIONE ESTE LOG
     }
+}
 
     // NÚMERO DE INSCRIÇÃO
     const campoNumero = document.getElementById('num_inscricao');
@@ -2317,51 +2356,50 @@ async function salvarCadastro() {
         
         // Para edição, precisamos enviar no formato que o servidor espera
         if (isEditing) {
-    console.log('   📝 Coletando dados para EDIÇÃO (form-data)');
-    
-    const form = document.getElementById('formCadastroAluno');
-    const formData = new FormData(form);
-    
-    // 🔥 CORREÇÃO: Remover TODOS os arquivos do FormData (eles já foram enviados)
-    const camposArquivo = [
-        'foto_aluno', 'foto_responsavel1', 'foto_responsavel2', 'foto_responsavel3',
-        'foto_responsavel4', 'foto_responsavel5', 'foto_terceiro1', 'foto_terceiro2',
-        'foto_terceiro3', 'foto_terceiro4', 'foto_terceiro5', 'foto_terceiro6',
-        'foto_terceiro7', 'foto_terceiro8', 'foto_terceiro9', 'foto_terceiro10',
-        'foto_transporte', 'aluno_certidao', 'aluno_rg',
-        'aluno_vacinacao', 'aluno_laudos', 'resp_rg', 'resp_comprovante',
-        'resp2_rg', 'terceiro_rg', 'transporte_rg', 'transporte_cnh'
-    ];
-    
-    // Remove TODOS os arquivos do FormData
-    for (const campo of camposArquivo) {
-        formData.delete(campo);
-        console.log(`   🗑️ Removido do FormData: ${campo}`);
-    }
-    
-    // Adiciona o número de inscrição original
-    const numInscricao = document.getElementById('num_inscricao').value;
-    formData.append('num_inscricao_original', numInscricao);
-    formData.append('modo_edicao', 'true');
-    
-    // Adiciona apenas os IDs dos arquivos (não os arquivos em si)
-    formData.append('arquivos_ids', JSON.stringify(arquivosIds));
-    
-    // Verificar tamanho do FormData (agora deve ser pequeno)
-    let totalSize = 0;
-    for (let [key, value] of formData.entries()) {
-        if (value instanceof File) {
-            totalSize += value.size;
-            console.log(`   ⚠️ AINDA TEM ARQUIVO: ${key} (${(value.size / 1024).toFixed(1)}KB)`);
-        }
-    }
-    console.log(`   📊 Tamanho do FormData (sem arquivos): ${(totalSize / 1024).toFixed(1)}KB`);
-    
-    const response = await fetch('/api/alunos/atualizar', {
-        method: 'POST',
-        body: formData
-    });
-    
+            console.log('   📝 Coletando dados para EDIÇÃO (form-data)');
+            
+            const form = document.getElementById('formCadastroAluno');
+            const formData = new FormData(form);
+            
+            const camposArquivo = [
+    'foto_aluno', 'foto_responsavel1', 'foto_responsavel2', 'foto_responsavel3',
+    'foto_responsavel4', 'foto_responsavel5', 'foto_terceiro1', 'foto_terceiro2',
+    'foto_terceiro3', 'foto_terceiro4', 'foto_terceiro5', 'foto_terceiro6',
+    'foto_terceiro7', 'foto_terceiro8', 'foto_terceiro9', 'foto_terceiro10',
+    'foto_transporte', 'aluno_certidao', 'aluno_rg',
+    'aluno_vacinacao', 'aluno_laudos', 'resp_rg', 'resp_comprovante',
+    'resp2_rg', 'transporte_cnh'  // ← 'terceiro_rg' REMOVIDO!
+];
+            
+            // Adicionar documentos específicos dos terceiros
+           // for (let i = 1; i <= 10; i++) {
+               // camposArquivo.push(`terceiro${i}_rg`);
+            //}
+            
+            // Remove todos os arquivos do FormData
+            for (const campo of camposArquivo) {
+                formData.delete(campo);
+                console.log(`   🗑️ Removido do FormData: ${campo}`);
+            }
+            
+            // Adiciona o número de inscrição original
+            const numInscricao = document.getElementById('num_inscricao').value;
+            formData.append('num_inscricao_original', numInscricao);
+            formData.append('modo_edicao', 'true');
+            
+            // Adiciona apenas os IDs dos arquivos
+            formData.append('arquivos_ids', JSON.stringify(arquivosIds));
+            
+            console.log(`   📎 IDs dos documentos de terceiros:`, {
+                terceiro1_rg: arquivosIds['terceiro1_rg'],
+                terceiro2_rg: arquivosIds['terceiro2_rg']
+            });
+            
+            const response = await fetch('/api/alunos/atualizar', {
+                method: 'POST',
+                body: formData
+            });
+            
             const resultado = await response.json();
             console.log('\n📥 RESPOSTA:', JSON.stringify(resultado, null, 2));
             

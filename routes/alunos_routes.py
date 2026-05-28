@@ -614,22 +614,83 @@ def atualizar_aluno():
         print("\n" + "="*60)
         print("📝 RECEBENDO REQUISIÇÃO DE ATUALIZAÇÃO")
         print("="*60)
+
+        
+        
+        # INICIALIZAÇÃO DAS VARIÁVEIS
+        num_inscricao_original = None
+        arquivos_ids = {}
         
         if request.is_json:
             dados = request.get_json()
             num_inscricao_original = dados.get('num_inscricao_original') or dados.get('num_inscricao')
             arquivos_ids = dados.get('arquivos_ids', {})
             print(f"📌 JSON recebido")
+            # IMPORTANTE: Se é JSON, não precisa converter
+            dados_dict = dados
         else:
-            dados = request.form
-            num_inscricao_original = dados.get('num_inscricao_original')
-            arquivos_ids_json = dados.get('arquivos_ids', '{}')
+            # ===== CRIA UM DICIONÁRIO MODIFICÁVEL DESDE O INÍCIO =====
+            dados_dict = {}
+            
+            # Copia todos os campos do FormData para o dicionário
+            for key, value in request.form.items():
+                dados_dict[key] = value
+            
+            num_inscricao_original = dados_dict.get('num_inscricao_original')
+            arquivos_ids_json = dados_dict.get('arquivos_ids', '{}')
             try:
                 arquivos_ids = json.loads(arquivos_ids_json) if arquivos_ids_json else {}
             except:
                 arquivos_ids = {}
-            print(f"📌 FormData recebido")
+            print(f"📌 FormData recebido e convertido para dict")
         
+        # ===== CORREÇÃO: RECUPERAR CAMPOS RG PERDIDOS DO FormData =====
+        # (Só executa se veio como FormData)
+        if not request.is_json:
+            # 1. Transporte RG
+            transporte_rg_direct = request.form.get('transporte_rg')
+            if transporte_rg_direct:
+                print(f"   🚌 transporte_rg recuperado do FormData: '{transporte_rg_direct}'")
+                dados_dict['transporte_rg'] = transporte_rg_direct
+            
+            # 2. Terceiros RG (1 a 10)
+            for i in range(1, 11):
+                rg_key = f'terceiro{i}_rg'
+                rg_valor = request.form.get(rg_key)
+                if rg_valor:
+                    print(f"   👤 {rg_key} recuperado do FormData: '{rg_valor}'")
+                    dados_dict[rg_key] = rg_valor
+            
+            # 3. Responsáveis RG (caso precise também)
+            for i in range(1, 6):
+                rg_key = f'responsavel{i}_rg'
+                rg_valor = request.form.get(rg_key)
+                if rg_valor and rg_valor.strip():
+                    print(f"   📋 {rg_key} recuperado do FormData: '{rg_valor[:10]}...'")
+                    dados_dict[rg_key] = rg_valor
+        
+        
+
+                      # Usar dados_dict daqui em diante
+        dados = dados_dict
+
+       
+
+        # Depois de criar dados_dict, adicione:
+        print("\n🔍 TODOS OS CAMPOS RECEBIDOS:")
+        for key, value in dados_dict.items():
+            if 'transporte' in key.lower() or 'rg' in key.lower():
+                print(f"   {key}: '{value}'")
+        
+        # 🔥 COLOQUE OS LOGS AQUI 🔥
+        print("\n🔍 VERIFICANDO RGs ANTES DE PROCESSAR:")
+        print(f"   transporte_rg no dados: '{dados.get('transporte_rg', 'NÃO ENCONTRADO')}'")
+        for i in range(1, 11):
+            rg_key = f'terceiro{i}_rg'
+            if dados.get(rg_key):
+                print(f"   {rg_key}: '{dados.get(rg_key)}'")
+        # ===== FIM DOS LOGS =====
+
         # LOG PARA VERIFICAR DOCUMENTOS DOS TERCEIROS NA ATUALIZAÇÃO
         print(f"📎 ARQUIVOS IDs RECEBIDOS NA ATUALIZAÇÃO:")
         for key, value in arquivos_ids.items():
@@ -798,23 +859,25 @@ def atualizar_aluno():
                     'nome': dados['transporte'].get('nome', ''),
                     'cnpj': dados['transporte'].get('cnpj', ''),
                     'cpf': dados['transporte'].get('cpf', ''),
-                    'rg': dados['transporte'].get('rg', ''),  # <-- CORREÇÃO
+                    'rg': dados['transporte'].get('rg', ''),
                     'telefone': dados['transporte'].get('telefone', ''),
                     'email': dados['transporte'].get('email', ''),
                     'rg_file_id': dados['transporte'].get('rg_file_id', transporte_rg_file_id)
                 }
+                print(f"   ✅ Transporte atualizado (objeto): {dados_atualizados['transporte'].get('nome')}")
+                print(f"   📌 RG do Transporte: {dados_atualizados['transporte'].get('rg', 'NÃO INFORMADO')}")
             else:
                 dados_atualizados['transporte'] = {
                     'nome': dados.get('transporte_nome', ''),
                     'cnpj': dados.get('transporte_cnpj', ''),
                     'cpf': dados.get('transporte_cpf', ''),
-                    'rg': dados.get('transporte_rg', ''),  # <-- CORREÇÃO
+                    'rg': dados.get('transporte_rg', ''),
                     'telefone': dados.get('transporte_telefone', ''),
                     'email': dados.get('transporte_email', ''),
                     'rg_file_id': transporte_rg_file_id
                 }
-            print(f"   ✅ Transporte atualizado: {dados_atualizados['transporte'].get('nome')}")
-            print(f"   📌 RG do Transporte: {dados_atualizados['transporte'].get('rg', 'NÃO INFORMADO')}")
+                print(f"   ✅ Transporte atualizado: {dados_atualizados['transporte'].get('nome')}")
+                print(f"   📌 RG do Transporte: {dados_atualizados['transporte'].get('rg', 'NÃO INFORMADO')}")
         elif 'transporte' in dados_atualizados:
             dados_atualizados['transporte'] = None
         
