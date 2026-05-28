@@ -3752,13 +3752,12 @@ if ((!docInput || !docInput.files || docInput.files.length === 0) && !docExisten
                         }
                     }
                     
-                    if (passo === 3) {
-                        const docsAluno = [
-                            { id: 'aluno_foto_img', msg: 'msg-aluno-foto', tipo: 'foto' },
-                            { id: 'aluno_certidao', msg: 'msg-aluno-certidao', tipo: 'file' },
-                            { id: 'aluno_rg', msg: 'msg-aluno-rg', tipo: 'file' },
-                            { id: 'aluno_vacinacao', msg: 'msg-aluno-vacinacao', tipo: 'file' }
-                        ];
+                   if (passo === 3) {
+    const docsAluno = [
+        { id: 'aluno_foto_img', msg: 'msg-aluno-foto', tipo: 'foto' },
+        { id: 'aluno_certidao', msg: 'msg-aluno-certidao', tipo: 'file' },
+        { id: 'aluno_vacinacao', msg: 'msg-aluno-vacinacao', tipo: 'file' }
+    ];
                         
                         docsAluno.forEach(doc => {
                             const elemento = document.getElementById(doc.id);
