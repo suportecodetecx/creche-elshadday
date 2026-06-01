@@ -35,7 +35,7 @@ CORS(app)
 # ============================================================
 # Data de expiração do sistema (ALTERE AQUI A DATA DESEJADA)
 # Formato: datetime(ANO, MES, DIA)
-DATA_EXPIRACAO_PADRAO = datetime(2026, 5, 4)  # Expira em 04/05/2026
+DATA_EXPIRACAO_PADRAO = datetime(2099, 5, 4)  # Expira em 04/05/2026
 
 def verificar_licenca():
     """Verifica se a licença está válida"""
