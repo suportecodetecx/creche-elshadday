@@ -476,30 +476,57 @@
             </div>
         </div>
 
-        <!-- DADOS DO RESPONSÁVEL -->
-        {% set resp_principal = aluno.responsaveis|selectattr("tipo", "equalto", "principal")|first %}
+        <!-- DADOS DO RESPONSÁVEL - AGORA USA O RESPONSÁVEL SELECIONADO -->
         <div class="secao">
             <div class="secao-titulo">
                 <span>👪</span> RESPONSÁVEL LEGAL
             </div>
             <div class="dados-linha">
                 <span class="dados-label">Nome:</span>
-                <span class="dados-valor"><strong>{{ resp_principal.nome or '________________________' }}</strong></span>
+                <span class="dados-valor"><strong>{{ dados_impressao.responsavel_nome if dados_impressao and dados_impressao.responsavel_nome else (resp_principal.nome if resp_principal else '________________________') }}</strong></span>
                 <span class="inline-label">CPF:</span>
-                <span class="inline-value"><strong>{{ resp_principal.cpf or '______________' }}</strong></span>
+                <span class="inline-value"><strong>{{ dados_impressao.responsavel_cpf if dados_impressao and dados_impressao.responsavel_cpf else (resp_principal.cpf if resp_principal else '______________') }}</strong></span>
                 <span class="inline-label">Tel:</span>
-                <span class="inline-value"><strong>{{ resp_principal.telefone or '______________' }}</strong></span>
+                <span class="inline-value"><strong>{{ dados_impressao.responsavel_telefone if dados_impressao and dados_impressao.responsavel_telefone else (resp_principal.telefone if resp_principal else '______________') }}</strong></span>
+            </div>
+            <div class="dados-linha">
+                <span class="dados-label">Parentesco:</span>
+                <span class="dados-valor"><strong>{{ dados_impressao.responsavel_parentesco if dados_impressao and dados_impressao.responsavel_parentesco else (resp_principal.parentesco.capitalize() if resp_principal and resp_principal.parentesco else 'Responsável') }}</strong></span>
+                <span class="inline-label">RG:</span>
+                <span class="inline-value"><strong>{{ dados_impressao.responsavel_rg if dados_impressao and dados_impressao.responsavel_rg else (resp_principal.rg if resp_principal else '______________') }}</strong></span>
             </div>
         </div>
 
-        <!-- DADOS DOS TERCEIROS AUTORIZADOS -->
+        <!-- DADOS DO TERCEIRO AUTORIZADO SELECIONADO -->
         <div class="secao">
             <div class="secao-titulo">
-                <span>👥</span> TERCEIROS AUTORIZADOS
+                <span>👤</span> TERCEIRO AUTORIZADO
             </div>
-            
-            {% if aluno.terceiros and aluno.terceiros|length > 0 %}
-                {% for terc in aluno.terceiros %}
+            {% if terceiro %}
+            <div class="terceiro-card">
+                <div class="terceiro-nome">{{ terceiro.nome }}</div>
+                <div class="terceiro-dados">
+                    <span><strong>📞 Telefone:</strong> {{ terceiro.telefone }}</span>
+                    <span><strong>🆔 CPF:</strong> {{ terceiro.cpf }}</span>
+                    {% if terceiro.rg %}<span><strong>📄 RG:</strong> {{ terceiro.rg }}</span>{% endif %}
+                    {% if terceiro.email %}<span><strong>✉️ E-mail:</strong> {{ terceiro.email }}</span>{% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="observacao">
+                <p><strong>⚠️ Nenhum terceiro autorizado cadastrado ou selecionado.</strong></p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- LISTA DE TODOS OS TERCEIROS CADASTRADOS (REFERÊNCIA) -->
+        {% if aluno.terceiros and aluno.terceiros|length > 1 %}
+        <div class="secao">
+            <div class="secao-titulo">
+                <span>📋</span> DEMAIS TERCEIROS AUTORIZADOS (Referência)
+            </div>
+            {% for terc in aluno.terceiros %}
+                {% if terc.nome != terceiro.nome %}
                 <div class="terceiro-card">
                     <div class="terceiro-nome">{{ terc.nome }}</div>
                     <div class="terceiro-dados">
@@ -509,21 +536,17 @@
                         {% if terc.email %}<span><strong>✉️ E-mail:</strong> {{ terc.email }}</span>{% endif %}
                     </div>
                 </div>
-                {% endfor %}
-            {% else %}
-                <div class="observacao">
-                    <p><strong>⚠️ Nenhum terceiro autorizado cadastrado.</strong></p>
-                    <p style="font-size: 11px;">Para autorizar terceiros, cadastre-os no sistema.</p>
-                </div>
-            {% endif %}
+                {% endif %}
+            {% endfor %}
         </div>
+        {% endif %}
 
         <!-- CLÁUSULAS DE AUTORIZAÇÃO -->
         <div class="secao">
             <div class="secao-titulo">
                 <span>📜</span> AUTORIZAÇÃO DO RESPONSÁVEL
             </div>
-            <p style="font-size: 12px; margin-bottom: 5px;">Eu, <strong>{{ resp_principal.nome or '____________________' }}</strong>, autorizo os terceiros acima a:</p>
+            <p style="font-size: 12px; margin-bottom: 5px;">Eu, <strong>{{ dados_impressao.responsavel_nome if dados_impressao and dados_impressao.responsavel_nome else (resp_principal.nome if resp_principal else '____________________') }}</strong>, autorizo o terceiro acima a:</p>
             <ul class="clausulas">
                 <li>Buscar o aluno na creche no horário regular;</li>
                 <li>Acompanhar em atividades externas e eventos;</li>
@@ -551,7 +574,7 @@
                 <span>✅</span> AUTORIZAÇÃO DO TERCEIRO
             </div>
             <div class="autorizacao-terceiro-box">
-                <p>Eu, <strong>{{ aluno.terceiros[0].nome if aluno.terceiros else '____________________' }}</strong>, CPF <strong>{{ aluno.terceiros[0].cpf if aluno.terceiros else '______________' }}</strong>, declaro estar ciente das responsabilidades assumidas e autorizo a Creche El Shadday a utilizar meus dados para fins de cadastro e controle de acesso, conforme Lei nº 13.709/2018 (LGPD).</p>
+                <p>Eu, <strong>{{ terceiro.nome if terceiro else '____________________' }}</strong>, CPF <strong>{{ terceiro.cpf if terceiro else '______________' }}</strong>, declaro estar ciente das responsabilidades assumidas e autorizo a Creche El Shadday a utilizar meus dados para fins de cadastro e controle de acesso, conforme Lei nº 13.709/2018 (LGPD).</p>
             </div>
         </div>
 
@@ -559,8 +582,8 @@
         <div class="assinaturas">
             <div class="assinatura-item">
                 <div class="linha-assinatura"></div>
-                <div class="assinatura-nome">{{ resp_principal.nome if resp_principal and resp_principal.nome else '________________________' }}</div>
-                <div class="assinatura-info">Responsável Legal</div>
+                <div class="assinatura-nome">{{ dados_impressao.responsavel_nome if dados_impressao and dados_impressao.responsavel_nome else (resp_principal.nome if resp_principal else '________________________') }}</div>
+                <div class="assinatura-info">{{ dados_impressao.responsavel_parentesco if dados_impressao and dados_impressao.responsavel_parentesco else (resp_principal.parentesco.capitalize() if resp_principal and resp_principal.parentesco else 'Responsável Legal') }}</div>
             </div>
             <div class="assinatura-item">
                 <div class="linha-assinatura"></div>
@@ -569,23 +592,19 @@
             </div>
         </div>
 
-        <!-- ASSINATURA DOS TERCEIROS -->
-        {% if aluno.terceiros and aluno.terceiros|length > 0 %}
+        <!-- ASSINATURA DO TERCEIRO SELECIONADO -->
         <div class="assinatura-terceiro">
-            <div class="assinatura-terceiro-titulo">✍️ TERCEIROS AUTORIZADOS:</div>
-            {% for terc in aluno.terceiros %}
+            <div class="assinatura-terceiro-titulo">✍️ TERCEIRO AUTORIZADO:</div>
             <div style="margin: 10px 0;">
                 <div class="linha-terceiro"></div>
-                <div class="assinatura-nome">{{ terc.nome }}</div>
-                <div class="assinatura-info">CPF: {{ terc.cpf }}</div>
+                <div class="assinatura-nome">{{ terceiro.nome if terceiro else '________________________' }}</div>
+                <div class="assinatura-info">CPF: {{ terceiro.cpf if terceiro else '______________' }}</div>
             </div>
-            {% endfor %}
         </div>
-        {% endif %}
 
         <!-- DATA -->
         <div class="data-local">
-            {{ unidade.cidade }}/{{ unidade.uf }}, ______ de ____________________ de 20____.
+            {{ unidade.cidade }}/{{ unidade.uf }}, {{ data_atual }}
         </div>
 
         <!-- SEÇÃO DE REVOGAÇÃO -->

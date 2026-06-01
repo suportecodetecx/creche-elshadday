@@ -420,28 +420,42 @@
             Versão atualizada - Março/2026
         </div>
 
-        <!-- DADOS DO RESPONSÁVEL -->
+        <!-- DADOS DO RESPONSÁVEL - AGORA USA O RESPONSÁVEL SELECIONADO -->
         <div class="secao">
             <div class="secao-titulo">1. DADOS DO RESPONSÁVEL LEGAL</div>
             
+            {% if dados_impressao and dados_impressao.responsavel_nome %}
+                {% set resp_nome = dados_impressao.responsavel_nome %}
+                {% set resp_rg = dados_impressao.responsavel_rg %}
+                {% set resp_cpf = dados_impressao.responsavel_cpf %}
+                {% set resp_telefone = dados_impressao.responsavel_telefone %}
+                {% set resp_parentesco = dados_impressao.responsavel_parentesco|lower %}
+            {% else %}
+                {% set resp_nome = aluno.responsaveis[0].nome if aluno.responsaveis else '' %}
+                {% set resp_rg = aluno.responsaveis[0].rg if aluno.responsaveis else '' %}
+                {% set resp_cpf = aluno.responsaveis[0].cpf if aluno.responsaveis else '' %}
+                {% set resp_telefone = aluno.responsaveis[0].telefone if aluno.responsaveis else '' %}
+                {% set resp_parentesco = aluno.responsaveis[0].parentesco|lower if aluno.responsaveis and aluno.responsaveis[0].parentesco else '' %}
+            {% endif %}
+            
             <div class="dados-linha">
                 <span class="dados-label">Nome Completo:</span>
-                <span class="dados-valor"><strong>{{ aluno.responsaveis[0].nome if aluno.responsaveis else '__________________________' }}</strong></span>
+                <span class="dados-valor"><strong>{{ resp_nome if resp_nome else '__________________________' }}</strong></span>
             </div>
             
             <div class="dados-linha">
                 <span class="dados-label">RG:</span>
-                <span class="dados-valor">{{ aluno.responsaveis[0].rg if aluno.responsaveis else '____________________' }}</span>
+                <span class="dados-valor">{{ resp_rg if resp_rg else '____________________' }}</span>
             </div>
             
             <div class="dados-linha">
                 <span class="dados-label">CPF:</span>
-                <span class="dados-valor">{{ aluno.responsaveis[0].cpf if aluno.responsaveis else '____________________' }}</span>
+                <span class="dados-valor">{{ resp_cpf if resp_cpf else '____________________' }}</span>
             </div>
             
             <div class="dados-linha">
                 <span class="dados-label">Telefone:</span>
-                <span class="dados-valor">{{ aluno.responsaveis[0].telefone if aluno.responsaveis else '____________________' }}</span>
+                <span class="dados-valor">{{ resp_telefone if resp_telefone else '____________________' }}</span>
             </div>
             
             <div class="dados-linha">
@@ -449,15 +463,15 @@
                 <span class="dados-valor">
                     <div class="qualidade-container">
                         <div class="qualidade-item">
-                            <span class="check-box {% if aluno.responsaveis and aluno.responsaveis[0].parentesco and aluno.responsaveis[0].parentesco|lower in ['pai', 'pai'] %}check-marcado{% endif %}"></span>
+                            <span class="check-box {% if resp_parentesco in ['pai', 'pai'] %}check-marcado{% endif %}"></span>
                             <span>Pai</span>
                         </div>
                         <div class="qualidade-item">
-                            <span class="check-box {% if aluno.responsaveis and aluno.responsaveis[0].parentesco and aluno.responsaveis[0].parentesco|lower in ['mãe', 'mae'] %}check-marcado{% endif %}"></span>
+                            <span class="check-box {% if resp_parentesco in ['mãe', 'mae'] %}check-marcado{% endif %}"></span>
                             <span>Mãe</span>
                         </div>
                         <div class="qualidade-item">
-                            <span class="check-box {% if not aluno.responsaveis or (aluno.responsaveis[0].parentesco and aluno.responsaveis[0].parentesco|lower not in ['pai', 'mãe', 'mae']) %}check-marcado{% endif %}"></span>
+                            <span class="check-box {% if resp_parentesco not in ['pai', 'mãe', 'mae'] %}check-marcado{% endif %}"></span>
                             <span>Outro</span>
                         </div>
                     </div>
@@ -471,13 +485,15 @@
             
             <div class="dados-linha">
                 <span class="dados-label">Nome Completo:</span>
-                <span class="dados-valor"><strong>{{ aluno.dados_pessoais.nome if aluno.dados_pessoais else '__________________________' }}</strong></span>
+                <span class="dados-valor"><strong>{{ dados_impressao.nome if dados_impressao and dados_impressao.nome else (aluno.dados_pessoais.nome if aluno.dados_pessoais else '__________________________') }}</strong></span>
             </div>
             
             <div class="dados-linha">
                 <span class="dados-label">Data de Nascimento:</span>
                 <span class="dados-valor">
-                    {% if aluno.dados_pessoais and aluno.dados_pessoais.data_nasc %}
+                    {% if dados_impressao and dados_impressao.data_nasc %}
+                        {{ dados_impressao.data_nasc }}
+                    {% elif aluno.dados_pessoais and aluno.dados_pessoais.data_nasc %}
                         {% set data = aluno.dados_pessoais.data_nasc.split('-') %}
                         {{ data[2] }}/{{ data[1] }}/{{ data[0] }}
                     {% else %}
@@ -488,7 +504,7 @@
             
             <div class="dados-linha">
                 <span class="dados-label">Turma:</span>
-                <span class="dados-valor">{{ aluno.turma.turma if aluno.turma else '______________' }}</span>
+                <span class="dados-valor">{{ dados_impressao.turma if dados_impressao and dados_impressao.turma else (aluno.turma.turma if aluno.turma else '______________') }}</span>
             </div>
             
             <div class="dados-linha">
@@ -571,26 +587,26 @@
             </div>
         </div>
 
-        <!-- DECLARAÇÃO FINAL -->
+        <!-- DECLARAÇÃO FINAL - USA O RESPONSÁVEL SELECIONADO -->
         <div class="destaque">
             <p><strong>AUTORIZAÇÃO EXPRESSA DE USO DE IMAGEM</strong></p>
-            <p>Por meio do presente instrumento, eu, <strong>{{ aluno.responsaveis[0].nome if aluno.responsaveis else '____________________' }}</strong>, portador(a) do RG n° <strong>{{ aluno.responsaveis[0].rg if aluno.responsaveis else '______' }}</strong> e CPF n° <strong>{{ aluno.responsaveis[0].cpf if aluno.responsaveis else '______' }}</strong>, na qualidade de 
+            <p>Por meio do presente instrumento, eu, <strong>{{ resp_nome if resp_nome else '____________________' }}</strong>, portador(a) do RG n° <strong>{{ resp_rg if resp_rg else '______' }}</strong> e CPF n° <strong>{{ resp_cpf if resp_cpf else '______' }}</strong>, na qualidade de 
                 <strong>
-                    {% if aluno.responsaveis and aluno.responsaveis[0].parentesco %}
-                        {% if aluno.responsaveis[0].parentesco|lower in ['pai', 'pai'] %}
-                            PAI
-                        {% elif aluno.responsaveis[0].parentesco|lower in ['mãe', 'mae'] %}
-                            MÃE
-                        {% else %}
-                            {{ aluno.responsaveis[0].parentesco|upper }}
-                        {% endif %}
+                    {% if resp_parentesco in ['pai', 'pai'] %}
+                        PAI
+                    {% elif resp_parentesco in ['mãe', 'mae'] %}
+                        MÃE
+                    {% elif resp_parentesco %}
+                        {{ resp_parentesco|upper }}
                     {% else %}
                         RESPONSÁVEL
                     {% endif %}
                 </strong> 
-                do menor <strong>{{ aluno.dados_pessoais.nome if aluno.dados_pessoais else '______' }}</strong>, nascido em 
+                do menor <strong>{{ dados_impressao.nome if dados_impressao and dados_impressao.nome else (aluno.dados_pessoais.nome if aluno.dados_pessoais else '______') }}</strong>, nascido em 
                 <strong>
-                    {% if aluno.dados_pessoais and aluno.dados_pessoais.data_nasc %}
+                    {% if dados_impressao and dados_impressao.data_nasc %}
+                        {{ dados_impressao.data_nasc }}
+                    {% elif aluno.dados_pessoais and aluno.dados_pessoais.data_nasc %}
                         {% set data = aluno.dados_pessoais.data_nasc.split('-') %}
                         {{ data[2] }}/{{ data[1] }}/{{ data[0] }}
                     {% else %}
@@ -599,25 +615,35 @@
                 </strong>, autorizo a CRECHE EL SHADDAY, inscrita no CNPJ sob nº {{ unidade.cnpj }}, a coletar, tratar, utilizar e compartilhar os dados pessoais, imagem e voz do(a) menor, em conformidade com a Lei Geral de Proteção de Dados (Lei n° 13.709/2018), conforme disposições acima.</p>
         </div>
 
-        <!-- ASSINATURAS -->
+        <!-- ASSINATURAS - USA O RESPONSÁVEL SELECIONADO -->
         <div class="assinaturas-container">
             <div class="assinaturas-titulo">TERMO DE AUTORIZAÇÃO DE USO DE IMAGEM</div>
             
             <div class="assinaturas-grid">
-                <!-- Coluna do Responsável -->
+                <!-- Coluna do Responsável Selecionado -->
                 <div class="assinatura-coluna">
                     <div class="assinatura-cargo">RESPONSÁVEL LEGAL</div>
                     <div class="linha-assinatura"></div>
-                    <div class="assinatura-nome">{{ aluno.responsaveis[0].nome if aluno.responsaveis else '__________________________' }}</div>
-                    <div class="assinatura-funcao">{{ aluno.responsaveis[0].parentesco.capitalize() if aluno.responsaveis and aluno.responsaveis[0].parentesco else 'Responsável pelo aluno' }}</div>
+                    <div class="assinatura-nome">{{ resp_nome if resp_nome else '__________________________' }}</div>
+                    <div class="assinatura-funcao">
+                        {% if resp_parentesco in ['pai', 'pai'] %}
+                            Pai
+                        {% elif resp_parentesco in ['mãe', 'mae'] %}
+                            Mãe
+                        {% elif resp_parentesco %}
+                            {{ resp_parentesco|capitalize }}
+                        {% else %}
+                            Responsável pelo aluno
+                        {% endif %}
+                    </div>
                     <div class="dados-assinante">
                         <div class="linha-dado">
                             <span>CPF:</span>
-                            <div class="linha-preenchimento">{{ aluno.responsaveis[0].cpf if aluno.responsaveis else '' }}</div>
+                            <div class="linha-preenchimento">{{ resp_cpf if resp_cpf else '' }}</div>
                         </div>
                         <div class="linha-dado">
                             <span>RG:</span>
-                            <div class="linha-preenchimento">{{ aluno.responsaveis[0].rg if aluno.responsaveis else '' }}</div>
+                            <div class="linha-preenchimento">{{ resp_rg if resp_rg else '' }}</div>
                         </div>
                         <div class="linha-dado">
                             <span>Data:</span>

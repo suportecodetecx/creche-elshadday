@@ -528,31 +528,55 @@
             </div>
         </div>
 
-        <!-- CIÊNCIA DO RESPONSÁVEL -->
+        <!-- CIÊNCIA DO RESPONSÁVEL - AGORA USA O RESPONSÁVEL SELECIONADO -->
         <div class="destaque">
             <p><strong>CIÊNCIA DO RESPONSÁVEL</strong></p>
-            <p>Declaro ter recebido, lido e estar ciente de todas as normas estabelecidas neste Regulamento Interno, comprometendo-me a cumpri-las e a orientar meu(minha) filho(a) <strong>{{ aluno.dados_pessoais.nome }}</strong> quanto às regras de convivência na Creche El Shadday.</p>
+            <p>Declaro ter recebido, lido e estar ciente de todas as normas estabelecidas neste Regulamento Interno, comprometendo-me a cumpri-las e a orientar meu(minha) filho(a) <strong>{{ dados_impressao.nome if dados_impressao and dados_impressao.nome else (aluno.dados_pessoais.nome if aluno.dados_pessoais else '______') }}</strong> quanto às regras de convivência na Creche El Shadday.</p>
         </div>
 
-        <!-- ASSINATURAS -->
+        <!-- ASSINATURAS - USA O RESPONSÁVEL SELECIONADO -->
         <div class="assinaturas-container">
             <div class="assinaturas-titulo">TERMO DE CIÊNCIA E RESPONSABILIDADE</div>
             
             <div class="assinaturas-grid">
-                <!-- Coluna do Responsável -->
+                <!-- Coluna do Responsável Selecionado -->
                 <div class="assinatura-coluna">
                     <div class="assinatura-cargo">RESPONSÁVEL LEGAL</div>
                     <div class="linha-assinatura"></div>
-                    <div class="assinatura-nome">{{ aluno.responsaveis[0].nome if aluno.responsaveis else '__________________________' }}</div>
-                    <div class="assinatura-funcao">{{ aluno.responsaveis[0].parentesco.capitalize() if aluno.responsaveis and aluno.responsaveis[0].parentesco else 'Responsável pelo aluno' }}</div>
+                    <div class="assinatura-nome">
+                        {% if dados_impressao and dados_impressao.responsavel_nome %}
+                            {{ dados_impressao.responsavel_nome }}
+                        {% else %}
+                            {{ aluno.responsaveis[0].nome if aluno.responsaveis else '__________________________' }}
+                        {% endif %}
+                    </div>
+                    <div class="assinatura-funcao">
+                        {% if dados_impressao and dados_impressao.responsavel_parentesco %}
+                            {{ dados_impressao.responsavel_parentesco|capitalize }}
+                        {% else %}
+                            {{ aluno.responsaveis[0].parentesco.capitalize() if aluno.responsaveis and aluno.responsaveis[0].parentesco else 'Responsável pelo aluno' }}
+                        {% endif %}
+                    </div>
                     <div class="dados-assinante">
                         <div class="linha-dado">
                             <span>CPF:</span>
-                            <div class="linha-preenchimento">{{ aluno.responsaveis[0].cpf if aluno.responsaveis else '' }}</div>
+                            <div class="linha-preenchimento">
+                                {% if dados_impressao and dados_impressao.responsavel_cpf %}
+                                    {{ dados_impressao.responsavel_cpf }}
+                                {% else %}
+                                    {{ aluno.responsaveis[0].cpf if aluno.responsaveis else '' }}
+                                {% endif %}
+                            </div>
                         </div>
                         <div class="linha-dado">
                             <span>RG:</span>
-                            <div class="linha-preenchimento">{{ aluno.responsaveis[0].rg if aluno.responsaveis else '' }}</div>
+                            <div class="linha-preenchimento">
+                                {% if dados_impressao and dados_impressao.responsavel_rg %}
+                                    {{ dados_impressao.responsavel_rg }}
+                                {% else %}
+                                    {{ aluno.responsaveis[0].rg if aluno.responsaveis else '' }}
+                                {% endif %}
+                            </div>
                         </div>
                         <div class="linha-dado">
                             <span>Data:</span>

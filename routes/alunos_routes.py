@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, render_template, send_file, redirect
+from flask import Blueprint, request, jsonify, render_template, send_file, redirect, abort
 from services.aluno_service import AlunoService
 from werkzeug.utils import secure_filename
 import os
@@ -319,6 +319,313 @@ def visualizar_arquivo_aluno(file_id):
 
 
 # ============================================
+# ROTAS DE VISUALIZAÇÃO DE TERMOS COM SUPORTE AO RESPONSÁVEL SELECIONADO
+# ============================================
+
+@alunos_bp.route('/visualizar/termo/matricula/<num_inscricao>')
+def visualizar_termo_matricula(num_inscricao):
+    """Visualiza termo de matrícula"""
+    try:
+        from database.mongo import db
+        
+        aluno = db.alunos.find_one({'num_inscricao': num_inscricao})
+        
+        if not aluno:
+            abort(404, description="Aluno não encontrado")
+        
+        if '_id' in aluno:
+            aluno['_id'] = str(aluno['_id'])
+        
+        # Dados da unidade
+        unidade = {
+            'nome': 'CEIC El Shadday',
+            'tipo': 'CEIC - Centro de Educação Infantil',
+            'cnpj': '03.067.526/0001-87',
+            'INEP': '35195340',
+            'endereco': 'Rua Francisco Vilani Bicudo, 470',
+            'bairro': 'Vila Nova Aparecida',
+            'cidade': 'Mogi das Cruzes',
+            'uf': 'SP',
+            'cep': '08830-340',
+            'telefone': '(11) 4739-3549',
+            'email': 'contato@crecheelshadday.com.br'
+        }
+        
+        data_atual = datetime.now().strftime('%d/%m/%Y')
+        
+        return render_template('componentes/termo_matricula.html',
+                             aluno=aluno,
+                             unidade=unidade,
+                             data_atual=data_atual)
+    except Exception as e:
+        print(f"❌ Erro ao visualizar termo matrícula: {e}")
+        abort(500)
+
+
+@alunos_bp.route('/visualizar/termo/imagem/<num_inscricao>')
+def visualizar_termo_imagem(num_inscricao):
+    """Visualiza termo de autorização de imagem com suporte ao responsável selecionado"""
+    try:
+        from database.mongo import db
+        
+        aluno = db.alunos.find_one({'num_inscricao': num_inscricao})
+        
+        if not aluno:
+            abort(404, description="Aluno não encontrado")
+        
+        if '_id' in aluno:
+            aluno['_id'] = str(aluno['_id'])
+        
+        # 🔥 PEGA OS PARÂMETROS DO RESPONSÁVEL SELECIONADO
+        responsavel_nome = request.args.get('responsavel_nome', '')
+        responsavel_parentesco = request.args.get('responsavel_parentesco', '')
+        responsavel_rg = request.args.get('responsavel_rg', '')
+        responsavel_cpf = request.args.get('responsavel_cpf', '')
+        responsavel_telefone = request.args.get('responsavel_telefone', '')
+        
+        # Cria objeto dados_impressao com o responsável selecionado
+        dados_impressao = {
+            'responsavel_nome': responsavel_nome,
+            'responsavel_parentesco': responsavel_parentesco,
+            'responsavel_rg': responsavel_rg,
+            'responsavel_cpf': responsavel_cpf,
+            'responsavel_telefone': responsavel_telefone,
+            'nome': aluno.get('dados_pessoais', {}).get('nome', ''),
+            'data_nasc': aluno.get('dados_pessoais', {}).get('data_nasc', ''),
+            'turma': aluno.get('turma', {}).get('turma', ''),
+            'unidade': aluno.get('turma', {}).get('unidade', ''),
+            'endereco': aluno.get('endereco', {}).get('logradouro', ''),
+            'numero': aluno.get('endereco', {}).get('numero', ''),
+            'bairro': aluno.get('endereco', {}).get('bairro', ''),
+            'cidade': aluno.get('endereco', {}).get('cidade', ''),
+            'uf': aluno.get('endereco', {}).get('uf', ''),
+            'cep': aluno.get('endereco', {}).get('cep', ''),
+            'sexo': aluno.get('dados_pessoais', {}).get('sexo', '')
+        }
+        
+        # Dados da unidade
+        unidade = {
+            'nome': 'CEIC El Shadday',
+            'tipo': 'CEIC - Centro de Educação Infantil',
+            'cnpj': '03.067.526/0001-87',
+            'INEP': '35195340',
+            'endereco': 'Rua Francisco Vilani Bicudo, 470',
+            'bairro': 'Vila Nova Aparecida',
+            'cidade': 'Mogi das Cruzes',
+            'uf': 'SP',
+            'cep': '08830-340',
+            'telefone': '(11) 4739-3549',
+            'email': 'contato@crecheelshadday.com.br'
+        }
+        
+        data_atual = datetime.now().strftime('%d/%m/%Y')
+        
+        return render_template('componentes/autorizacao_imagem.html',
+                             aluno=aluno,
+                             unidade=unidade,
+                             data_atual=data_atual,
+                             dados_impressao=dados_impressao)
+    except Exception as e:
+        print(f"❌ Erro ao visualizar termo imagem: {e}")
+        traceback.print_exc()
+        abort(500)
+
+
+@alunos_bp.route('/visualizar/termo/regulamento/<num_inscricao>')
+def visualizar_termo_regulamento(num_inscricao):
+    """Visualiza termo de regulamento com suporte ao responsável selecionado"""
+    try:
+        from database.mongo import db
+        
+        aluno = db.alunos.find_one({'num_inscricao': num_inscricao})
+        
+        if not aluno:
+            abort(404, description="Aluno não encontrado")
+        
+        if '_id' in aluno:
+            aluno['_id'] = str(aluno['_id'])
+        
+        # 🔥 PEGA OS PARÂMETROS DO RESPONSÁVEL SELECIONADO
+        responsavel_nome = request.args.get('responsavel_nome', '')
+        responsavel_parentesco = request.args.get('responsavel_parentesco', '')
+        responsavel_rg = request.args.get('responsavel_rg', '')
+        responsavel_cpf = request.args.get('responsavel_cpf', '')
+        responsavel_telefone = request.args.get('responsavel_telefone', '')
+        
+        dados_impressao = {
+            'responsavel_nome': responsavel_nome,
+            'responsavel_parentesco': responsavel_parentesco,
+            'responsavel_rg': responsavel_rg,
+            'responsavel_cpf': responsavel_cpf,
+            'responsavel_telefone': responsavel_telefone,
+            'nome': aluno.get('dados_pessoais', {}).get('nome', ''),
+            'data_nasc': aluno.get('dados_pessoais', {}).get('data_nasc', ''),
+            'turma': aluno.get('turma', {}).get('turma', ''),
+            'unidade': aluno.get('turma', {}).get('unidade', '')
+        }
+        
+        unidade = {
+            'nome': 'CEIC El Shadday',
+            'tipo': 'CEIC - Centro de Educação Infantil',
+            'cnpj': '03.067.526/0001-87',
+            'INEP': '35195340'
+        }
+        
+        data_atual = datetime.now().strftime('%d/%m/%Y')
+        
+        return render_template('componentes/regulamento.html',
+                             aluno=aluno,
+                             unidade=unidade,
+                             data_atual=data_atual,
+                             dados_impressao=dados_impressao)
+    except Exception as e:
+        print(f"❌ Erro ao visualizar termo regulamento: {e}")
+        abort(500)
+
+
+@alunos_bp.route('/visualizar/termo/saude/<num_inscricao>')
+def visualizar_termo_saude(num_inscricao):
+    """Visualiza termo de saúde com suporte ao responsável selecionado"""
+    try:
+        from database.mongo import db
+        
+        aluno = db.alunos.find_one({'num_inscricao': num_inscricao})
+        
+        if not aluno:
+            abort(404, description="Aluno não encontrado")
+        
+        if '_id' in aluno:
+            aluno['_id'] = str(aluno['_id'])
+        
+        # 🔥 PEGA OS PARÂMETROS DO RESPONSÁVEL SELECIONADO
+        responsavel_nome = request.args.get('responsavel_nome', '')
+        responsavel_parentesco = request.args.get('responsavel_parentesco', '')
+        responsavel_rg = request.args.get('responsavel_rg', '')
+        responsavel_cpf = request.args.get('responsavel_cpf', '')
+        responsavel_telefone = request.args.get('responsavel_telefone', '')
+        
+        dados_impressao = {
+            'responsavel_nome': responsavel_nome,
+            'responsavel_parentesco': responsavel_parentesco,
+            'responsavel_rg': responsavel_rg,
+            'responsavel_cpf': responsavel_cpf,
+            'responsavel_telefone': responsavel_telefone,
+            'nome': aluno.get('dados_pessoais', {}).get('nome', ''),
+            'data_nasc': aluno.get('dados_pessoais', {}).get('data_nasc', ''),
+            'turma': aluno.get('turma', {}).get('turma', ''),
+            'unidade': aluno.get('turma', {}).get('unidade', '')
+        }
+        
+        unidade = {
+            'nome': 'CEIC El Shadday',
+            'tipo': 'CEIC - Centro de Educação Infantil',
+            'cnpj': '03.067.526/0001-87',
+            'INEP': '35195340'
+        }
+        
+        data_atual = datetime.now().strftime('%d/%m/%Y')
+        
+        return render_template('componentes/termo_saude.html',
+                             aluno=aluno,
+                             unidade=unidade,
+                             data_atual=data_atual,
+                             dados_impressao=dados_impressao)
+    except Exception as e:
+        print(f"❌ Erro ao visualizar termo saúde: {e}")
+        abort(500)
+
+
+@alunos_bp.route('/visualizar/termo/transporte/<num_inscricao>')
+def visualizar_termo_transporte(num_inscricao):
+    """Visualiza termo de transporte com suporte ao responsável selecionado"""
+    try:
+        from database.mongo import db
+        
+        aluno = db.alunos.find_one({'num_inscricao': num_inscricao})
+        
+        if not aluno:
+            abort(404, description="Aluno não encontrado")
+        
+        if '_id' in aluno:
+            aluno['_id'] = str(aluno['_id'])
+        
+        # 🔥 PEGA OS PARÂMETROS DO RESPONSÁVEL SELECIONADO
+        responsavel_nome = request.args.get('responsavel_nome', '')
+        responsavel_parentesco = request.args.get('responsavel_parentesco', '')
+        responsavel_rg = request.args.get('responsavel_rg', '')
+        responsavel_cpf = request.args.get('responsavel_cpf', '')
+        responsavel_telefone = request.args.get('responsavel_telefone', '')
+        
+        dados_impressao = {
+            'responsavel_nome': responsavel_nome,
+            'responsavel_parentesco': responsavel_parentesco,
+            'responsavel_rg': responsavel_rg,
+            'responsavel_cpf': responsavel_cpf,
+            'responsavel_telefone': responsavel_telefone,
+            'nome': aluno.get('dados_pessoais', {}).get('nome', ''),
+            'data_nasc': aluno.get('dados_pessoais', {}).get('data_nasc', ''),
+            'turma': aluno.get('turma', {}).get('turma', ''),
+            'unidade': aluno.get('turma', {}).get('unidade', '')
+        }
+        
+        unidade = {
+            'nome': 'CEIC El Shadday',
+            'tipo': 'CEIC - Centro de Educação Infantil',
+            'cnpj': '03.067.526/0001-87',
+            'INEP': '35195340'
+        }
+        
+        data_atual = datetime.now().strftime('%d/%m/%Y')
+        
+        return render_template('componentes/termo_transporte.html',
+                             aluno=aluno,
+                             unidade=unidade,
+                             data_atual=data_atual,
+                             dados_impressao=dados_impressao)
+    except Exception as e:
+        print(f"❌ Erro ao visualizar termo transporte: {e}")
+        abort(500)
+
+
+@alunos_bp.route('/visualizar/termo/terceiro/<num_inscricao>')
+def visualizar_termo_terceiro(num_inscricao):
+    """Visualiza termo de terceiro autorizado"""
+    try:
+        from database.mongo import db
+        
+        aluno = db.alunos.find_one({'num_inscricao': num_inscricao})
+        
+        if not aluno:
+            abort(404, description="Aluno não encontrado")
+        
+        if '_id' in aluno:
+            aluno['_id'] = str(aluno['_id'])
+        
+        terceiro_num = request.args.get('terceiro', '1')
+        terceiro_idx = int(terceiro_num) - 1
+        
+        terceiro = aluno.get('terceiros', [])[terceiro_idx] if aluno.get('terceiros') and terceiro_idx < len(aluno.get('terceiros', [])) else None
+        
+        unidade = {
+            'nome': 'CEIC El Shadday',
+            'tipo': 'CEIC - Centro de Educação Infantil',
+            'cnpj': '03.067.526/0001-87',
+            'INEP': '35195340'
+        }
+        
+        data_atual = datetime.now().strftime('%d/%m/%Y')
+        
+        return render_template('componentes/termo_terceiro.html',
+                             aluno=aluno,
+                             terceiro=terceiro,
+                             unidade=unidade,
+                             data_atual=data_atual)
+    except Exception as e:
+        print(f"❌ Erro ao visualizar termo terceiro: {e}")
+        abort(500)
+
+
+# ============================================
 # ENDPOINT DE CADASTRO VIA JSON - COM VERIFICAÇÃO DE DUPLICIDADE
 # ============================================
 
@@ -616,7 +923,6 @@ def atualizar_aluno():
         print("="*60)
 
         
-        
         # INICIALIZAÇÃO DAS VARIÁVEIS
         num_inscricao_original = None
         arquivos_ids = {}
@@ -669,12 +975,8 @@ def atualizar_aluno():
                     print(f"   📋 {rg_key} recuperado do FormData: '{rg_valor[:10]}...'")
                     dados_dict[rg_key] = rg_valor
         
-        
-
-                      # Usar dados_dict daqui em diante
+        # Usar dados_dict daqui em diante
         dados = dados_dict
-
-       
 
         # Depois de criar dados_dict, adicione:
         print("\n🔍 TODOS OS CAMPOS RECEBIDOS:")

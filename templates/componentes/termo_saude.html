@@ -344,12 +344,14 @@
             <div class="secao-titulo">📋 DADOS DO ALUNO</div>
             <div class="dados-linha">
                 <span class="dados-label">Nome:</span>
-                <span class="dados-valor"><strong>{{ aluno.dados_pessoais.nome or '________________________' }}</strong></span>
+                <span class="dados-valor"><strong>{{ dados_impressao.nome if dados_impressao and dados_impressao.nome else (aluno.dados_pessoais.nome or '________________________') }}</strong></span>
             </div>
             <div class="dados-linha">
                 <span class="dados-label">Data Nasc.:</span>
                 <span class="dados-valor">
-                    {% if aluno.dados_pessoais.data_nasc %}
+                    {% if dados_impressao and dados_impressao.data_nasc %}
+                        {{ dados_impressao.data_nasc }}
+                    {% elif aluno.dados_pessoais.data_nasc %}
                         {% set data = aluno.dados_pessoais.data_nasc.split('-') %}
                         {{ data[2] }}/{{ data[1] }}/{{ data[0] }}
                     {% else %}
@@ -357,29 +359,62 @@
                     {% endif %}
                 </span>
                 <span style="margin-left: 10px; font-weight: bold;">Turma:</span>
-                <span>{{ aluno.turma.turma or '______' }}</span>
+                <span>{{ dados_impressao.turma if dados_impressao and dados_impressao.turma else (aluno.turma.turma or '______') }}</span>
                 <span style="margin-left: 10px; font-weight: bold;">Período:</span>
                 <span>{{ aluno.turma.periodo or '______' }}</span>
             </div>
             <div class="dados-linha">
                 <span class="dados-label">Unidade:</span>
-                <span class="dados-valor">{{ aluno.turma.unidade or 'CEIC El Shadday' }}</span>
+                <span class="dados-valor">{{ dados_impressao.unidade if dados_impressao and dados_impressao.unidade else (aluno.turma.unidade or 'CEIC El Shadday') }}</span>
             </div>
         </div>
 
-        <!-- RESPONSÁVEL LEGAL -->
-        {% set resp_principal = aluno.responsaveis|selectattr("tipo", "equalto", "principal")|first %}
-        {% if resp_principal and (resp_principal.nome or resp_principal.telefone or resp_principal.cpf or resp_principal.email) %}
+        <!-- RESPONSÁVEL LEGAL - AGORA USA O RESPONSÁVEL SELECIONADO -->
         <div class="card-responsavel card-saude">
             <div class="card-titulo">👪 RESPONSÁVEL LEGAL</div>
             <div class="card-conteudo">
-                {% if resp_principal.nome %}<div><strong>Nome:</strong> {{ resp_principal.nome }}</div>{% endif %}
-                {% if resp_principal.telefone %}<div><strong>Telefone:</strong> {{ resp_principal.telefone }}</div>{% endif %}
-                {% if resp_principal.cpf %}<div><strong>CPF:</strong> {{ resp_principal.cpf }}</div>{% endif %}
-                {% if resp_principal.email %}<div><strong>E-mail:</strong> {{ resp_principal.email }}</div>{% endif %}
+                <div><strong>Nome:</strong> 
+                    {% if dados_impressao and dados_impressao.responsavel_nome %}
+                        {{ dados_impressao.responsavel_nome }}
+                    {% else %}
+                        {% set resp_principal = aluno.responsaveis|selectattr("tipo", "equalto", "principal")|first %}
+                        {{ resp_principal.nome if resp_principal and resp_principal.nome else '________________________' }}
+                    {% endif %}
+                </div>
+                <div><strong>Telefone:</strong> 
+                    {% if dados_impressao and dados_impressao.responsavel_telefone %}
+                        {{ dados_impressao.responsavel_telefone }}
+                    {% else %}
+                        {% set resp_principal = aluno.responsaveis|selectattr("tipo", "equalto", "principal")|first %}
+                        {{ resp_principal.telefone if resp_principal and resp_principal.telefone else '________________________' }}
+                    {% endif %}
+                </div>
+                <div><strong>Parentesco:</strong> 
+                    {% if dados_impressao and dados_impressao.responsavel_parentesco %}
+                        {{ dados_impressao.responsavel_parentesco|capitalize }}
+                    {% else %}
+                        {% set resp_principal = aluno.responsaveis|selectattr("tipo", "equalto", "principal")|first %}
+                        {{ resp_principal.parentesco.capitalize() if resp_principal and resp_principal.parentesco else 'Responsável' }}
+                    {% endif %}
+                </div>
+                <div><strong>CPF:</strong> 
+                    {% if dados_impressao and dados_impressao.responsavel_cpf %}
+                        {{ dados_impressao.responsavel_cpf }}
+                    {% else %}
+                        {% set resp_principal = aluno.responsaveis|selectattr("tipo", "equalto", "principal")|first %}
+                        {{ resp_principal.cpf if resp_principal and resp_principal.cpf else '________________________' }}
+                    {% endif %}
+                </div>
+                <div><strong>RG:</strong> 
+                    {% if dados_impressao and dados_impressao.responsavel_rg %}
+                        {{ dados_impressao.responsavel_rg }}
+                    {% else %}
+                        {% set resp_principal = aluno.responsaveis|selectattr("tipo", "equalto", "principal")|first %}
+                        {{ resp_principal.rg if resp_principal and resp_principal.rg else '________________________' }}
+                    {% endif %}
+                </div>
             </div>
         </div>
-        {% endif %}
 
         <!-- INFORMAÇÕES DE SAÚDE -->
         <div class="secao">
@@ -479,12 +514,26 @@
             <p>Declaro que as informações prestadas são verdadeiras e autorizo a Creche El Shadday a proceder conforme as orientações acima em caso de emergência.</p>
         </div>
 
-        <!-- ASSINATURAS -->
+        <!-- ASSINATURAS - USA O RESPONSÁVEL SELECIONADO -->
         <div class="assinaturas">
             <div class="assinatura-item">
                 <div class="linha-assinatura"></div>
-                <div class="assinatura-nome">{{ resp_principal.nome if resp_principal and resp_principal.nome else '________________________' }}</div>
-                <div class="assinatura-info">Responsável Legal</div>
+                <div class="assinatura-nome">
+                    {% if dados_impressao and dados_impressao.responsavel_nome %}
+                        {{ dados_impressao.responsavel_nome }}
+                    {% else %}
+                        {% set resp_principal = aluno.responsaveis|selectattr("tipo", "equalto", "principal")|first %}
+                        {{ resp_principal.nome if resp_principal and resp_principal.nome else '________________________' }}
+                    {% endif %}
+                </div>
+                <div class="assinatura-info">
+                    {% if dados_impressao and dados_impressao.responsavel_parentesco %}
+                        {{ dados_impressao.responsavel_parentesco|capitalize }}
+                    {% else %}
+                        {% set resp_principal = aluno.responsaveis|selectattr("tipo", "equalto", "principal")|first %}
+                        {{ resp_principal.parentesco.capitalize() if resp_principal and resp_principal.parentesco else 'Responsável Legal' }}
+                    {% endif %}
+                </div>
             </div>
             <div class="assinatura-item">
                 <div class="linha-assinatura"></div>
@@ -495,7 +544,7 @@
 
         <!-- DATA -->
         <div class="data-local">
-            Mogi das Cruzes, ______ de ____________________ de 20____.
+            {{ unidade.cidade }}/{{ unidade.uf }}, {{ data_atual }}
         </div>
 
         <!-- RODAPÉ -->

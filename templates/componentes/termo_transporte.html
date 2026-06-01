@@ -396,12 +396,14 @@
             </div>
             <div class="dados-linha">
                 <span class="dados-label">Nome:</span>
-                <span class="dados-valor"><strong>{{ aluno.dados_pessoais.nome or '________________________' }}</strong></span>
+                <span class="dados-valor"><strong>{{ dados_impressao.nome if dados_impressao and dados_impressao.nome else (aluno.dados_pessoais.nome or '________________________') }}</strong></span>
             </div>
             <div class="dados-linha">
                 <span class="dados-label">Data Nasc.:</span>
                 <span class="dados-valor">
-                    {% if aluno.dados_pessoais.data_nasc %}
+                    {% if dados_impressao and dados_impressao.data_nasc %}
+                        {{ dados_impressao.data_nasc }}
+                    {% elif aluno.dados_pessoais.data_nasc %}
                         {% set data = aluno.dados_pessoais.data_nasc.split('-') %}
                         {{ data[2] }}/{{ data[1] }}/{{ data[0] }}
                     {% else %}
@@ -409,17 +411,17 @@
                     {% endif %}
                 </span>
                 <span style="margin-left: 15px; font-weight: bold;">Turma:</span>
-                <span>{{ aluno.turma.turma or '______' }}</span>
+                <span>{{ dados_impressao.turma if dados_impressao and dados_impressao.turma else (aluno.turma.turma or '______') }}</span>
             </div>
             <div class="dados-linha">
                 <span class="dados-label">Unidade:</span>
-                <span class="dados-valor">{{ aluno.turma.unidade or 'CEIC El Shadday' }}</span>
+                <span class="dados-valor">{{ dados_impressao.unidade if dados_impressao and dados_impressao.unidade else (aluno.turma.unidade or 'CEIC El Shadday') }}</span>
                 <span style="margin-left: 15px; font-weight: bold;">Período:</span>
                 <span>{{ aluno.turma.periodo or '______' }}</span>
             </div>
         </div>
 
-        <!-- DADOS DO RESPONSÁVEL PELO ALUNO -->
+        <!-- DADOS DO RESPONSÁVEL PELO ALUNO - AGORA USA O RESPONSÁVEL SELECIONADO -->
         {% set resp_principal = aluno.responsaveis|selectattr("tipo", "equalto", "principal")|first %}
         <div class="secao">
             <div class="secao-titulo">
@@ -427,13 +429,19 @@
             </div>
             <div class="dados-linha">
                 <span class="dados-label">Nome:</span>
-                <span class="dados-valor"><strong>{{ resp_principal.nome or '________________________' }}</strong></span>
+                <span class="dados-valor"><strong>{{ dados_impressao.responsavel_nome if dados_impressao and dados_impressao.responsavel_nome else (resp_principal.nome if resp_principal else '________________________') }}</strong></span>
             </div>
             <div class="dados-linha">
                 <span class="dados-label">Telefone:</span>
-                <span class="dados-valor">{{ resp_principal.telefone or '______________' }}</span>
+                <span class="dados-valor">{{ dados_impressao.responsavel_telefone if dados_impressao and dados_impressao.responsavel_telefone else (resp_principal.telefone if resp_principal else '______________') }}</span>
                 <span style="margin-left: 15px; font-weight: bold;">CPF:</span>
-                <span>{{ resp_principal.cpf or '______________' }}</span>
+                <span>{{ dados_impressao.responsavel_cpf if dados_impressao and dados_impressao.responsavel_cpf else (resp_principal.cpf if resp_principal else '______________') }}</span>
+            </div>
+            <div class="dados-linha">
+                <span class="dados-label">Parentesco:</span>
+                <span class="dados-valor">{{ dados_impressao.responsavel_parentesco if dados_impressao and dados_impressao.responsavel_parentesco else (resp_principal.parentesco.capitalize() if resp_principal and resp_principal.parentesco else 'Responsável') }}</span>
+                <span style="margin-left: 15px; font-weight: bold;">RG:</span>
+                <span>{{ dados_impressao.responsavel_rg if dados_impressao and dados_impressao.responsavel_rg else (resp_principal.rg if resp_principal else '______________') }}</span>
             </div>
         </div>
 
@@ -494,17 +502,17 @@
                 <span>🔒</span> AUTORIZAÇÃO DO TRANSPORTADOR
             </div>
             <div class="autorizacao-box">
-                <p>Eu, <strong>{{ aluno.transporte.nome if aluno.transporte else '____________________' }}</strong>, portador do CPF <strong>{{ aluno.transporte.cpf if aluno.transporte else '______________' }}</strong> e CNPJ <strong>{{ aluno.transporte.cnpj if aluno.transporte else '______________' }}</strong>, declaro para os devidos fins que estou ciente e autorizo a Creche El Shadday a manter meus dados cadastrais (nome, CPF, CNPJ, RG, telefone e demais informações) em seu sistema, para fins de cadastro de transportador autorizado a buscar e trazer o(a) aluno(a) <strong>{{ aluno.dados_pessoais.nome or '____________________' }}</strong> da unidade escolar.</p>
+                <p>Eu, <strong>{{ aluno.transporte.nome if aluno.transporte else '____________________' }}</strong>, portador do CPF <strong>{{ aluno.transporte.cpf if aluno.transporte else '______________' }}</strong> e CNPJ <strong>{{ aluno.transporte.cnpj if aluno.transporte else '______________' }}</strong>, declaro para os devidos fins que estou ciente e autorizo a Creche El Shadday a manter meus dados cadastrais (nome, CPF, CNPJ, RG, telefone e demais informações) em seu sistema, para fins de cadastro de transportador autorizado a buscar e trazer o(a) aluno(a) <strong>{{ dados_impressao.nome if dados_impressao and dados_impressao.nome else (aluno.dados_pessoais.nome or '____________________') }}</strong> da unidade escolar.</p>
                 <p>Estou ciente que meus dados serão tratados conforme a Lei nº 13.709/2018 (LGPD), podendo revogar esta autorização a qualquer momento.</p>
             </div>
         </div>
 
-        <!-- ASSINATURAS -->
+        <!-- ASSINATURAS - USA O RESPONSÁVEL SELECIONADO -->
         <div class="assinaturas">
             <div class="assinatura-item">
                 <div class="linha-assinatura"></div>
-                <div class="assinatura-nome">{{ resp_principal.nome if resp_principal and resp_principal.nome else '________________________' }}</div>
-                <div class="assinatura-info">Responsável pelo Aluno</div>
+                <div class="assinatura-nome">{{ dados_impressao.responsavel_nome if dados_impressao and dados_impressao.responsavel_nome else (resp_principal.nome if resp_principal else '________________________') }}</div>
+                <div class="assinatura-info">{{ dados_impressao.responsavel_parentesco if dados_impressao and dados_impressao.responsavel_parentesco else (resp_principal.parentesco.capitalize() if resp_principal and resp_principal.parentesco else 'Responsável pelo Aluno') }}</div>
             </div>
             <div class="assinatura-item">
                 <div class="linha-assinatura"></div>
@@ -516,7 +524,7 @@
 
         <!-- DATA -->
         <div class="data-local">
-            {{ unidade.cidade }}/{{ unidade.uf }}, ______ de ____________________ de 20____.
+            {{ unidade.cidade }}/{{ unidade.uf }}, {{ data_atual }}
         </div>
 
         <!-- SEÇÃO DE REVOGAÇÃO -->

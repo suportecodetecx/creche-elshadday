@@ -1056,8 +1056,8 @@
         .termo-link.transporte { background: #A06CD5; color: white; }
         .termo-link.terceiros { background: #FF6B6B; color: white; }
         
-        /* Estilos para o modal de seleção de terceiros - CORRIGIDO */
-        .modal-terceiros {
+        /* Estilos para o modal de seleção de responsáveis */
+        .modal-responsaveis {
             display: none;
             position: fixed;
             top: 0;
@@ -1067,6 +1067,100 @@
             background: rgba(0,0,0,0.95);
             backdrop-filter: blur(8px);
             z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-responsaveis.active {
+            display: flex;
+        }
+
+        .modal-responsaveis-box {
+            background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
+            border-radius: 24px;
+            padding: 25px;
+            width: 100%;
+            max-width: 450px;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: slideUp 0.3s ease;
+        }
+
+        .responsaveis-lista {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .responsavel-item {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .responsavel-item:hover {
+            background: rgba(229,9,20,0.15);
+            border-color: #E50914;
+        }
+
+        .responsavel-foto {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: linear-gradient(135deg, #4ECDC4, #45B7AC);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .responsavel-info {
+            flex: 1;
+        }
+
+        .responsavel-info .nome {
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 4px;
+            font-size: 1rem;
+        }
+
+        .responsavel-info .parentesco {
+            font-size: 0.75rem;
+            color: #aaa;
+        }
+
+        .responsavel-badge {
+            font-size: 0.7rem;
+            background: rgba(255,255,255,0.1);
+            padding: 4px 10px;
+            border-radius: 20px;
+            color: #4ECDC4;
+            flex-shrink: 0;
+        }
+
+        /* Estilos para o modal de seleção de terceiros */
+        .modal-terceiros {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(8px);
+            z-index: 10001;
             align-items: center;
             justify-content: center;
         }
@@ -1149,10 +1243,6 @@
             color: #FF6B6B;
             flex-shrink: 0;
         }
-
-        .modal-terceiros-box .modal-buttons {
-            margin-top: 20px;
-        }
         
         .lista-alunos {
             display: grid;
@@ -1221,9 +1311,9 @@
             .termo-detalhes { grid-template-columns: 1fr; }
             .termos-section { padding: 20px; }
             .termo-card { padding: 20px; }
-            .terceiro-item { flex-wrap: wrap; }
-            .terceiro-foto { width: 45px; height: 45px; font-size: 1.2rem; }
-            .terceiro-info .nome { font-size: 0.9rem; }
+            .responsavel-item, .terceiro-item { flex-wrap: wrap; }
+            .responsavel-foto, .terceiro-foto { width: 45px; height: 45px; font-size: 1.2rem; }
+            .responsavel-info .nome, .terceiro-info .nome { font-size: 0.9rem; }
         }
     </style>
 </head>
@@ -1243,7 +1333,7 @@
         <!-- Header -->
         <div class="header">
             <div class="logo">
-             <img src="/static/img/gestao.png" alt="Creche El Shadday" style="width: 100%; height: 100%; object-fit: contain;">   
+                <img src="/static/img/gestao.png" alt="Creche El Shadday" style="width: 100%; height: 100%; object-fit: contain;">   
             </div>
             <h1>Creche El Shadday</h1>
             <p>Sistema de Gestão Educacional</p>
@@ -1440,10 +1530,23 @@
             <div id="alunos-termos" class="termos-resultado"></div>
         </div>
 
-        <!-- Modal de Seleção de Terceiros (CORRIGIDO - sem título e com foto) -->
+        <!-- Modal de Seleção de Responsáveis (para assinar termos) -->
+        <div id="modalResponsaveis" class="modal-responsaveis">
+            <div class="modal-responsaveis-box">
+                <button class="btn-close" onclick="fecharModalResponsaveis()">✕</button>
+                <h3 style="margin-bottom: 15px; text-align: center;">📝 Selecione quem vai assinar</h3>
+                <div id="responsaveisLista" class="responsaveis-lista"></div>
+                <div class="modal-buttons">
+                    <button class="btn-modal-primary" onclick="fecharModalResponsaveis()">Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Seleção de Terceiros -->
         <div id="modalTerceiros" class="modal-terceiros">
             <div class="modal-terceiros-box">
                 <button class="btn-close" onclick="fecharModalTerceiros()">✕</button>
+                <h3 style="margin-bottom: 15px; text-align: center;">👥 Selecione o Terceiro Autorizado</h3>
                 <div id="terceirosLista" class="terceiros-lista"></div>
                 <div class="modal-buttons">
                     <button class="btn-modal-primary" onclick="fecharModalTerceiros()">Cancelar</button>
@@ -1563,6 +1666,7 @@
         let usuarioLogado = null;
         let tipoAcesso = 'pedagogico';
         let alunoSelecionadoGlobal = null;
+        let termoPendente = null; // { tipo, numInscricao, aluno }
 
         // ===== FUNÇÕES DE CAPITALIZAÇÃO =====
         function capitalizarTexto(texto) {
@@ -1606,6 +1710,21 @@
             return palavras.join(' ');
         }
 
+        // Função para obter a foto do responsável
+        function getFotoResponsavelUrl(aluno, index) {
+            if (!aluno) return null;
+            
+            const arquivosIds = aluno.arquivos_ids || {};
+            const campoFoto = index === 0 ? 'foto_responsavel1' : `foto_responsavel${index + 1}`;
+            
+            if (campoFoto && arquivosIds[campoFoto]) {
+                const fileId = arquivosIds[campoFoto];
+                return `/api/alunos/arquivo/${fileId}`;
+            }
+            
+            return null;
+        }
+
         // Função para obter a foto do terceiro
         function getFotoTerceiroUrl(aluno, index) {
             if (!aluno) return null;
@@ -1618,20 +1737,10 @@
                 return `/api/alunos/arquivo/${fileId}`;
             }
             
-            if (aluno.arquivos && aluno.arquivos.length > 0) {
-                const arquivoFoto = aluno.arquivos.find(a => a.campo === campoFoto);
-                if (arquivoFoto) {
-                    if (arquivoFoto.data_url && arquivoFoto.data_url.startsWith('data:')) {
-                        return arquivoFoto.data_url;
-                    }
-                    if (arquivoFoto.caminho) return arquivoFoto.caminho;
-                }
-            }
-            
             return null;
         }
 
-        // Função para obter a foto do responsável
+        // Função para obter a foto do aluno
         function getFotoUrl(aluno, tipo) {
             if (!aluno) return null;
             
@@ -1654,21 +1763,128 @@
                 return `/api/alunos/arquivo/${fileId}`;
             }
             
-            if (aluno.arquivos && aluno.arquivos.length > 0) {
-                const arquivoFoto = aluno.arquivos.find(a => a.campo === campoFoto);
-                if (arquivoFoto) {
-                    if (arquivoFoto.data_url && arquivoFoto.data_url.startsWith('data:')) {
-                        return arquivoFoto.data_url;
-                    }
-                    if (arquivoFoto.caminho) return arquivoFoto.caminho;
-                    if (arquivoFoto.url) return arquivoFoto.url;
-                }
-            }
-            
             return null;
         }
 
-        // ===== FUNÇÃO CORRIGIDA: Abrir modal para selecionar qual terceiro imprimir =====
+        // ===== FUNÇÃO CORRIGIDA: Abrir modal para selecionar qual responsável vai assinar =====
+        function abrirModalResponsaveis(event, tipo, numInscricao) {
+            const button = event.currentTarget;
+            const textoOriginal = button.textContent;
+            button.textContent = 'Carregando...';
+            button.disabled = true;
+            
+            const aluno = alunosData.find(a => a.num_inscricao === numInscricao);
+            alunoSelecionadoGlobal = aluno;
+            
+            if (!aluno || !aluno.responsaveis || aluno.responsaveis.length === 0) {
+                mostrarNotificacao('Este aluno não possui responsáveis cadastrados.', 'warning');
+                button.textContent = textoOriginal;
+                button.disabled = false;
+                return;
+            }
+            
+            termoPendente = { tipo, numInscricao, aluno };
+            
+            const listaDiv = document.getElementById('responsaveisLista');
+            listaDiv.innerHTML = '';
+            
+            aluno.responsaveis.forEach((responsavel, index) => {
+                const nomeResp = capitalizarNome(responsavel.nome || 'Responsável sem nome');
+                const parentesco = responsavel.parentesco || 'Responsável';
+                const fotoUrl = getFotoResponsavelUrl(aluno, index);
+                
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'responsavel-item';
+                itemDiv.onclick = () => {
+                    fecharModalResponsaveis();
+                    gerarTermoComResponsavel(aluno, responsavel, tipo);
+                };
+                
+                let fotoHtml = '';
+                if (fotoUrl) {
+                    fotoHtml = `<img src="${fotoUrl}" class="responsavel-foto" style="object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">`;
+                    fotoHtml += `<div class="responsavel-foto" style="display: none;">${nomeResp.charAt(0).toUpperCase()}</div>`;
+                } else {
+                    fotoHtml = `<div class="responsavel-foto">${nomeResp.charAt(0).toUpperCase()}</div>`;
+                }
+                
+                itemDiv.innerHTML = `
+                    ${fotoHtml}
+                    <div class="responsavel-info">
+                        <div class="nome">${nomeResp}</div>
+                        <div class="parentesco">${parentesco}</div>
+                    </div>
+                    <div class="responsavel-badge">${index === 0 ? 'PRINCIPAL' : 'RESPONSÁVEL'}</div>
+                `;
+                listaDiv.appendChild(itemDiv);
+            });
+            
+            document.getElementById('modalResponsaveis').classList.add('active');
+            
+            button.textContent = textoOriginal;
+            button.disabled = false;
+        }
+
+        function fecharModalResponsaveis() {
+            document.getElementById('modalResponsaveis').classList.remove('active');
+            termoPendente = null;
+        }
+
+        function gerarTermoComResponsavel(aluno, responsavel, tipo) {
+    console.log('===== GERANDO TERMO =====');
+    console.log('Responsável selecionado:', responsavel);
+    console.log('Tipo:', tipo);
+    
+    const dadosCapitalizados = {
+        nome: capitalizarNome(aluno.dados_pessoais?.nome || ''),
+        ra: aluno.dados_pessoais?.ra || '',
+        turma: capitalizarTexto(aluno.turma?.turma || ''),
+        unidade: capitalizarTexto(aluno.turma?.unidade || ''),
+        endereco: capitalizarTexto(aluno.endereco?.logradouro || ''),
+        numero: aluno.endereco?.numero || '',
+        bairro: capitalizarTexto(aluno.endereco?.bairro || ''),
+        cidade: capitalizarTexto(aluno.endereco?.cidade || ''),
+        uf: aluno.endereco?.uf || '',
+        cep: aluno.endereco?.cep || '',
+        responsavel_nome: capitalizarNome(responsavel.nome || ''),
+        responsavel_parentesco: responsavel.parentesco || 'Responsável',
+        responsavel_rg: responsavel.rg || '',
+        responsavel_cpf: responsavel.cpf || '',
+        responsavel_telefone: responsavel.telefone || '',
+        data_nasc: aluno.dados_pessoais?.data_nasc || '',
+        sexo: aluno.dados_pessoais?.sexo === 'M' ? 'Masculino' : 'Feminino'
+    };
+    
+    sessionStorage.setItem('dadosImpressao', JSON.stringify(dadosCapitalizados));
+    
+    // 🔥 CORREÇÃO: Adiciona os parâmetros do responsável na URL
+    const params = new URLSearchParams({
+        responsavel_nome: dadosCapitalizados.responsavel_nome,
+        responsavel_parentesco: dadosCapitalizados.responsavel_parentesco,
+        responsavel_rg: dadosCapitalizados.responsavel_rg,
+        responsavel_cpf: dadosCapitalizados.responsavel_cpf,
+        responsavel_telefone: dadosCapitalizados.responsavel_telefone,
+        capitalizar: 'true'
+    });
+    
+    const urls = {
+        'imagem': `/visualizar/termo/imagem/${aluno.num_inscricao}?${params.toString()}`,
+        'regulamento': `/visualizar/termo/regulamento/${aluno.num_inscricao}?${params.toString()}`,
+        'saude': `/visualizar/termo/saude/${aluno.num_inscricao}?${params.toString()}`,
+        'transporte': `/visualizar/termo/transporte/${aluno.num_inscricao}?${params.toString()}`
+    };
+    
+    const url = urls[tipo];
+    console.log('URL gerada:', url);
+    
+    if (url) {
+        window.open(url, '_blank');
+    } else {
+        console.error('URL não encontrada para o tipo:', tipo);
+    }
+}
+
+        // ===== FUNÇÃO PARA TERCEIROS (já existente, mantida) =====
         function abrirModalTerceiros(event, numInscricao) {
             const button = event.currentTarget;
             const textoOriginal = button.textContent;
@@ -1691,7 +1907,6 @@
             aluno.terceiros.forEach((terceiro, index) => {
                 const nomeTerceiro = capitalizarNome(terceiro.nome || 'Terceiro sem nome');
                 const telefone = terceiro.telefone || 'Telefone não informado';
-                const parentesco = terceiro.parentesco || 'Autorizado';
                 const fotoUrl = getFotoTerceiroUrl(aluno, index);
                 
                 const itemDiv = document.createElement('div');
@@ -1701,7 +1916,6 @@
                     gerarTermoTerceiro(aluno, terceiro, index + 1);
                 };
                 
-                // Foto do terceiro
                 let fotoHtml = '';
                 if (fotoUrl) {
                     fotoHtml = `<img src="${fotoUrl}" class="terceiro-foto" style="object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">`;
@@ -1760,14 +1974,21 @@
             window.open(url, '_blank');
         }
 
-        // ===== FUNÇÃO MODIFICADA PARA IMPRIMIR TERMO =====
+        // ===== FUNÇÃO MODIFICADA PARA IMPRIMIR TERMO COM SELEÇÃO DE RESPONSÁVEL =====
         function imprimirTermo(event, tipo, numInscricao) {
-            // Se for terceiro, abre o modal de seleção
+            // Para terceiros, abre modal específico de terceiros
             if (tipo === 'terceiro') {
                 abrirModalTerceiros(event, numInscricao);
                 return;
             }
             
+            // Para os demais termos (imagem, regulamento, saude, transporte)
+            // Abre modal para selecionar qual responsável vai assinar
+            abrirModalResponsaveis(event, tipo, numInscricao);
+        }
+
+        // Mantém a função original para compatibilidade com o botão de Matrícula
+        function imprimirTermoMatricula(event, numInscricao) {
             const button = event.currentTarget;
             const textoOriginal = button.textContent;
             button.textContent = 'Preparando...';
@@ -1776,6 +1997,7 @@
             const aluno = alunosData.find(a => a.num_inscricao === numInscricao);
             
             if (aluno) {
+                const responsavelPrincipal = aluno.responsaveis?.[0] || {};
                 const dadosCapitalizados = {
                     nome: capitalizarNome(aluno.dados_pessoais?.nome || ''),
                     ra: aluno.dados_pessoais?.ra || '',
@@ -1787,8 +2009,11 @@
                     cidade: capitalizarTexto(aluno.endereco?.cidade || ''),
                     uf: aluno.endereco?.uf || '',
                     cep: aluno.endereco?.cep || '',
-                    responsavel: capitalizarNome(aluno.responsaveis?.[0]?.nome || ''),
-                    telefone: aluno.responsaveis?.[0]?.telefone || '',
+                    responsavel_nome: capitalizarNome(responsavelPrincipal.nome || ''),
+                    responsavel_parentesco: responsavelPrincipal.parentesco || 'Responsável',
+                    responsavel_rg: responsavelPrincipal.rg || '',
+                    responsavel_cpf: responsavelPrincipal.cpf || '',
+                    responsavel_telefone: responsavelPrincipal.telefone || '',
                     data_nasc: aluno.dados_pessoais?.data_nasc || '',
                     sexo: aluno.dados_pessoais?.sexo === 'M' ? 'Masculino' : 'Feminino'
                 };
@@ -1796,19 +2021,8 @@
                 sessionStorage.setItem('dadosImpressao', JSON.stringify(dadosCapitalizados));
             }
             
-            const urls = {
-                'matricula': `/visualizar/termo/matricula/${numInscricao}`,
-                'imagem': `/visualizar/termo/imagem/${numInscricao}`,
-                'transporte': `/visualizar/termo/transporte/${numInscricao}`,
-                'regulamento': `/visualizar/termo/regulamento/${numInscricao}`,
-                'saude': `/visualizar/termo/saude/${numInscricao}`
-            };
-            
-            const url = urls[tipo];
-            if (url) {
-                const urlComParams = url + (url.includes('?') ? '&' : '?') + 'capitalizar=true';
-                window.open(urlComParams, '_blank');
-            }
+            const url = `/visualizar/termo/matricula/${numInscricao}?capitalizar=true`;
+            window.open(url, '_blank');
             
             setTimeout(() => { 
                 button.textContent = textoOriginal; 
@@ -2150,12 +2364,12 @@
                         <div class="termo-detalhe-item"><div class="termo-detalhe-icon">📞</div><div class="termo-detalhe-content"><p>Contato</p><strong>${telefone}</strong></div></div>
                     </div>
                     <div class="termos-links">
-                        <button class="termo-link matricula" onclick="imprimirTermo(event, 'matricula', '${numInscricao}')">Matrícula</button>
+                        <button class="termo-link matricula" onclick="imprimirTermoMatricula(event, '${numInscricao}')">Matrícula</button>
                         <button class="termo-link imagem" onclick="imprimirTermo(event, 'imagem', '${numInscricao}')">Imagem</button>
                         <button class="termo-link regulamento" onclick="imprimirTermo(event, 'regulamento', '${numInscricao}')">Regulamento</button>
                         <button class="termo-link saude" onclick="imprimirTermo(event, 'saude', '${numInscricao}')">Saúde</button>
                         ${temTransporte ? `<button class="termo-link transporte" onclick="imprimirTermo(event, 'transporte', '${numInscricao}')">Transporte</button>` : ''}
-                        ${temTerceiros ? `<button class="termo-link terceiros" onclick="imprimirTermo(event, 'terceiro', '${numInscricao}')">Terceiros</button>` : ''}
+                        ${temTerceiros ? `<button class="termo-link terceiros" onclick="abrirModalTerceiros(event, '${numInscricao}')">Terceiros</button>` : ''}
                     </div>
                 </div>
             `;
