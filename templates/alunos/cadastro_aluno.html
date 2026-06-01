@@ -4027,8 +4027,19 @@ if ((!docInput || !docInput.files || docInput.files.length === 0) && !docExisten
             throw new Error('Nenhuma câmera encontrada');
         }
         
-        // Tenta a câmera USB (índice 0) com configurações mais baixas
-        let selectedDevice = videoDevices[0]; // USB 2.0 Camera
+        // Para Windows Desktop Positivo, prioriza o índice 1 (USB verdadeira)
+const isWindows = navigator.userAgent.indexOf('Windows') !== -1;
+let selectedDevice;
+
+if (isWindows && videoDevices.length >= 2) {
+    // Windows: usa índice 1 primeiro (USB verdadeira)
+    selectedDevice = videoDevices[1];
+    console.log('🎯 Windows: usando câmera de índice 1 (USB verdadeira)');
+} else {
+    // Mac/Linux: usa índice 0
+    selectedDevice = videoDevices[0];
+    console.log('🎯 Outros SO: usando câmera de índice 0');
+}
         
         console.log(`🎯 Tentando abrir: ${selectedDevice.label || 'USB Camera'}`);
         
