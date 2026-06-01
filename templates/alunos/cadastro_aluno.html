@@ -3998,87 +3998,106 @@ if ((!docInput || !docInput.files || docInput.files.length === 0) && !docExisten
                 }
 
                 async function abrirCamera(id) {
-                    console.log(`📷 Abrindo câmera: ${id}`);
-                    fecharCamera(id);
-                    
-                    const video = document.getElementById(id + '_video');
-                    if (!video) {
-                        console.error(`❌ Video não encontrado: ${id}_video`);
-                        mostrarNotificacao('Erro: elemento de vídeo não encontrado', 'error');
-                        return;
-                    }
-                    
-                    try {
-                        // Lista todos os dispositivos de vídeo
-                        const devices = await navigator.mediaDevices.enumerateDevices();
-                        let videoDevices = devices.filter(device => device.kind === 'videoinput');
-                        
-                        // 🔥 FILTRO: Remove câmeras virtuais (OBS, ManyCam, etc)
-                        videoDevices = videoDevices.filter(device => {
-                            const label = device.label.toLowerCase();
-                            const isVirtual = label.includes('virtual') || 
-                                            label.includes('obs') || 
-                                            label.includes('manycam') ||
-                                            label.includes('snap') ||
-                                            label.includes('xsplit');
-                            return !isVirtual;
-                        });
-                        
-                        console.log('📹 Câmeras reais encontradas:', videoDevices.map(d => ({
-                            label: d.label || 'Sem nome',
-                            deviceId: d.deviceId
-                        })));
-                        
-                        if (videoDevices.length === 0) {
-                            throw new Error('Nenhuma câmera real encontrada');
-                        }
-                        
-                        let constraints = { video: true };
-                        
-                        // Prioriza câmera externa USB entre as câmeras reais
-                        if (videoDevices.length > 1) {
-                            const cameraExterna = videoDevices.find(device => {
-                                const label = device.label.toLowerCase();
-                                return label.includes('usb') || 
-                                       label.includes('external') || 
-                                       label.includes('logitech') ||
-                                       label.includes('camera') ||
-                                       (!label.includes('integrated') && !label.includes('facetime') && !label.includes('built-in'));
-                            });
-                            
-                            const cameraSelecionada = cameraExterna || videoDevices[0];
-                            
-                            console.log(`🎯 Selecionando câmera: ${cameraSelecionada.label || 'Padrão'}`);
-                            constraints = {
-                                video: { deviceId: { exact: cameraSelecionada.deviceId } }
-                            };
-                        }
-                        
-                        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-                        video.srcObject = stream;
-                        video.classList.add('active');
-                        cameraStreams[id] = stream;
-                        
-                        const track = stream.getVideoTracks()[0];
-                        const cameraLabel = track.label;
-                        mostrarNotificacao(`📷 Câmera ativa: ${cameraLabel}`, 'success');
-                        console.log(`✅ Câmera aberta: ${id} - ${cameraLabel}`);
-                        
-                    } catch (err) {
-                        console.error(`❌ Erro ao abrir câmera:`, err);
-                        let mensagem = 'Erro ao acessar câmera. ';
-                        if (err.name === 'NotAllowedError') {
-                            mensagem += 'Permissão negada. Autorize o acesso.';
-                        } else if (err.name === 'NotFoundError') {
-                            mensagem += 'Nenhuma câmera encontrada.';
-                        } else if (err.name === 'NotReadableError') {
-                            mensagem += 'Câmera em uso por outro programa. Feche outros aplicativos.';
-                        } else {
-                            mensagem += err.message;
-                        }
-                        mostrarNotificacao(mensagem, 'error');
-                    }
-                }
+    console.log(`📷 Abrindo câmera: ${id}`);
+    fecharCamera(id);
+    
+    const video = document.getElementById(id + '_video');
+    if (!video) {
+        console.error(`❌ Video não encontrado: ${id}_video`);
+        mostrarNotificacao('Erro: elemento de vídeo não encontrado', 'error');
+        return;
+    }
+    
+    // Mostra loading
+    mostrarNotificacao('🔍 Inicializando câmera... Aguarde', 'warning');
+    
+    try {
+        // Primeiro, tenta acessar com permissão padrão
+        const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        tempStream.getTracks().forEach(track => track.stop());
+        
+        // Lista todas as câmeras
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        let videoDevices = devices.filter(device => device.kind === 'videoinput');
+        
+        console.log('📹 Câmeras encontradas:');
+        videoDevices.forEach((d, i) => console.log(`   ${i}: ${d.label || 'Sem nome'}`));
+        
+        if (videoDevices.length === 0) {
+            throw new Error('Nenhuma câmera encontrada');
+        }
+        
+        // Tenta a câmera USB (índice 0) com configurações mais baixas
+        let selectedDevice = videoDevices[0]; // USB 2.0 Camera
+        
+        console.log(`🎯 Tentando abrir: ${selectedDevice.label || 'USB Camera'}`);
+        
+        // 🔥 CONFIGURAÇÕES MAIS TOLERANTES
+        const constraints = {
+            video: {
+                deviceId: { exact: selectedDevice.deviceId },
+                width: { ideal: 640, max: 1280 },
+                height: { ideal: 480, max: 720 },
+                frameRate: { ideal: 15, max: 30 }
+            }
+        };
+        
+        // Tenta abrir com timeout manual
+        const stream = await new Promise((resolve, reject) => {
+            let timeoutId = setTimeout(() => {
+                reject(new Error('Timeout ao abrir câmera USB (10 segundos)'));
+            }, 10000);
+            
+            navigator.mediaDevices.getUserMedia(constraints)
+                .then(stream => {
+                    clearTimeout(timeoutId);
+                    resolve(stream);
+                })
+                .catch(err => {
+                    clearTimeout(timeoutId);
+                    reject(err);
+                });
+        });
+        
+        video.srcObject = stream;
+        video.classList.add('active');
+        cameraStreams[id] = stream;
+        
+        const track = stream.getVideoTracks()[0];
+        mostrarNotificacao(`📷 Câmera USB ativa: ${track.label}`, 'success');
+        console.log(`✅ Câmera aberta: ${track.label}`);
+        
+    } catch (err) {
+        console.error(`❌ Erro na USB:`, err);
+        
+        // FALLBACK: Tenta a câmera nativa (índice 1)
+        mostrarNotificacao('⚠️ Câmera USB com problemas, tentando câmera nativa...', 'warning');
+        
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            let videoDevices = devices.filter(device => device.kind === 'videoinput');
+            
+            let fallbackDevice = videoDevices[1]; // XWF-1080P (nativa)
+            if (!fallbackDevice) fallbackDevice = videoDevices[0];
+            
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { deviceId: { exact: fallbackDevice.deviceId } }
+            });
+            
+            video.srcObject = stream;
+            video.classList.add('active');
+            cameraStreams[id] = stream;
+            
+            const track = stream.getVideoTracks()[0];
+            mostrarNotificacao(`📷 Usando câmera nativa: ${track.label}`, 'warning');
+            console.log(`✅ Fallback funcionou: ${track.label}`);
+            
+        } catch (err2) {
+            console.error('❌ Fallback também falhou:', err2);
+            mostrarNotificacao('Erro: Nenhuma câmera disponível. Verifique as permissões.', 'error');
+        }
+    }
+}
 
                 function capturarFoto(id) {
                     const video = document.getElementById(id + '_video');
