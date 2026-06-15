@@ -609,7 +609,7 @@
                                 Vale Transp.
                             </th>
                             <th style="text-align:center">Valor</th>
-                        </tr>
+                         </tr>
                     </thead>
                     <tbody id="listaFuncionarios"></tbody>
                 </table>
@@ -868,7 +868,6 @@
             mostrarNotificacao(`Aplicação parcial: ${sucessos} sucesso(s), ${falhas} falha(s)`, 'warning');
         }
         
-        // 🔥 CORREÇÃO: Apenas reaplica os filtros para atualizar a tabela
         filtrar();
     }
 
@@ -923,7 +922,6 @@
             mostrarNotificacao(`Limpeza parcial: ${sucessos} sucesso(s), ${falhas} falha(s)`, 'warning');
         }
         
-        // 🔥 CORREÇÃO: Apenas reaplica os filtros para atualizar a tabela
         filtrar();
     }
 
@@ -1221,6 +1219,7 @@
         dependentesTemp = [];
     }
 
+    // Função modificada para incluir dependentes no PDF
     function gerarPDF() {
         const filtroNome = document.getElementById('filtroNome').value.toLowerCase();
         const filtroUnidade = document.getElementById('filtroUnidade').value;
@@ -1354,6 +1353,21 @@
                     td:nth-child(3) { 
                         white-space: nowrap;
                     }
+                    .dependentes-lista {
+                        margin: 2px 0;
+                        padding-left: 10px;
+                        font-size: 7px;
+                        color: #666;
+                    }
+                    .dependentes-lista span {
+                        display: inline-block;
+                        margin-right: 8px;
+                    }
+                    .sem-dependentes {
+                        color: #999;
+                        font-size: 7px;
+                        font-style: italic;
+                    }
                     @media print {
                         body { 
                             padding: 0; 
@@ -1382,12 +1396,12 @@
                 <table>
                     <thead>
                         <tr>
-                            <th style="width:5%">Nº</th>
-                            <th style="width:20%">Nome</th>
-                            <th style="width:10%">CPF</th>
-                            <th style="width:12%">Função</th>
-                            <th style="width:15%">Unidade</th>
-                            ${tabAtual === 'plano_saude' ? '<th style="width:8%">Valor Base</th><th style="width:8%">Dependentes</th><th style="width:6%">Pessoas</th><th style="width:10%">Valor Total</th>' : ''}
+                            <th style="width:4%">Nº</th>
+                            <th style="width:15%">Nome</th>
+                            <th style="width:8%">CPF</th>
+                            <th style="width:10%">Função</th>
+                            <th style="width:12%">Unidade</th>
+                            ${tabAtual === 'plano_saude' ? '<th style="width:6%">Valor Base</th><th style="width:12%">Dependentes</th><th style="width:5%">Pessoas</th><th style="width:8%">Valor Total</th>' : ''}
                             ${tabAtual === 'vale_transporte' ? '<th style="width:10%">Valor Mensal</th>' : ''}
                         </tr>
                     </thead>
@@ -1397,6 +1411,22 @@
                                 const totalPessoas = calcularTotalPessoas(f.dependentes);
                                 const valorTotal = calcularValorTotalPlanoSaude(f);
                                 const qtdDependentes = (f.dependentes && f.dependentes.length) || 0;
+                                
+                                // Formata a lista de dependentes para exibição
+                                let dependentesHtml = '';
+                                if (f.dependentes && f.dependentes.length > 0) {
+                                    dependentesHtml = '<div class="dependentes-lista">';
+                                    f.dependentes.forEach((dep, idx) => {
+                                        dependentesHtml += `<span>• ${escapeHtml(dep.nome || '')} ${dep.parentesco ? `(${dep.parentesco})` : ''}</span>`;
+                                        if ((idx + 1) % 2 === 0 && idx !== f.dependentes.length - 1) {
+                                            dependentesHtml += '<br>';
+                                        }
+                                    });
+                                    dependentesHtml += '</div>';
+                                } else {
+                                    dependentesHtml = '<div class="sem-dependentes">Nenhum dependente</div>';
+                                }
+                                
                                 return `<tr>
                                     <td style="text-align: center;">${i+1}</td>
                                     <td style="white-space: nowrap;">${escapeHtml(f.nome || '')}</td>
@@ -1404,7 +1434,7 @@
                                     <td style="white-space: nowrap;">${escapeHtml(f.funcao || '')}</td>
                                     <td style="white-space: nowrap;">${escapeHtml(f.unidade || '')}</td>
                                     <td style="text-align: center;">R$ ${(f.valor_plano_saude || 0).toFixed(2).replace('.', ',')}</td>
-                                    <td style="text-align: center;">${qtdDependentes}</td>
+                                    <td style="vertical-align: top;">${dependentesHtml}</td>
                                     <td style="text-align: center;">${totalPessoas}</td>
                                     <td style="text-align: center;">R$ ${valorTotal.toFixed(2).replace('.', ',')}</td>
                                 </tr>`;
