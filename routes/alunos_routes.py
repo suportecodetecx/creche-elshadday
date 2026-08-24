@@ -18,79 +18,11 @@ aluno_service = AlunoService()
 # Detecta se está no Vercel
 IS_VERCEL = os.environ.get('VERCEL') == '1' or os.environ.get('NOW') is not None
 
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf'}
+# Apenas imagens são permitidas agora
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def save_uploaded_file_to_db(file, campo):
-    """Salva um arquivo como Base64 no MongoDB"""
-    if file and allowed_file(file.filename):
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        unique_id = str(uuid.uuid4())[:8]
-        ext = file.filename.rsplit('.', 1)[1].lower()
-        filename = f"{timestamp}_{unique_id}_{campo}.{ext}"
-        
-        file_data = file.read()
-        base64_data = base64.b64encode(file_data).decode('utf-8')
-        
-        print(f"   ✅ Arquivo convertido para Base64: {filename} ({len(file_data)} bytes)")
-        
-        return {
-            'campo': campo,
-            'nome': filename,
-            'dados': base64_data,
-            'tipo': ext,
-            'tamanho': len(file_data)
-        }
-    return None
-
-def save_uploaded_file(file, subfolder, campo):
-    """Salva um arquivo enviado - Prioriza MongoDB no Vercel"""
-    IS_VERCEL = os.environ.get('VERCEL') == '1' or os.environ.get('NOW') is not None
-    
-    if IS_VERCEL:
-        info_db = save_uploaded_file_to_db(file, campo)
-        if info_db:
-            return info_db
-        print(f"   ⚠️ Falha ao salvar no MongoDB: {campo}")
-        return None
-    
-    info_db = save_uploaded_file_to_db(file, campo)
-    if info_db:
-        return info_db
-    
-    if file and allowed_file(file.filename):
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        unique_id = str(uuid.uuid4())[:8]
-        ext = file.filename.rsplit('.', 1)[1].lower()
-        filename = f"{timestamp}_{unique_id}_{campo}.{ext}"
-        
-        upload_path = os.path.join('uploads', subfolder)
-        try:
-            os.makedirs(upload_path, exist_ok=True)
-            print(f"   📁 Pasta criada: {upload_path}")
-        except Exception as e:
-            print(f"   ⚠️ Não foi possível criar {upload_path}: {e}")
-            upload_path = '/tmp'
-        
-        filepath = os.path.join(upload_path, filename)
-        
-        try:
-            file.save(filepath)
-            print(f"   ✅ Arquivo salvo em: {filepath}")
-            
-            return {
-                'campo': campo,
-                'nome': filename,
-                'caminho': f"/uploads/{subfolder}/{filename}",
-                'tipo': ext,
-                'tamanho': os.path.getsize(filepath) if os.path.exists(filepath) else 0
-            }
-        except Exception as e:
-            print(f"   ❌ Erro ao salvar arquivo: {e}")
-            return None
-    return None
 
 
 # ============================================
@@ -196,14 +128,14 @@ def verificar_duplicidade():
 
 
 # ============================================
-# ENDPOINTS PARA GRIDFS (UPLOAD DIRETO)
+# ENDPOINTS PARA GRIDFS (UPLOAD DIRETO DE FOTOS)
 # ============================================
 
 @alunos_bp.route('/api/upload-arquivo', methods=['POST'])
 def upload_arquivo():
-    """Endpoint para upload direto de arquivo para GridFS"""
+    """Endpoint para upload direto de foto para GridFS"""
     try:
-        print("\n📤 UPLOAD DIRETO PARA GRIDFS")
+        print("\n📤 UPLOAD DIRETO PARA GRIDFS (FOTO)")
         
         campo = request.form.get('campo')
         if not campo:
@@ -215,6 +147,24 @@ def upload_arquivo():
         file = request.files['arquivo']
         if not file or not file.filename:
             return jsonify({'sucesso': False, 'erro': 'Arquivo inválido'}), 400
+        
+        # 🔥 VALIDAÇÃO: SÓ ACEITA IMAGENS
+        if not file.content_type.startswith('image/'):
+            return jsonify({
+                'sucesso': False, 
+                'erro': 'Apenas imagens são permitidas (JPG, PNG, etc)'
+            }), 400
+        
+        # Verifica tamanho (máx 5MB para fotos)
+        file.seek(0, os.SEEK_END)
+        tamanho = file.tell()
+        file.seek(0)
+        
+        if tamanho > 5 * 1024 * 1024:
+            return jsonify({
+                'sucesso': False, 
+                'erro': 'Imagem muito grande (máx 5MB)'
+            }), 400
         
         from database.mongo import salvar_arquivo_gridfs
         
@@ -240,7 +190,7 @@ def upload_arquivo():
 
 @alunos_bp.route('/api/visualizar-gridfs/<file_id>', methods=['GET'])
 def visualizar_gridfs(file_id):
-    """Visualiza um arquivo salvo no GridFS"""
+    """Visualiza uma foto salva no GridFS"""
     try:
         from database.mongo import get_arquivo_gridfs
         
@@ -250,16 +200,17 @@ def visualizar_gridfs(file_id):
             return jsonify({'erro': 'Arquivo não encontrado'}), 404
         
         metadata = arquivo.metadata or {}
-        content_type = metadata.get('content_type', 'application/octet-stream')
+        content_type = metadata.get('content_type', 'image/jpeg')
         
+        # Determina o content type baseado na extensão
         if arquivo.filename:
             ext = arquivo.filename.rsplit('.', 1)[-1].lower() if '.' in arquivo.filename else ''
             if ext in ['jpg', 'jpeg']:
                 content_type = 'image/jpeg'
             elif ext == 'png':
                 content_type = 'image/png'
-            elif ext == 'pdf':
-                content_type = 'application/pdf'
+            elif ext == 'gif':
+                content_type = 'image/gif'
         
         return send_file(
             BytesIO(arquivo.read()),
@@ -275,21 +226,21 @@ def visualizar_gridfs(file_id):
 
 
 # ============================================
-# NOVA ROTA PARA VISUALIZAR ARQUIVOS (usada pelo frontend)
+# ROTA PARA VISUALIZAR FOTOS (usada pelo frontend)
 # ============================================
 
 @alunos_bp.route('/api/alunos/arquivo/<file_id>', methods=['GET'])
 def visualizar_arquivo_aluno(file_id):
-    """Visualiza um arquivo salvo no GridFS pelo ID (usado pelo frontend)"""
+    """Visualiza uma foto salva no GridFS pelo ID (usado pelo frontend)"""
     try:
         from database.mongo import get_arquivo_gridfs
         
-        print(f"🔍 Buscando arquivo: {file_id}")
+        print(f"🔍 Buscando foto: {file_id}")
         
         arquivo = get_arquivo_gridfs(file_id)
         
         if not arquivo:
-            print(f"❌ Arquivo não encontrado: {file_id}")
+            print(f"❌ Foto não encontrada: {file_id}")
             return jsonify({'erro': 'Arquivo não encontrado'}), 404
         
         # Determina o content type baseado na extensão
@@ -298,12 +249,12 @@ def visualizar_arquivo_aluno(file_id):
             mime_type = 'image/jpeg'
         elif ext == 'png':
             mime_type = 'image/png'
-        elif ext == 'pdf':
-            mime_type = 'application/pdf'
+        elif ext == 'gif':
+            mime_type = 'image/gif'
         else:
-            mime_type = 'application/octet-stream'
+            mime_type = 'image/jpeg'  # fallback
         
-        print(f"✅ Arquivo encontrado: {arquivo.filename} - Tipo: {mime_type}")
+        print(f"✅ Foto encontrada: {arquivo.filename} - Tipo: {mime_type}")
         
         return send_file(
             BytesIO(arquivo.read()),
@@ -313,7 +264,7 @@ def visualizar_arquivo_aluno(file_id):
         )
         
     except Exception as e:
-        print(f"❌ Erro ao visualizar arquivo: {e}")
+        print(f"❌ Erro ao visualizar foto: {e}")
         traceback.print_exc()
         return jsonify({'erro': str(e)}), 500
 
@@ -376,7 +327,7 @@ def visualizar_termo_imagem(num_inscricao):
         if '_id' in aluno:
             aluno['_id'] = str(aluno['_id'])
         
-        # 🔥 PEGA OS PARÂMETROS DO RESPONSÁVEL SELECIONADO
+        # PEGA OS PARÂMETROS DO RESPONSÁVEL SELECIONADO
         responsavel_nome = request.args.get('responsavel_nome', '')
         responsavel_parentesco = request.args.get('responsavel_parentesco', '')
         responsavel_rg = request.args.get('responsavel_rg', '')
@@ -445,7 +396,7 @@ def visualizar_termo_regulamento(num_inscricao):
         if '_id' in aluno:
             aluno['_id'] = str(aluno['_id'])
         
-        # 🔥 PEGA OS PARÂMETROS DO RESPONSÁVEL SELECIONADO
+        # PEGA OS PARÂMETROS DO RESPONSÁVEL SELECIONADO
         responsavel_nome = request.args.get('responsavel_nome', '')
         responsavel_parentesco = request.args.get('responsavel_parentesco', '')
         responsavel_rg = request.args.get('responsavel_rg', '')
@@ -497,7 +448,7 @@ def visualizar_termo_saude(num_inscricao):
         if '_id' in aluno:
             aluno['_id'] = str(aluno['_id'])
         
-        # 🔥 PEGA OS PARÂMETROS DO RESPONSÁVEL SELECIONADO
+        # PEGA OS PARÂMETROS DO RESPONSÁVEL SELECIONADO
         responsavel_nome = request.args.get('responsavel_nome', '')
         responsavel_parentesco = request.args.get('responsavel_parentesco', '')
         responsavel_rg = request.args.get('responsavel_rg', '')
@@ -549,7 +500,7 @@ def visualizar_termo_transporte(num_inscricao):
         if '_id' in aluno:
             aluno['_id'] = str(aluno['_id'])
         
-        # 🔥 PEGA OS PARÂMETROS DO RESPONSÁVEL SELECIONADO
+        # PEGA OS PARÂMETROS DO RESPONSÁVEL SELECIONADO
         responsavel_nome = request.args.get('responsavel_nome', '')
         responsavel_parentesco = request.args.get('responsavel_parentesco', '')
         responsavel_rg = request.args.get('responsavel_rg', '')
@@ -631,7 +582,7 @@ def visualizar_termo_terceiro(num_inscricao):
 
 @alunos_bp.route('/api/alunos/cadastrar-json', methods=['POST'])
 def cadastrar_aluno_json():
-    """Endpoint para cadastrar um novo aluno (recebe JSON com IDs dos arquivos do GridFS)"""
+    """Endpoint para cadastrar um novo aluno (recebe JSON com IDs das fotos do GridFS)"""
     try:
         print("\n" + "="*60)
         print("📥 RECEBENDO REQUISIÇÃO DE CADASTRO (JSON - GRIDFS)")
@@ -644,21 +595,14 @@ def cadastrar_aluno_json():
         
         arquivos_ids = dados.pop('arquivos_ids', {})
         
-        # LOG PARA VERIFICAR DOCUMENTOS DOS TERCEIROS
-        print(f"📎 ARQUIVOS IDs RECEBIDOS:")
+        # LOG PARA VERIFICAR FOTOS RECEBIDAS
+        print(f"📎 FOTOS IDs RECEBIDOS:")
         for key, value in arquivos_ids.items():
             print(f"   - {key}: {value}")
         
-        # Verificar especificamente documentos de terceiros
-        docs_terceiros = [k for k in arquivos_ids.keys() if k.startswith('terceiro') and k.endswith('_rg')]
-        if docs_terceiros:
-            print(f"   ✅ Documentos de terceiros detectados: {docs_terceiros}")
-        else:
-            print(f"   ⚠️ Nenhum documento de terceiro encontrado no arquivos_ids")
-        
         print(f"📦 Dados recebidos:")
         print(f"   📝 Campos de texto: {len(dados)}")
-        print(f"   📎 IDs de arquivos: {len(arquivos_ids)}")
+        print(f"   📎 IDs das fotos: {len(arquivos_ids)}")
         
         # ===== VALIDAÇÃO DE DUPLICIDADE =====
         nome = dados.get('nome', '').strip()
@@ -667,7 +611,6 @@ def cadastrar_aluno_json():
         from database.mongo import db
         from database.mongo import verificar_duplicidade_aluno
         
-        # Usar a função de verificação do mongo.py
         verificacao = verificar_duplicidade_aluno(nome=nome, ra=ra)
         
         if verificacao['existe']:
@@ -676,11 +619,6 @@ def cadastrar_aluno_json():
                 'sucesso': False,
                 'erro': verificacao['mensagem']
             }), 400
-        
-        # ===== VERIFICA SE OS DADOS VIERAM COMO ARRAY =====
-        print(f"\n🔍 VERIFICANDO ARRAYS:")
-        print(f"   responsaveis array: {'SIM' if dados.get('responsaveis') else 'NÃO'}")
-        print(f"   terceiros array: {'SIM' if dados.get('terceiros') else 'NÃO'}")
         
         # ===== GERAR NÚMERO DE INSCRIÇÃO =====
         from database.mongo import db
@@ -736,22 +674,17 @@ def cadastrar_aluno_json():
                 'deficiencia_desc': dados.get('deficiencia_desc', '')
             },
             'responsaveis': [],
-            'terceiros': [],  # <-- ADICIONADO: inicializa lista de terceiros
+            'terceiros': [],
             'arquivos_ids': arquivos_ids,
             'usando_gridfs': True
         }
         
-        # ===== PROCESSA RESPONSÁVEIS - ACEITA AMBOS OS FORMATOS =====
+        # ===== PROCESSA RESPONSÁVEIS =====
         responsaveis_lista = []
         
-        # FORMATO 1: Array 'responsaveis' (enviado pelo frontend)
         if dados.get('responsaveis') and isinstance(dados['responsaveis'], list):
             responsaveis_lista = dados['responsaveis']
             print(f"   ✅ Usando array responsaveis: {len(responsaveis_lista)} responsáveis")
-            for resp in responsaveis_lista:
-                print(f"      - {resp.get('tipo', 'desconhecido')}: {resp.get('nome', 'sem nome')}")
-        
-        # FORMATO 2: Campos individuais (fallback)
         else:
             # Responsável principal
             responsavel_principal = {
@@ -766,7 +699,6 @@ def cadastrar_aluno_json():
             }
             if responsavel_principal['nome']:
                 responsaveis_lista.append(responsavel_principal)
-                print(f"   ✅ Responsável principal: {responsavel_principal['nome']}")
             
             # Responsáveis adicionais (2 a 5)
             for i in range(2, 6):
@@ -783,21 +715,17 @@ def cadastrar_aluno_json():
                         'tipo': 'adicional'
                     }
                     responsaveis_lista.append(resp_adicional)
-                    print(f"   ✅ Responsável adicional {i}: {nome}")
         
         aluno['responsaveis'] = responsaveis_lista
         print(f"   📌 Total de responsáveis: {len(responsaveis_lista)}")
         
-        # ===== PROCESSA TERCEIROS - CORREÇÃO PRINCIPAL (SUPORTE A MÚLTIPLOS TERCEIROS) =====
+        # ===== PROCESSA TERCEIROS =====
         terceiros_lista = []
         
-        # FORMATO 1: Array 'terceiros' (enviado pelo frontend via JSON)
         if dados.get('terceiros') and isinstance(dados['terceiros'], list):
             for idx, terc in enumerate(dados['terceiros']):
                 numero = idx + 1
-                # Busca o file_id do documento do terceiro
                 rg_file_id = arquivos_ids.get(f'terceiro{numero}_rg', '')
-                cpf_file_id = arquivos_ids.get(f'terceiro{numero}_cpf', '')
                 
                 terceiros_lista.append({
                     'nome': terc.get('nome', ''),
@@ -805,96 +733,68 @@ def cadastrar_aluno_json():
                     'cpf': terc.get('cpf', ''),
                     'rg': terc.get('rg', ''),
                     'email': terc.get('email', ''),
-                    'rg_file_id': rg_file_id,
-                    'cpf_file_id': cpf_file_id
+                    'rg_file_id': rg_file_id
                 })
                 print(f"   ✅ Terceiro {numero}: {terc.get('nome')}")
-                print(f"      RG File ID: {rg_file_id[:20] if rg_file_id else 'N/A'}...")
-        
-        # FORMATO 2: Campos individuais terceiro1_nome, terceiro2_nome, etc. (fallback)
         else:
-            for i in range(1, 11):  # CORREÇÃO: suporte até 10 terceiros
+            for i in range(1, 11):
                 nome_terceiro = dados.get(f'terceiro{i}_nome', '')
                 if nome_terceiro and nome_terceiro.strip():
-                    # Busca o RG correspondente nos arquivos_ids
                     rg_key = f'terceiro{i}_rg'
                     rg_file_id = arquivos_ids.get(rg_key, '')
                     
-                    cpf_key = f'terceiro{i}_cpf'
-                    cpf_file_id = arquivos_ids.get(cpf_key, '')
-                    
-                    terceiro = {
+                    terceiros_lista.append({
                         'nome': nome_terceiro,
                         'telefone': dados.get(f'terceiro{i}_telefone', ''),
                         'cpf': dados.get(f'terceiro{i}_cpf', ''),
                         'rg': dados.get(f'terceiro{i}_rg', ''),
                         'email': dados.get(f'terceiro{i}_email', ''),
-                        'rg_file_id': rg_file_id,
-                        'cpf_file_id': cpf_file_id
-                    }
-                    terceiros_lista.append(terceiro)
+                        'rg_file_id': rg_file_id
+                    })
                     print(f"   ✅ Terceiro {i}: {nome_terceiro}")
-                    print(f"      RG File ID: {rg_file_id[:20] if rg_file_id else 'N/A'}...")
         
         if terceiros_lista:
             aluno['terceiros'] = terceiros_lista
             print(f"   📌 Total de terceiros: {len(terceiros_lista)}")
-        else:
-            print(f"   ℹ️ Nenhum terceiro adicionado")
         
-        # ===== PROCESSA TRANSPORTE - CORREÇÃO PARA SALVAR RG/CIN =====
+        # ===== PROCESSA TRANSPORTE =====
         if dados.get('utiliza_transporte') == '1' or dados.get('utiliza_transporte') == True:
             transporte_rg_file_id = arquivos_ids.get('transporte_rg', '')
             
-            # FORMATO 1: Objeto 'transporte' (enviado pelo frontend)
             if dados.get('transporte') and isinstance(dados['transporte'], dict):
                 aluno['transporte'] = {
                     'nome': dados['transporte'].get('nome', ''),
                     'cnpj': dados['transporte'].get('cnpj', ''),
                     'cpf': dados['transporte'].get('cpf', ''),
-                    'rg': dados['transporte'].get('rg', ''),  # <-- CORREÇÃO: RG/CIN do transporte
+                    'rg': dados['transporte'].get('rg', ''),
                     'telefone': dados['transporte'].get('telefone', ''),
                     'email': dados['transporte'].get('email', ''),
                     'rg_file_id': dados['transporte'].get('rg_file_id', transporte_rg_file_id)
                 }
-                print(f"   ✅ Transporte (objeto): {aluno['transporte'].get('nome', 'sem nome')}")
-                print(f"   📌 RG do Transporte (objeto): {aluno['transporte'].get('rg', 'NÃO INFORMADO')}")
-            # FORMATO 2: Campos individuais (fallback)
+                print(f"   ✅ Transporte: {aluno['transporte'].get('nome')}")
             else:
                 aluno['transporte'] = {
                     'nome': dados.get('transporte_nome', ''),
                     'cnpj': dados.get('transporte_cnpj', ''),
                     'cpf': dados.get('transporte_cpf', ''),
-                    'rg': dados.get('transporte_rg', ''),  # <-- CORREÇÃO: RG/CIN do transporte
+                    'rg': dados.get('transporte_rg', ''),
                     'telefone': dados.get('transporte_telefone', ''),
                     'email': dados.get('transporte_email', ''),
                     'rg_file_id': transporte_rg_file_id
                 }
                 print(f"   ✅ Transporte: {aluno['transporte']['nome']}")
-                print(f"   📌 RG do Transporte: {aluno['transporte'].get('rg', 'NÃO INFORMADO')}")
-                print(f"   📌 RG File ID: {transporte_rg_file_id[:20] if transporte_rg_file_id else 'N/A'}...")
         
         # ===== RESUMO FINAL =====
         print(f"\n📊 RESUMO DO CADASTRO:")
         print(f"   👤 Responsáveis: {len(aluno['responsaveis'])}")
-        for resp in aluno['responsaveis']:
-            print(f"      - {resp.get('tipo', 'desconhecido')}: {resp.get('nome', 'sem nome')}")
         print(f"   👥 Terceiros: {len(aluno.get('terceiros', []))}")
-        for idx, terc in enumerate(aluno.get('terceiros', [])):
-            print(f"      - Terceiro {idx+1}: {terc.get('nome', 'sem nome')}")
-            print(f"        RG: {terc.get('rg', 'NÃO INFORMADO')} | CPF: {terc.get('cpf', 'NÃO INFORMADO')}")
         print(f"   🚍 Transporte: {'Sim' if aluno.get('transporte') else 'Não'}")
-        if aluno.get('transporte'):
-            print(f"      - Nome: {aluno['transporte'].get('nome', 'sem nome')}")
-            print(f"      - RG: {aluno['transporte'].get('rg', 'NÃO INFORMADO')}")
-            print(f"      - CPF/CNPJ: {aluno['transporte'].get('cpf', '') or aluno['transporte'].get('cnpj', 'NÃO INFORMADO')}")
-        print(f"   📎 Arquivos IDs: {len(arquivos_ids)}")
+        print(f"   📎 Fotos IDs: {len(arquivos_ids)}")
         
         # Salva no banco
         result = db.alunos.insert_one(aluno)
         
         print(f"\n✅ Cadastro realizado! Nº: {num_inscricao}")
-        print(f"📎 IDs dos arquivos: {list(arquivos_ids.keys())}")
         print("="*60)
         
         return jsonify({
@@ -921,9 +821,7 @@ def atualizar_aluno():
         print("\n" + "="*60)
         print("📝 RECEBENDO REQUISIÇÃO DE ATUALIZAÇÃO")
         print("="*60)
-
         
-        # INICIALIZAÇÃO DAS VARIÁVEIS
         num_inscricao_original = None
         arquivos_ids = {}
         
@@ -932,13 +830,9 @@ def atualizar_aluno():
             num_inscricao_original = dados.get('num_inscricao_original') or dados.get('num_inscricao')
             arquivos_ids = dados.get('arquivos_ids', {})
             print(f"📌 JSON recebido")
-            # IMPORTANTE: Se é JSON, não precisa converter
             dados_dict = dados
         else:
-            # ===== CRIA UM DICIONÁRIO MODIFICÁVEL DESDE O INÍCIO =====
             dados_dict = {}
-            
-            # Copia todos os campos do FormData para o dicionário
             for key, value in request.form.items():
                 dados_dict[key] = value
             
@@ -950,57 +844,7 @@ def atualizar_aluno():
                 arquivos_ids = {}
             print(f"📌 FormData recebido e convertido para dict")
         
-        # ===== CORREÇÃO: RECUPERAR CAMPOS RG PERDIDOS DO FormData =====
-        # (Só executa se veio como FormData)
-        if not request.is_json:
-            # 1. Transporte RG
-            transporte_rg_direct = request.form.get('transporte_rg')
-            if transporte_rg_direct:
-                print(f"   🚌 transporte_rg recuperado do FormData: '{transporte_rg_direct}'")
-                dados_dict['transporte_rg'] = transporte_rg_direct
-            
-            # 2. Terceiros RG (1 a 10)
-            for i in range(1, 11):
-                rg_key = f'terceiro{i}_rg'
-                rg_valor = request.form.get(rg_key)
-                if rg_valor:
-                    print(f"   👤 {rg_key} recuperado do FormData: '{rg_valor}'")
-                    dados_dict[rg_key] = rg_valor
-            
-            # 3. Responsáveis RG (caso precise também)
-            for i in range(1, 6):
-                rg_key = f'responsavel{i}_rg'
-                rg_valor = request.form.get(rg_key)
-                if rg_valor and rg_valor.strip():
-                    print(f"   📋 {rg_key} recuperado do FormData: '{rg_valor[:10]}...'")
-                    dados_dict[rg_key] = rg_valor
-        
-        # Usar dados_dict daqui em diante
         dados = dados_dict
-
-        # Depois de criar dados_dict, adicione:
-        print("\n🔍 TODOS OS CAMPOS RECEBIDOS:")
-        for key, value in dados_dict.items():
-            if 'transporte' in key.lower() or 'rg' in key.lower():
-                print(f"   {key}: '{value}'")
-        
-        # 🔥 COLOQUE OS LOGS AQUI 🔥
-        print("\n🔍 VERIFICANDO RGs ANTES DE PROCESSAR:")
-        print(f"   transporte_rg no dados: '{dados.get('transporte_rg', 'NÃO ENCONTRADO')}'")
-        for i in range(1, 11):
-            rg_key = f'terceiro{i}_rg'
-            if dados.get(rg_key):
-                print(f"   {rg_key}: '{dados.get(rg_key)}'")
-        # ===== FIM DOS LOGS =====
-
-        # LOG PARA VERIFICAR DOCUMENTOS DOS TERCEIROS NA ATUALIZAÇÃO
-        print(f"📎 ARQUIVOS IDs RECEBIDOS NA ATUALIZAÇÃO:")
-        for key, value in arquivos_ids.items():
-            print(f"   - {key}: {value}")
-        
-        docs_terceiros = [k for k in arquivos_ids.keys() if k.startswith('terceiro') and k.endswith('_rg')]
-        if docs_terceiros:
-            print(f"   ✅ Documentos de terceiros detectados: {docs_terceiros}")
         
         print(f"📌 Número de inscrição original: {num_inscricao_original}")
         
@@ -1032,15 +876,13 @@ def atualizar_aluno():
         
         print(f"📌 Atualizando aluno: {aluno_existente['dados_pessoais']['nome']}")
         
-        # ===== PROCESSA RESPONSÁVEIS - ACEITA AMBOS OS FORMATOS =====
+        # ===== PROCESSA RESPONSÁVEIS =====
         responsaveis = []
         
-        # Verifica se veio como array
         if dados.get('responsaveis') and isinstance(dados.get('responsaveis'), list):
             responsaveis = dados.get('responsaveis')
             print(f"   ✅ Usando array responsaveis na atualização")
         else:
-            # Responsável principal
             responsavel_principal = {
                 'nome': dados.get('responsavel1_nome', ''),
                 'parentesco': dados.get('responsavel1_parentesco', ''),
@@ -1053,9 +895,7 @@ def atualizar_aluno():
             }
             if responsavel_principal['nome']:
                 responsaveis.append(responsavel_principal)
-                print(f"   ✅ Responsável principal: {responsavel_principal['nome']}")
             
-            # Responsáveis adicionais (2 a 5)
             for i in range(2, 6):
                 nome = dados.get(f'responsavel{i}_nome', '')
                 if nome and nome.strip():
@@ -1070,12 +910,10 @@ def atualizar_aluno():
                         'tipo': 'adicional'
                     }
                     responsaveis.append(resp_adicional)
-                    print(f"   ✅ Responsável adicional {i}: {nome}")
         
-        # ===== PROCESSA TERCEIROS NA ATUALIZAÇÃO =====
+        # ===== PROCESSA TERCEIROS =====
         terceiros = []
         
-        # PRIORIDADE 1: Array 'terceiros'
         if dados.get('terceiros') and isinstance(dados.get('terceiros'), list):
             for idx, terc in enumerate(dados.get('terceiros')):
                 numero = idx + 1
@@ -1085,26 +923,21 @@ def atualizar_aluno():
                     'cpf': terc.get('cpf', ''),
                     'rg': terc.get('rg', ''),
                     'email': terc.get('email', ''),
-                    'rg_file_id': arquivos_ids.get(f'terceiro{numero}_rg', terc.get('rg_file_id', '')),
-                    'cpf_file_id': arquivos_ids.get(f'terceiro{numero}_cpf', terc.get('cpf_file_id', ''))
+                    'rg_file_id': arquivos_ids.get(f'terceiro{numero}_rg', terc.get('rg_file_id', ''))
                 })
                 print(f"   ✅ Terceiro {numero}: {terc.get('nome')}")
         else:
-            # PRIORIDADE 2: Campos individuais
             for i in range(1, 11):
                 nome_terceiro = dados.get(f'terceiro{i}_nome', '')
                 if nome_terceiro and nome_terceiro.strip():
                     rg_key = f'terceiro{i}_rg'
-                    cpf_key = f'terceiro{i}_cpf'
-                    
                     terceiros.append({
                         'nome': nome_terceiro,
                         'telefone': dados.get(f'terceiro{i}_telefone', ''),
                         'cpf': dados.get(f'terceiro{i}_cpf', ''),
                         'rg': dados.get(f'terceiro{i}_rg', ''),
                         'email': dados.get(f'terceiro{i}_email', ''),
-                        'rg_file_id': arquivos_ids.get(rg_key, ''),
-                        'cpf_file_id': arquivos_ids.get(cpf_key, '')
+                        'rg_file_id': arquivos_ids.get(rg_key, '')
                     })
                     print(f"   ✅ Terceiro {i}: {nome_terceiro}")
         
@@ -1152,7 +985,7 @@ def atualizar_aluno():
             'usando_gridfs': True
         }
         
-        # ===== PROCESSAMENTO DO TRANSPORTE NA ATUALIZAÇÃO =====
+        # ===== PROCESSAMENTO DO TRANSPORTE =====
         if dados.get('utiliza_transporte') == '1' or dados.get('utiliza_transporte') == True:
             transporte_rg_file_id = arquivos_ids.get('transporte_rg', '')
             
@@ -1166,8 +999,7 @@ def atualizar_aluno():
                     'email': dados['transporte'].get('email', ''),
                     'rg_file_id': dados['transporte'].get('rg_file_id', transporte_rg_file_id)
                 }
-                print(f"   ✅ Transporte atualizado (objeto): {dados_atualizados['transporte'].get('nome')}")
-                print(f"   📌 RG do Transporte: {dados_atualizados['transporte'].get('rg', 'NÃO INFORMADO')}")
+                print(f"   ✅ Transporte atualizado: {dados_atualizados['transporte'].get('nome')}")
             else:
                 dados_atualizados['transporte'] = {
                     'nome': dados.get('transporte_nome', ''),
@@ -1179,7 +1011,6 @@ def atualizar_aluno():
                     'rg_file_id': transporte_rg_file_id
                 }
                 print(f"   ✅ Transporte atualizado: {dados_atualizados['transporte'].get('nome')}")
-                print(f"   📌 RG do Transporte: {dados_atualizados['transporte'].get('rg', 'NÃO INFORMADO')}")
         elif 'transporte' in dados_atualizados:
             dados_atualizados['transporte'] = None
         
@@ -1258,7 +1089,7 @@ def buscar_aluno(num_inscricao):
 
 @alunos_bp.route('/api/alunos/excluir/<num_inscricao>', methods=['DELETE'])
 def excluir_aluno_route(num_inscricao):
-    """Exclui um aluno (soft delete ou hard delete)"""
+    """Exclui um aluno (soft delete)"""
     try:
         from database.mongo import db
         
@@ -1500,59 +1331,6 @@ def estatisticas():
         })
     except Exception as e:
         return jsonify({'sucesso': False, 'erro': str(e)}), 500
-
-
-@alunos_bp.route('/api/visualizar/<campo>/<num_inscricao>', methods=['GET'])
-def visualizar_arquivo_legado(campo, num_inscricao):
-    """Visualiza um arquivo salvo no MongoDB (Base64) - LEGADO"""
-    try:
-        aluno = aluno_service.get_aluno_by_inscricao(num_inscricao)
-        if not aluno:
-            return jsonify({'erro': 'Aluno não encontrado'}), 404
-        
-        if aluno.get('usando_gridfs') and aluno.get('arquivos_ids', {}).get(campo):
-            file_id = aluno['arquivos_ids'][campo]
-            return redirect(f'/api/alunos/arquivo/{file_id}')
-        
-        arquivo = None
-        for arq in aluno.get('arquivos', []):
-            if arq.get('campo') == campo:
-                arquivo = arq
-                break
-        
-        if not arquivo:
-            return jsonify({'erro': 'Arquivo não encontrado'}), 404
-        
-        if arquivo.get('dados'):
-            dados_bytes = base64.b64decode(arquivo['dados'])
-            
-            if arquivo.get('tipo') in ['jpg', 'jpeg']:
-                mime_type = 'image/jpeg'
-            elif arquivo.get('tipo') == 'png':
-                mime_type = 'image/png'
-            elif arquivo.get('tipo') == 'gif':
-                mime_type = 'image/gif'
-            elif arquivo.get('tipo') == 'pdf':
-                mime_type = 'application/pdf'
-            else:
-                mime_type = 'application/octet-stream'
-            
-            return send_file(
-                BytesIO(dados_bytes),
-                mimetype=mime_type,
-                as_attachment=False,
-                download_name=arquivo.get('nome', 'arquivo')
-            )
-        
-        if arquivo.get('caminho'):
-            return redirect(arquivo['caminho'])
-        
-        return jsonify({'erro': 'Arquivo não encontrado'}), 404
-        
-    except Exception as e:
-        print(f"❌ Erro ao visualizar arquivo: {e}")
-        traceback.print_exc()
-        return jsonify({'erro': str(e)}), 500
 
 
 # ============================================

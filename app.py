@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session, jsonify, request
+from flask import Flask, render_template, session, jsonify, request, abort
 from flask_cors import CORS
 import os
 import logging
@@ -6,6 +6,7 @@ import sys
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from functools import wraps
+import traceback
 
 # Configurar logging
 logging.basicConfig(
@@ -25,7 +26,6 @@ from routes.termos_routes import termos_bp
 from routes.auth_routes import auth_bp
 from routes.justificativa_routes import justificativa_bp
 from routes.funcionarios_routes import funcionarios_bp
-from routes.documentos_routes import documentos_bp
 
 app = Flask(__name__)
 CORS(app)
@@ -79,7 +79,6 @@ try:
     os.makedirs(os.path.join('uploads', 'alunos'), exist_ok=True)
     os.makedirs(os.path.join('uploads', 'pais'), exist_ok=True)
     os.makedirs(os.path.join('uploads', 'terceiros'), exist_ok=True)
-    os.makedirs(os.path.join('uploads', 'documentos'), exist_ok=True)
     os.makedirs('generated_terms', exist_ok=True)
     logger.info("✅ Pastas criadas com sucesso")
 except Exception as e:
@@ -92,7 +91,6 @@ app.register_blueprint(termos_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(justificativa_bp)
 app.register_blueprint(funcionarios_bp)
-app.register_blueprint(documentos_bp)
 
 
 # ==================== ROTAS PRINCIPAIS ====================
@@ -166,7 +164,7 @@ def cadastro_aluno():
                     aluno['data_cadastro'] = aluno['data_cadastro'].strftime('%Y-%m-%d %H:%M:%S')
                 
                 print(f"✅ Aluno encontrado: {aluno['dados_pessoais']['nome']}")
-                print(f"📁 Arquivos IDs: {list(aluno.get('arquivos_ids', {}).keys())}")
+                print(f"📁 Fotos IDs: {list(aluno.get('arquivos_ids', {}).keys())}")
                 print(f"👥 Responsáveis: {len(aluno.get('responsaveis', []))}")
                 print(f"👤 Terceiros: {len(aluno.get('terceiros', []))}")
                 
@@ -203,49 +201,6 @@ def gerar_termo(num_inscricao):
         return jsonify({'erro': str(e)}), 500
 
 
-@app.route('/documentos/dashboard')
-def dashboard_documentos():
-    """Dashboard de documentos"""
-    try:
-        return render_template('documentos/dashboard.html')
-    except Exception as e:
-        logger.error(f"Erro ao renderizar dashboard: {e}")
-        return jsonify({'erro': str(e)}), 500
-
-
-@app.route('/documentos/doc-prof')
-def doc_prof():
-    """Documentos profissionais"""
-    try:
-        return render_template('documentos/doc_prof.html')
-    except Exception as e:
-        logger.error(f"Erro ao renderizar doc-prof: {e}")
-        return jsonify({'erro': str(e)}), 500
-
-
-@app.route('/documentos/atestado')
-def atestado_upload():
-    """Upload de atestados"""
-    try:
-        return render_template('documentos/atestado_upload.html')
-    except Exception as e:
-        logger.error(f"Erro ao renderizar atestado: {e}")
-        return jsonify({'erro': str(e)}), 500
-
-
-# ==================== NOVA ROTA PARA GESTÃO DE DOCUMENTOS ====================
-@app.route('/documentos/gestao')
-def gestao_documentos():
-    """Página de gestão de documentos (Prestação de Contas e Atestados)"""
-    try:
-        # Importa os meses da blueprint
-        from routes.documentos_routes import MESES_LISTA
-        return render_template('documentos/gestao_documentos.html', meses=MESES_LISTA)
-    except Exception as e:
-        logger.error(f"Erro ao renderizar gestao_documentos: {e}")
-        return jsonify({'erro': str(e)}), 500
-
-
 # ==================== ROTAS PARA FUNCIONÁRIOS E JUSTIFICATIVA ====================
 
 @app.route('/funcionarios/cadastro')
@@ -270,64 +225,387 @@ def justificativa():
 
 # ==================== ROTAS PARA VISUALIZAÇÃO DE TERMOS ====================
 
+def capitalizar_nome(nome):
+    """Capitaliza nome próprio"""
+    if not nome:
+        return ''
+    palavras_minusculas = ['da', 'de', 'do', 'das', 'dos', 'e', 'a', 'o', 'as', 'os']
+    palavras = nome.lower().split(' ')
+    palavras = [palavra if palavra in palavras_minusculas else palavra.capitalize() for palavra in palavras]
+    return ' '.join(palavras)
+
+def capitalizar_texto(texto):
+    """Capitaliza texto"""
+    if not texto:
+        return ''
+    palavras_especiais = ['RG', 'CPF', 'CIN', 'CNPJ', 'TEA', 'TDAH', 'HIV', 'AIDS', 'SP', 'RJ', 'MG']
+    palavras = texto.lower().split(' ')
+    palavras = [palavra.upper() if palavra.upper() in palavras_especiais else palavra.capitalize() for palavra in palavras]
+    return ' '.join(palavras)
+
 @app.route('/visualizar/termo/matricula/<num_inscricao>')
 def visualizar_termo_matricula(num_inscricao):
     """Visualiza termo de matrícula"""
     try:
-        return render_template('componentes/termo_matricula.html', num_inscricao=num_inscricao)
+        from database.mongo import db
+        
+        aluno = db.alunos.find_one({'num_inscricao': num_inscricao})
+        
+        if not aluno:
+            abort(404, description="Aluno não encontrado")
+        
+        if '_id' in aluno:
+            aluno['_id'] = str(aluno['_id'])
+        
+        # Dados da unidade
+        unidade = {
+            'nome': 'CEIC El Shadday',
+            'tipo': 'CEIC - Centro de Educação Infantil',
+            'cnpj': '03.067.526/0001-87',
+            'INEP': '35195340',
+            'endereco': 'Rua Francisco Vilani Bicudo, 470',
+            'bairro': 'Vila Nova Aparecida',
+            'cidade': 'Mogi das Cruzes',
+            'uf': 'SP',
+            'cep': '08830-340',
+            'telefone': '(11) 4739-3549',
+            'email': 'contato@crecheelshadday.com.br'
+        }
+        
+        data_atual = datetime.now().strftime('%d/%m/%Y')
+        
+        # Dados do responsável principal
+        responsavel_principal = aluno.get('responsaveis', [{}])[0] if aluno.get('responsaveis') else {}
+        
+        dados_impressao = {
+            'responsavel_nome': capitalizar_nome(responsavel_principal.get('nome', '')),
+            'responsavel_parentesco': responsavel_principal.get('parentesco', 'Responsável'),
+            'responsavel_rg': responsavel_principal.get('rg', ''),
+            'responsavel_cpf': responsavel_principal.get('cpf', ''),
+            'responsavel_telefone': responsavel_principal.get('telefone', ''),
+            'nome': capitalizar_nome(aluno.get('dados_pessoais', {}).get('nome', '')),
+            'data_nasc': aluno.get('dados_pessoais', {}).get('data_nasc', ''),
+            'turma': capitalizar_texto(aluno.get('turma', {}).get('turma', '')),
+            'unidade': capitalizar_texto(aluno.get('turma', {}).get('unidade', '')),
+            'endereco': capitalizar_texto(aluno.get('endereco', {}).get('logradouro', '')),
+            'numero': aluno.get('endereco', {}).get('numero', ''),
+            'bairro': capitalizar_texto(aluno.get('endereco', {}).get('bairro', '')),
+            'cidade': capitalizar_texto(aluno.get('endereco', {}).get('cidade', '')),
+            'uf': aluno.get('endereco', {}).get('uf', ''),
+            'cep': aluno.get('endereco', {}).get('cep', ''),
+            'sexo': aluno.get('dados_pessoais', {}).get('sexo', '')
+        }
+        
+        return render_template('componentes/termo_matricula.html',
+                             aluno=aluno,
+                             unidade=unidade,
+                             data_atual=data_atual,
+                             dados_impressao=dados_impressao)
     except Exception as e:
-        logger.error(f"Erro ao renderizar termo matricula: {e}")
-        return jsonify({'erro': str(e)}), 500
+        print(f"❌ Erro ao visualizar termo matrícula: {e}")
+        traceback.print_exc()
+        abort(500)
 
 
 @app.route('/visualizar/termo/imagem/<num_inscricao>')
 def visualizar_termo_imagem(num_inscricao):
     """Visualiza termo de autorização de imagem"""
     try:
-        return render_template('componentes/autorizacao_imagem.html', num_inscricao=num_inscricao)
+        from database.mongo import db
+        
+        aluno = db.alunos.find_one({'num_inscricao': num_inscricao})
+        
+        if not aluno:
+            abort(404, description="Aluno não encontrado")
+        
+        if '_id' in aluno:
+            aluno['_id'] = str(aluno['_id'])
+        
+        # PEGA OS PARÂMETROS DO RESPONSÁVEL SELECIONADO
+        responsavel_nome = request.args.get('responsavel_nome', '')
+        responsavel_parentesco = request.args.get('responsavel_parentesco', '')
+        responsavel_rg = request.args.get('responsavel_rg', '')
+        responsavel_cpf = request.args.get('responsavel_cpf', '')
+        responsavel_telefone = request.args.get('responsavel_telefone', '')
+        
+        dados_impressao = {
+            'responsavel_nome': capitalizar_nome(responsavel_nome),
+            'responsavel_parentesco': responsavel_parentesco,
+            'responsavel_rg': responsavel_rg,
+            'responsavel_cpf': responsavel_cpf,
+            'responsavel_telefone': responsavel_telefone,
+            'nome': capitalizar_nome(aluno.get('dados_pessoais', {}).get('nome', '')),
+            'data_nasc': aluno.get('dados_pessoais', {}).get('data_nasc', ''),
+            'turma': capitalizar_texto(aluno.get('turma', {}).get('turma', '')),
+            'unidade': capitalizar_texto(aluno.get('turma', {}).get('unidade', '')),
+            'endereco': capitalizar_texto(aluno.get('endereco', {}).get('logradouro', '')),
+            'numero': aluno.get('endereco', {}).get('numero', ''),
+            'bairro': capitalizar_texto(aluno.get('endereco', {}).get('bairro', '')),
+            'cidade': capitalizar_texto(aluno.get('endereco', {}).get('cidade', '')),
+            'uf': aluno.get('endereco', {}).get('uf', ''),
+            'cep': aluno.get('endereco', {}).get('cep', ''),
+            'sexo': aluno.get('dados_pessoais', {}).get('sexo', '')
+        }
+        
+        unidade = {
+            'nome': 'CEIC El Shadday',
+            'tipo': 'CEIC - Centro de Educação Infantil',
+            'cnpj': '03.067.526/0001-87',
+            'INEP': '35195340',
+            'endereco': 'Rua Francisco Vilani Bicudo, 470',
+            'bairro': 'Vila Nova Aparecida',
+            'cidade': 'Mogi das Cruzes',
+            'uf': 'SP',
+            'cep': '08830-340',
+            'telefone': '(11) 4739-3549',
+            'email': 'contato@crecheelshadday.com.br'
+        }
+        
+        data_atual = datetime.now().strftime('%d/%m/%Y')
+        
+        return render_template('componentes/autorizacao_imagem.html',
+                             aluno=aluno,
+                             unidade=unidade,
+                             data_atual=data_atual,
+                             dados_impressao=dados_impressao)
     except Exception as e:
-        logger.error(f"Erro ao renderizar termo imagem: {e}")
-        return jsonify({'erro': str(e)}), 500
-
-
-@app.route('/visualizar/termo/transporte/<num_inscricao>')
-def visualizar_termo_transporte(num_inscricao):
-    """Visualiza termo de transporte"""
-    try:
-        return render_template('componentes/termo_transporte.html', num_inscricao=num_inscricao)
-    except Exception as e:
-        logger.error(f"Erro ao renderizar termo transporte: {e}")
-        return jsonify({'erro': str(e)}), 500
-
-
-@app.route('/visualizar/termo/terceiro/<num_inscricao>')
-def visualizar_termo_terceiro(num_inscricao):
-    """Visualiza termo de terceiros autorizados"""
-    try:
-        return render_template('componentes/termo_terceiro.html', num_inscricao=num_inscricao)
-    except Exception as e:
-        logger.error(f"Erro ao renderizar termo terceiro: {e}")
-        return jsonify({'erro': str(e)}), 500
+        print(f"❌ Erro ao visualizar termo imagem: {e}")
+        traceback.print_exc()
+        abort(500)
 
 
 @app.route('/visualizar/termo/regulamento/<num_inscricao>')
 def visualizar_termo_regulamento(num_inscricao):
     """Visualiza regulamento interno"""
     try:
-        return render_template('componentes/regulamento.html', num_inscricao=num_inscricao)
+        from database.mongo import db
+        
+        aluno = db.alunos.find_one({'num_inscricao': num_inscricao})
+        
+        if not aluno:
+            abort(404, description="Aluno não encontrado")
+        
+        if '_id' in aluno:
+            aluno['_id'] = str(aluno['_id'])
+        
+        responsavel_nome = request.args.get('responsavel_nome', '')
+        responsavel_parentesco = request.args.get('responsavel_parentesco', '')
+        responsavel_rg = request.args.get('responsavel_rg', '')
+        responsavel_cpf = request.args.get('responsavel_cpf', '')
+        responsavel_telefone = request.args.get('responsavel_telefone', '')
+        
+        dados_impressao = {
+            'responsavel_nome': capitalizar_nome(responsavel_nome),
+            'responsavel_parentesco': responsavel_parentesco,
+            'responsavel_rg': responsavel_rg,
+            'responsavel_cpf': responsavel_cpf,
+            'responsavel_telefone': responsavel_telefone,
+            'nome': capitalizar_nome(aluno.get('dados_pessoais', {}).get('nome', '')),
+            'data_nasc': aluno.get('dados_pessoais', {}).get('data_nasc', ''),
+            'turma': capitalizar_texto(aluno.get('turma', {}).get('turma', '')),
+            'unidade': capitalizar_texto(aluno.get('turma', {}).get('unidade', ''))
+        }
+        
+        unidade = {
+            'nome': 'CEIC El Shadday',
+            'tipo': 'CEIC - Centro de Educação Infantil',
+            'cnpj': '03.067.526/0001-87',
+            'INEP': '35195340'
+        }
+        
+        data_atual = datetime.now().strftime('%d/%m/%Y')
+        
+        return render_template('componentes/regulamento.html',
+                             aluno=aluno,
+                             unidade=unidade,
+                             data_atual=data_atual,
+                             dados_impressao=dados_impressao)
     except Exception as e:
-        logger.error(f"Erro ao renderizar termo regulamento: {e}")
-        return jsonify({'erro': str(e)}), 500
+        print(f"❌ Erro ao visualizar termo regulamento: {e}")
+        traceback.print_exc()
+        abort(500)
 
 
 @app.route('/visualizar/termo/saude/<num_inscricao>')
 def visualizar_termo_saude(num_inscricao):
     """Visualiza termo de saúde"""
     try:
-        return render_template('componentes/termo_saude.html', num_inscricao=num_inscricao)
+        from database.mongo import db
+        
+        aluno = db.alunos.find_one({'num_inscricao': num_inscricao})
+        
+        if not aluno:
+            abort(404, description="Aluno não encontrado")
+        
+        if '_id' in aluno:
+            aluno['_id'] = str(aluno['_id'])
+        
+        responsavel_nome = request.args.get('responsavel_nome', '')
+        responsavel_parentesco = request.args.get('responsavel_parentesco', '')
+        responsavel_rg = request.args.get('responsavel_rg', '')
+        responsavel_cpf = request.args.get('responsavel_cpf', '')
+        responsavel_telefone = request.args.get('responsavel_telefone', '')
+        
+        dados_impressao = {
+            'responsavel_nome': capitalizar_nome(responsavel_nome),
+            'responsavel_parentesco': responsavel_parentesco,
+            'responsavel_rg': responsavel_rg,
+            'responsavel_cpf': responsavel_cpf,
+            'responsavel_telefone': responsavel_telefone,
+            'nome': capitalizar_nome(aluno.get('dados_pessoais', {}).get('nome', '')),
+            'data_nasc': aluno.get('dados_pessoais', {}).get('data_nasc', ''),
+            'turma': capitalizar_texto(aluno.get('turma', {}).get('turma', '')),
+            'unidade': capitalizar_texto(aluno.get('turma', {}).get('unidade', ''))
+        }
+        
+        # Dados de saúde
+        saude = aluno.get('saude', {})
+        dados_saude = {
+            'tipo_sanguineo': saude.get('tipo_sanguineo', ''),
+            'plano_saude': saude.get('plano_saude', ''),
+            'alergias': saude.get('alergias', ''),
+            'medicamentos': saude.get('medicamentos', ''),
+            'restricoes': saude.get('restricoes', ''),
+            'pediatra': capitalizar_nome(saude.get('pediatra', '')),
+            'contato_pediatra': saude.get('contato_pediatra', ''),
+            'deficiencia': saude.get('deficiencia', False),
+            'deficiencia_desc': saude.get('deficiencia_desc', '')
+        }
+        
+        unidade = {
+            'nome': 'CEIC El Shadday',
+            'tipo': 'CEIC - Centro de Educação Infantil',
+            'cnpj': '03.067.526/0001-87',
+            'INEP': '35195340'
+        }
+        
+        data_atual = datetime.now().strftime('%d/%m/%Y')
+        
+        return render_template('componentes/termo_saude.html',
+                             aluno=aluno,
+                             unidade=unidade,
+                             data_atual=data_atual,
+                             dados_impressao=dados_impressao,
+                             dados_saude=dados_saude)
     except Exception as e:
-        logger.error(f"Erro ao renderizar termo saude: {e}")
-        return jsonify({'erro': str(e)}), 500
+        print(f"❌ Erro ao visualizar termo saúde: {e}")
+        traceback.print_exc()
+        abort(500)
+
+
+@app.route('/visualizar/termo/transporte/<num_inscricao>')
+def visualizar_termo_transporte(num_inscricao):
+    """Visualiza termo de transporte"""
+    try:
+        from database.mongo import db
+        
+        aluno = db.alunos.find_one({'num_inscricao': num_inscricao})
+        
+        if not aluno:
+            abort(404, description="Aluno não encontrado")
+        
+        if '_id' in aluno:
+            aluno['_id'] = str(aluno['_id'])
+        
+        responsavel_nome = request.args.get('responsavel_nome', '')
+        responsavel_parentesco = request.args.get('responsavel_parentesco', '')
+        responsavel_rg = request.args.get('responsavel_rg', '')
+        responsavel_cpf = request.args.get('responsavel_cpf', '')
+        responsavel_telefone = request.args.get('responsavel_telefone', '')
+        
+        transporte = aluno.get('transporte', {})
+        dados_transporte = {
+            'nome': capitalizar_nome(transporte.get('nome', '')),
+            'cnpj': transporte.get('cnpj', ''),
+            'cpf': transporte.get('cpf', ''),
+            'rg': transporte.get('rg', ''),
+            'telefone': transporte.get('telefone', ''),
+            'email': transporte.get('email', '')
+        }
+        
+        dados_impressao = {
+            'responsavel_nome': capitalizar_nome(responsavel_nome),
+            'responsavel_parentesco': responsavel_parentesco,
+            'responsavel_rg': responsavel_rg,
+            'responsavel_cpf': responsavel_cpf,
+            'responsavel_telefone': responsavel_telefone,
+            'nome': capitalizar_nome(aluno.get('dados_pessoais', {}).get('nome', '')),
+            'data_nasc': aluno.get('dados_pessoais', {}).get('data_nasc', ''),
+            'turma': capitalizar_texto(aluno.get('turma', {}).get('turma', '')),
+            'unidade': capitalizar_texto(aluno.get('turma', {}).get('unidade', ''))
+        }
+        
+        unidade = {
+            'nome': 'CEIC El Shadday',
+            'tipo': 'CEIC - Centro de Educação Infantil',
+            'cnpj': '03.067.526/0001-87',
+            'INEP': '35195340'
+        }
+        
+        data_atual = datetime.now().strftime('%d/%m/%Y')
+        
+        return render_template('componentes/termo_transporte.html',
+                             aluno=aluno,
+                             unidade=unidade,
+                             data_atual=data_atual,
+                             dados_impressao=dados_impressao,
+                             dados_transporte=dados_transporte)
+    except Exception as e:
+        print(f"❌ Erro ao visualizar termo transporte: {e}")
+        traceback.print_exc()
+        abort(500)
+
+
+@app.route('/visualizar/termo/terceiro/<num_inscricao>')
+def visualizar_termo_terceiro(num_inscricao):
+    """Visualiza termo de terceiro autorizado"""
+    try:
+        from database.mongo import db
+        
+        aluno = db.alunos.find_one({'num_inscricao': num_inscricao})
+        
+        if not aluno:
+            abort(404, description="Aluno não encontrado")
+        
+        if '_id' in aluno:
+            aluno['_id'] = str(aluno['_id'])
+        
+        terceiro_num = request.args.get('terceiro', '1')
+        terceiro_idx = int(terceiro_num) - 1
+        
+        terceiro = aluno.get('terceiros', [])[terceiro_idx] if aluno.get('terceiros') and terceiro_idx < len(aluno.get('terceiros', [])) else None
+        
+        if not terceiro:
+            abort(404, description="Terceiro não encontrado")
+        
+        dados_terceiro = {
+            'nome': capitalizar_nome(terceiro.get('nome', '')),
+            'telefone': terceiro.get('telefone', ''),
+            'cpf': terceiro.get('cpf', ''),
+            'rg': terceiro.get('rg', ''),
+            'email': terceiro.get('email', ''),
+            'numero': terceiro_num
+        }
+        
+        unidade = {
+            'nome': 'CEIC El Shadday',
+            'tipo': 'CEIC - Centro de Educação Infantil',
+            'cnpj': '03.067.526/0001-87',
+            'INEP': '35195340'
+        }
+        
+        data_atual = datetime.now().strftime('%d/%m/%Y')
+        
+        return render_template('componentes/termo_terceiro.html',
+                             aluno=aluno,
+                             terceiro=terceiro,
+                             dados_terceiro=dados_terceiro,
+                             unidade=unidade,
+                             data_atual=data_atual)
+    except Exception as e:
+        print(f"❌ Erro ao visualizar termo terceiro: {e}")
+        traceback.print_exc()
+        abort(500)
 
 
 # ==================== ROTAS DE TESTE E UTILITÁRIOS ====================

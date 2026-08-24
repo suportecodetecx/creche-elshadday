@@ -29,8 +29,6 @@ class AlunoService:
                     tipo = 'png'
                 elif 'image/gif' in mime_type:
                     tipo = 'gif'
-                elif 'application/pdf' in mime_type:
-                    tipo = 'pdf'
                 else:
                     tipo = 'jpg'
                 
@@ -45,14 +43,17 @@ class AlunoService:
         return None
     
     def _processar_arquivos_frontend(self, request_files, request_form):
-        """Processa arquivos vindos do frontend (pode ser data_url ou arquivo real)"""
+        """Processa arquivos vindos do frontend (apenas fotos)"""
         arquivos_processados = []
         
         # Mapeamento dos campos de foto
         campos_foto = [
             'foto_aluno',
             'foto_responsavel1', 'foto_responsavel2', 'foto_responsavel3',
+            'foto_responsavel4', 'foto_responsavel5',
             'foto_terceiro1', 'foto_terceiro2', 'foto_terceiro3',
+            'foto_terceiro4', 'foto_terceiro5', 'foto_terceiro6',
+            'foto_terceiro7', 'foto_terceiro8', 'foto_terceiro9', 'foto_terceiro10',
             'foto_transporte'
         ]
         
@@ -61,21 +62,31 @@ class AlunoService:
             if campo in request_files:
                 file = request_files[campo]
                 if file and file.filename:
+                    # 🔥 VALIDAÇÃO: SÓ ACEITA IMAGENS
+                    if not file.content_type.startswith('image/'):
+                        print(f"   ⚠️ Arquivo ignorado (não é imagem): {campo} - {file.content_type}")
+                        continue
+                    
                     try:
                         file_data = file.read()
                         base64_data = base64.b64encode(file_data).decode('utf-8')
                         ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else 'jpg'
                         
+                        # Verifica tamanho (máx 5MB)
+                        if len(file_data) > 5 * 1024 * 1024:
+                            print(f"   ⚠️ Arquivo ignorado (muito grande): {campo} - {len(file_data)} bytes")
+                            continue
+                        
                         arquivos_processados.append({
-                            'campo': campo,  # <--- IMPORTANTE: campo definido
+                            'campo': campo,
                             'nome': f"{campo}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}",
                             'dados': base64_data,
                             'tipo': ext,
                             'tamanho': len(file_data)
                         })
-                        print(f"   ✅ Arquivo real processado: {campo}")
+                        print(f"   ✅ Foto processada: {campo}")
                     except Exception as e:
-                        print(f"   ❌ Erro ao processar arquivo {campo}: {e}")
+                        print(f"   ❌ Erro ao processar foto {campo}: {e}")
         
         # Depois, processa data_urls que podem vir do formulário
         for campo in campos_foto:
@@ -85,7 +96,7 @@ class AlunoService:
                 converted = self._converter_data_url_para_base64(data_url)
                 if converted:
                     arquivos_processados.append({
-                        'campo': campo,  # <--- IMPORTANTE: campo definido
+                        'campo': campo,
                         'nome': f"{campo}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{converted['tipo']}",
                         'dados': converted['dados'],
                         'tipo': converted['tipo'],
@@ -93,34 +104,8 @@ class AlunoService:
                     })
                     print(f"   ✅ Data URL processada: {campo}")
         
-        # Processa documentos (arquivos PDF, etc)
-        campos_documento = [
-            'aluno_certidao', 'aluno_rg', 'aluno_vacinacao', 'aluno_laudos',
-            'resp_rg', 'resp_cpf', 'resp_comprovante',
-            'resp2_rg', 'resp2_cpf',
-            'terceiro_rg',
-            'transporte_rg', 'transporte_cpf', 'transporte_cnh'
-        ]
-        
-        for campo in campos_documento:
-            if campo in request_files:
-                file = request_files[campo]
-                if file and file.filename:
-                    try:
-                        file_data = file.read()
-                        base64_data = base64.b64encode(file_data).decode('utf-8')
-                        ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else 'pdf'
-                        
-                        arquivos_processados.append({
-                            'campo': campo,  # <--- IMPORTANTE: campo definido
-                            'nome': f"{campo}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}",
-                            'dados': base64_data,
-                            'tipo': ext,
-                            'tamanho': len(file_data)
-                        })
-                        print(f"   ✅ Documento processado: {campo}")
-                    except Exception as e:
-                        print(f"   ❌ Erro ao processar documento {campo}: {e}")
+        # 🔥 REMOVIDOS: Campos de documentos (certidão, RG, vacinação, laudos, etc)
+        # Agora apenas fotos são processadas
         
         return arquivos_processados
     
@@ -143,30 +128,31 @@ class AlunoService:
         return f"{str(valor).zfill(3)}-{ano}"
     
     def salvar_aluno(self, dados_form, arquivos):
-        """Salva os dados do aluno no banco"""
+        """Salva os dados do aluno no banco (apenas fotos)"""
         
         # Gera número de inscrição
         num_inscricao = self.get_proximo_numero_inscricao()
         print(f"📌 Novo número de inscrição gerado: {num_inscricao}")
         
-        # Processa arquivos - GARANTINDO QUE TODOS TENHAM O CAMPO 'campo'
+        # Processa arquivos - APENAS FOTOS
         arquivos_processados = []
         if arquivos:
-            print(f"📁 Processando {len(arquivos)} arquivos...")
+            print(f"📁 Processando {len(arquivos)} fotos...")
             for idx, arq in enumerate(arquivos):
                 # VERIFICAÇÃO CRÍTICA: Garantir que tem o campo 'campo'
                 if not arq.get('campo'):
-                    print(f"   ❌ Arquivo #{idx+1} NÃO TEM CAMPO! Conteúdo: {arq}")
+                    print(f"   ❌ Foto #{idx+1} NÃO TEM CAMPO! Conteúdo: {arq}")
+                    continue
+                
+                # Verifica se é imagem
+                if arq.get('tipo') not in ['jpg', 'jpeg', 'png', 'gif']:
+                    print(f"   ⚠️ Foto ignorada (formato não suportado): {arq.get('campo')} - {arq.get('tipo')}")
                     continue
                 
                 # Se já tem dados em Base64, mantém
                 if arq.get('dados'):
                     arquivos_processados.append(arq)
-                    print(f"   ✅ Arquivo em Base64: {arq['campo']} - {arq.get('nome', 'sem_nome')}")
-                elif arq.get('caminho'):
-                    # Fallback: mantém o caminho (para compatibilidade)
-                    arquivos_processados.append(arq)
-                    print(f"   ⚠️ Arquivo com caminho: {arq['campo']} - {arq.get('nome', 'sem_nome')}")
+                    print(f"   ✅ Foto em Base64: {arq['campo']} - {arq.get('nome', 'sem_nome')}")
         
         # Prepara o documento do aluno
         aluno = {
@@ -216,7 +202,8 @@ class AlunoService:
             'responsaveis': [],
             'terceiros': [],
             'transporte': None,
-            'arquivos': arquivos_processados
+            'fotos': arquivos_processados,  # 🔥 RENOMEADO: 'arquivos' -> 'fotos'
+            'usando_gridfs': False  # Mantém compatibilidade
         }
         
         # Adiciona responsável principal
@@ -232,8 +219,8 @@ class AlunoService:
                 'email': dados_form.get('responsavel1_email')
             })
         
-        # Adiciona responsáveis adicionais
-        for i in range(2, 5):
+        # Adiciona responsáveis adicionais (até 5)
+        for i in range(2, 6):
             if dados_form.get(f'responsavel{i}_nome'):
                 aluno['responsaveis'].append({
                     'tipo': 'adicional',
@@ -246,8 +233,8 @@ class AlunoService:
                     'email': dados_form.get(f'responsavel{i}_email')
                 })
         
-        # Adiciona terceiros
-        for i in range(1, 4):
+        # Adiciona terceiros (até 10)
+        for i in range(1, 11):
             if dados_form.get(f'terceiro{i}_nome'):
                 aluno['terceiros'].append({
                     'nome': dados_form.get(f'terceiro{i}_nome'),
@@ -271,6 +258,7 @@ class AlunoService:
         # Insere no banco
         result = self.collection.insert_one(aluno)
         print(f"✅ Aluno salvo com ID: {result.inserted_id}")
+        print(f"📷 Fotos salvas: {len(arquivos_processados)}")
         
         return {
             'id': str(result.inserted_id),
@@ -278,7 +266,7 @@ class AlunoService:
         }
     
     def atualizar_aluno(self, num_inscricao_original, dados_form, novos_arquivos):
-        """Atualiza os dados de um aluno existente"""
+        """Atualiza os dados de um aluno existente (apenas fotos)"""
         try:
             print(f"📝 Atualizando aluno: {num_inscricao_original}")
             
@@ -287,18 +275,22 @@ class AlunoService:
             if not aluno_original:
                 raise Exception("Aluno não encontrado")
             
-            # Processa novos arquivos - GARANTINDO QUE TODOS TENHAM O CAMPO 'campo'
+            # Processa novas fotos
             novos_arquivos_processados = []
             if novos_arquivos:
                 for idx, arq in enumerate(novos_arquivos):
-                    # VERIFICAÇÃO CRÍTICA: Garantir que tem o campo 'campo'
                     if not arq.get('campo'):
-                        print(f"   ❌ Novo arquivo #{idx+1} NÃO TEM CAMPO! Conteúdo: {arq}")
+                        print(f"   ❌ Nova foto #{idx+1} NÃO TEM CAMPO! Conteúdo: {arq}")
+                        continue
+                    
+                    # Verifica se é imagem
+                    if arq.get('tipo') not in ['jpg', 'jpeg', 'png', 'gif']:
+                        print(f"   ⚠️ Foto ignorada (formato não suportado): {arq.get('campo')}")
                         continue
                     
                     if arq.get('dados'):
                         novos_arquivos_processados.append(arq)
-                        print(f"   ✅ Novo arquivo: {arq['campo']} - {arq.get('nome', 'sem_nome')}")
+                        print(f"   ✅ Nova foto: {arq['campo']} - {arq.get('nome', 'sem_nome')}")
             
             # Prepara os dados atualizados
             aluno_atualizado = {
@@ -364,8 +356,8 @@ class AlunoService:
                     'email': dados_form.get('responsavel1_email')
                 })
             
-            # Adiciona responsáveis adicionais
-            for i in range(2, 5):
+            # Adiciona responsáveis adicionais (até 5)
+            for i in range(2, 6):
                 if dados_form.get(f'responsavel{i}_nome'):
                     aluno_atualizado['responsaveis'].append({
                         'tipo': 'adicional',
@@ -378,8 +370,8 @@ class AlunoService:
                         'email': dados_form.get(f'responsavel{i}_email')
                     })
             
-            # Adiciona terceiros
-            for i in range(1, 4):
+            # Adiciona terceiros (até 10)
+            for i in range(1, 11):
                 if dados_form.get(f'terceiro{i}_nome'):
                     aluno_atualizado['terceiros'].append({
                         'nome': dados_form.get(f'terceiro{i}_nome'),
@@ -400,30 +392,33 @@ class AlunoService:
                     'email': dados_form.get('transporte_email')
                 }
             
-            # ===== PROCESSAMENTO DE ARQUIVOS NA EDIÇÃO =====
-            # Mantém arquivos antigos que NÃO foram substituídos
-            arquivos_manter = []
+            # ===== PROCESSAMENTO DE FOTOS NA EDIÇÃO =====
+            # Mantém fotos antigas que NÃO foram substituídas
+            fotos_manter = []
             campos_substituidos = [arq['campo'] for arq in novos_arquivos_processados]
             
-            for arquivo_antigo in aluno_original.get('arquivos', []):
-                # Verifica se o arquivo antigo tem campo
-                if not arquivo_antigo.get('campo'):
-                    print(f"   ⚠️ Arquivo antigo sem campo! Será mantido: {arquivo_antigo}")
-                    arquivos_manter.append(arquivo_antigo)
-                elif arquivo_antigo.get('campo') not in campos_substituidos:
-                    arquivos_manter.append(arquivo_antigo)
-                    print(f"   ✅ Mantendo arquivo: {arquivo_antigo['campo']} - {arquivo_antigo.get('nome', 'sem_nome')}")
+            # Busca fotos antigas (pode estar em 'fotos' ou 'arquivos')
+            fotos_antigas = aluno_original.get('fotos', []) or aluno_original.get('arquivos', [])
+            
+            for foto_antiga in fotos_antigas:
+                if not foto_antiga.get('campo'):
+                    print(f"   ⚠️ Foto antiga sem campo! Será mantida: {foto_antiga}")
+                    fotos_manter.append(foto_antiga)
+                elif foto_antiga.get('campo') not in campos_substituidos:
+                    fotos_manter.append(foto_antiga)
+                    print(f"   ✅ Mantendo foto: {foto_antiga['campo']} - {foto_antiga.get('nome', 'sem_nome')}")
                 else:
-                    print(f"   🔄 Substituindo arquivo: {arquivo_antigo.get('campo')}")
+                    print(f"   🔄 Substituindo foto: {foto_antiga.get('campo')}")
             
-            # Lista final de arquivos
-            arquivos_finais = arquivos_manter + novos_arquivos_processados
-            aluno_atualizado['arquivos'] = arquivos_finais
+            # Lista final de fotos
+            fotos_finais = fotos_manter + novos_arquivos_processados
+            aluno_atualizado['fotos'] = fotos_finais
+            aluno_atualizado['usando_gridfs'] = False
             
-            print(f"\n📊 RESUMO DOS ARQUIVOS APÓS ATUALIZAÇÃO:")
-            print(f"   📁 Arquivos mantidos: {len(arquivos_manter)}")
-            print(f"   📁 Novos arquivos: {len(novos_arquivos_processados)}")
-            print(f"   📁 Total: {len(arquivos_finais)}")
+            print(f"\n📊 RESUMO DAS FOTOS APÓS ATUALIZAÇÃO:")
+            print(f"   📷 Fotos mantidas: {len(fotos_manter)}")
+            print(f"   📷 Novas fotos: {len(novos_arquivos_processados)}")
+            print(f"   📷 Total: {len(fotos_finais)}")
             
             # Atualiza no banco
             result = self.collection.update_one(
@@ -505,11 +500,12 @@ class AlunoService:
             aluno = self.collection.find_one({'num_inscricao': num_inscricao})
             if aluno:
                 aluno['_id'] = str(aluno['_id'])
-                # LOG para debug - mostra quantos arquivos tem
-                if aluno.get('arquivos'):
-                    print(f"📁 Aluno {num_inscricao} tem {len(aluno['arquivos'])} arquivos")
-                    for arq in aluno['arquivos']:
-                        print(f"   - {arq.get('campo')}: dados={bool(arq.get('dados'))}, tipo={arq.get('tipo')}")
+                # LOG para debug - mostra quantas fotos tem
+                fotos = aluno.get('fotos', []) or aluno.get('arquivos', [])
+                if fotos:
+                    print(f"📷 Aluno {num_inscricao} tem {len(fotos)} fotos")
+                    for foto in fotos:
+                        print(f"   - {foto.get('campo')}: dados={bool(foto.get('dados'))}, tipo={foto.get('tipo')}")
             return aluno
         except Exception as e:
             print(f"Erro ao buscar aluno por inscrição: {e}")

@@ -169,6 +169,7 @@
             border-bottom: 1px dotted #aaa;
             padding-bottom: 2px;
             align-items: baseline;
+            flex-wrap: wrap;
         }
 
         .dados-label {
@@ -197,45 +198,35 @@
             font-size: 12px;
         }
 
-        /* CARD DE TERCEIRO */
-        .terceiro-card {
-            background: #f9f9f9;
-            padding: 8px;
-            border: 1px solid #000;
+        /* CARD DO TERCEIRO SELECIONADO - DESTAQUE */
+        .terceiro-card-destaque {
+            background: #e8f4fd;
+            padding: 10px 15px;
+            border: 2px solid #2980b9;
             margin-bottom: 8px;
-            border-radius: 6px;
+            border-radius: 8px;
         }
 
-        .terceiro-nome {
+        .terceiro-nome-destaque {
             font-weight: bold;
-            font-size: 13px;
-            border-bottom: 1px dotted #999;
-            margin-bottom: 5px;
-            padding-bottom: 3px;
+            font-size: 14px;
+            color: #2c3e50;
+            border-bottom: 2px solid #2980b9;
+            padding-bottom: 5px;
+            margin-bottom: 8px;
         }
 
-        .terceiro-dados {
+        .terceiro-dados-destaque {
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 20px;
             font-size: 12px;
         }
 
-        .terceiro-dados span {
+        .terceiro-dados-destaque span {
             display: flex;
             align-items: center;
-            gap: 3px;
-        }
-
-        /* CLÁUSULAS */
-        .clausulas {
-            margin: 5px 0 5px 25px;
-            font-size: 12px;
-            line-height: 1.3;
-        }
-
-        .clausulas li {
-            margin-bottom: 3px;
+            gap: 5px;
         }
 
         /* OBSERVAÇÃO */
@@ -266,6 +257,17 @@
 
         .autorizacao-terceiro-box strong {
             font-size: 12px;
+        }
+
+        /* CLÁUSULAS */
+        .clausulas {
+            margin: 5px 0 5px 25px;
+            font-size: 12px;
+            line-height: 1.3;
+        }
+
+        .clausulas li {
+            margin-bottom: 3px;
         }
 
         /* ASSINATURAS */
@@ -438,8 +440,8 @@
                 <div class="header-textos">
                     <h1>CRECHE EL SHADDAY</h1>
                     <h2>TERMO DE AUTORIZAÇÃO PARA TERCEIROS</h2>
-                    <h3 id="subtitulo-unidade">{{ unidade.tipo }}</h3>
-                    <p>CNPJ: {{ unidade.cnpj }} | INEP: {{ unidade.INEP }}</p>
+                    <h3 id="subtitulo-unidade">{{ unidade.tipo if unidade else 'CEIC El Shadday' }}</h3>
+                    <p>CNPJ: {{ unidade.cnpj if unidade else '______________' }} | INEP: {{ unidade.INEP if unidade else '______________' }}</p>
                 </div>
             </div>
         </div>
@@ -455,98 +457,95 @@
             </div>
             <div class="dados-linha">
                 <span class="dados-label">Nome:</span>
-                <span class="dados-valor"><strong>{{ aluno.dados_pessoais.nome or '________________________' }}</strong></span>
+                <span class="dados-valor"><strong>{{ aluno.dados_pessoais.nome if aluno and aluno.dados_pessoais else aluno.nome if aluno else '________________________' }}</strong></span>
             </div>
             <div class="dados-linha">
                 <span class="dados-label">Data Nasc.:</span>
-                {% if aluno.dados_pessoais.data_nasc %}
+                {% if aluno and aluno.dados_pessoais and aluno.dados_pessoais.data_nasc %}
                     {% set data = aluno.dados_pessoais.data_nasc.split('-') %}
+                    <span class="dados-valor"><strong>{{ data[2] }}/{{ data[1] }}/{{ data[0] }}</strong></span>
+                {% elif aluno and aluno.data_nasc %}
+                    {% set data = aluno.data_nasc.split('-') %}
                     <span class="dados-valor"><strong>{{ data[2] }}/{{ data[1] }}/{{ data[0] }}</strong></span>
                 {% else %}
                     <span class="dados-valor"><strong>___/___/_____</strong></span>
                 {% endif %}
                 <span class="inline-label">Turma:</span>
-                <span class="inline-value"><strong>{{ aluno.turma.turma or '______' }}</strong></span>
+                <span class="inline-value"><strong>{{ aluno.turma.turma if aluno and aluno.turma else aluno.turma if aluno else '______' }}</strong></span>
             </div>
             <div class="dados-linha">
                 <span class="dados-label">Unidade:</span>
-                <span class="dados-valor"><strong>{{ aluno.turma.unidade or 'CEIC El Shadday' }}</strong></span>
+                <span class="dados-valor"><strong>{{ aluno.turma.unidade if aluno and aluno.turma else aluno.unidade if aluno else 'CEIC El Shadday' }}</strong></span>
                 <span class="inline-label">Matrícula:</span>
-                <span class="inline-value"><strong>{{ aluno.num_inscricao or '______________' }}</strong></span>
+                <span class="inline-value"><strong>{{ aluno.num_inscricao if aluno else aluno.matricula if aluno else '______________' }}</strong></span>
             </div>
         </div>
 
-        <!-- DADOS DO RESPONSÁVEL - AGORA USA O RESPONSÁVEL SELECIONADO -->
+        <!-- DADOS DO RESPONSÁVEL - USA O RESPONSÁVEL SELECIONADO VIA PARÂMETROS -->
         <div class="secao">
             <div class="secao-titulo">
                 <span>👪</span> RESPONSÁVEL LEGAL
             </div>
             <div class="dados-linha">
                 <span class="dados-label">Nome:</span>
-                <span class="dados-valor"><strong>{{ dados_impressao.responsavel_nome if dados_impressao and dados_impressao.responsavel_nome else (resp_principal.nome if resp_principal else '________________________') }}</strong></span>
+                <span class="dados-valor"><strong>{{ request.args.get('responsavel_nome', dados_impressao.responsavel_nome if dados_impressao else '________________________') }}</strong></span>
                 <span class="inline-label">CPF:</span>
-                <span class="inline-value"><strong>{{ dados_impressao.responsavel_cpf if dados_impressao and dados_impressao.responsavel_cpf else (resp_principal.cpf if resp_principal else '______________') }}</strong></span>
+                <span class="inline-value"><strong>{{ request.args.get('responsavel_cpf', dados_impressao.responsavel_cpf if dados_impressao else '______________') }}</strong></span>
                 <span class="inline-label">Tel:</span>
-                <span class="inline-value"><strong>{{ dados_impressao.responsavel_telefone if dados_impressao and dados_impressao.responsavel_telefone else (resp_principal.telefone if resp_principal else '______________') }}</strong></span>
+                <span class="inline-value"><strong>{{ request.args.get('responsavel_telefone', dados_impressao.responsavel_telefone if dados_impressao else '______________') }}</strong></span>
             </div>
             <div class="dados-linha">
                 <span class="dados-label">Parentesco:</span>
-                <span class="dados-valor"><strong>{{ dados_impressao.responsavel_parentesco if dados_impressao and dados_impressao.responsavel_parentesco else (resp_principal.parentesco.capitalize() if resp_principal and resp_principal.parentesco else 'Responsável') }}</strong></span>
+                <span class="dados-valor"><strong>{{ request.args.get('responsavel_parentesco', dados_impressao.responsavel_parentesco if dados_impressao else 'Responsável') }}</strong></span>
                 <span class="inline-label">RG:</span>
-                <span class="inline-value"><strong>{{ dados_impressao.responsavel_rg if dados_impressao and dados_impressao.responsavel_rg else (resp_principal.rg if resp_principal else '______________') }}</strong></span>
+                <span class="inline-value"><strong>{{ request.args.get('responsavel_rg', dados_impressao.responsavel_rg if dados_impressao else '______________') }}</strong></span>
             </div>
         </div>
 
-        <!-- DADOS DO TERCEIRO AUTORIZADO SELECIONADO -->
+        <!-- DADOS DO TERCEIRO AUTORIZADO SELECIONADO (VIA PARÂMETROS) -->
         <div class="secao">
             <div class="secao-titulo">
-                <span>👤</span> TERCEIRO AUTORIZADO
+                <span>👤</span> TERCEIRO AUTORIZADO SELECIONADO
             </div>
-            {% if terceiro %}
-            <div class="terceiro-card">
-                <div class="terceiro-nome">{{ terceiro.nome }}</div>
-                <div class="terceiro-dados">
-                    <span><strong>📞 Telefone:</strong> {{ terceiro.telefone }}</span>
-                    <span><strong>🆔 CPF:</strong> {{ terceiro.cpf }}</span>
+            {% set terceiro_nome = request.args.get('terceiro_nome') %}
+            {% set terceiro_telefone = request.args.get('terceiro_telefone') %}
+            {% set terceiro_cpf = request.args.get('terceiro_cpf') %}
+            {% set terceiro_rg = request.args.get('terceiro_rg') %}
+            
+            {% if terceiro_nome %}
+            <div class="terceiro-card-destaque">
+                <div class="terceiro-nome-destaque">✅ {{ terceiro_nome }}</div>
+                <div class="terceiro-dados-destaque">
+                    <span><strong>📞 Telefone:</strong> {{ terceiro_telefone or 'Não informado' }}</span>
+                    <span><strong>🆔 CPF:</strong> {{ terceiro_cpf or 'Não informado' }}</span>
+                    {% if terceiro_rg %}<span><strong>📄 RG:</strong> {{ terceiro_rg }}</span>{% endif %}
+                </div>
+            </div>
+            {% elif terceiro %}
+            <div class="terceiro-card-destaque">
+                <div class="terceiro-nome-destaque">✅ {{ terceiro.nome }}</div>
+                <div class="terceiro-dados-destaque">
+                    <span><strong>📞 Telefone:</strong> {{ terceiro.telefone or 'Não informado' }}</span>
+                    <span><strong>🆔 CPF:</strong> {{ terceiro.cpf or 'Não informado' }}</span>
                     {% if terceiro.rg %}<span><strong>📄 RG:</strong> {{ terceiro.rg }}</span>{% endif %}
                     {% if terceiro.email %}<span><strong>✉️ E-mail:</strong> {{ terceiro.email }}</span>{% endif %}
                 </div>
             </div>
             {% else %}
             <div class="observacao">
-                <p><strong>⚠️ Nenhum terceiro autorizado cadastrado ou selecionado.</strong></p>
+                <p><strong>⚠️ Nenhum terceiro autorizado selecionado.</strong></p>
             </div>
             {% endif %}
         </div>
-
-        <!-- LISTA DE TODOS OS TERCEIROS CADASTRADOS (REFERÊNCIA) -->
-        {% if aluno.terceiros and aluno.terceiros|length > 1 %}
-        <div class="secao">
-            <div class="secao-titulo">
-                <span>📋</span> DEMAIS TERCEIROS AUTORIZADOS (Referência)
-            </div>
-            {% for terc in aluno.terceiros %}
-                {% if terc.nome != terceiro.nome %}
-                <div class="terceiro-card">
-                    <div class="terceiro-nome">{{ terc.nome }}</div>
-                    <div class="terceiro-dados">
-                        <span><strong>📞 Telefone:</strong> {{ terc.telefone }}</span>
-                        <span><strong>🆔 CPF:</strong> {{ terc.cpf }}</span>
-                        {% if terc.rg %}<span><strong>📄 RG:</strong> {{ terc.rg }}</span>{% endif %}
-                        {% if terc.email %}<span><strong>✉️ E-mail:</strong> {{ terc.email }}</span>{% endif %}
-                    </div>
-                </div>
-                {% endif %}
-            {% endfor %}
-        </div>
-        {% endif %}
 
         <!-- CLÁUSULAS DE AUTORIZAÇÃO -->
         <div class="secao">
             <div class="secao-titulo">
                 <span>📜</span> AUTORIZAÇÃO DO RESPONSÁVEL
             </div>
-            <p style="font-size: 12px; margin-bottom: 5px;">Eu, <strong>{{ dados_impressao.responsavel_nome if dados_impressao and dados_impressao.responsavel_nome else (resp_principal.nome if resp_principal else '____________________') }}</strong>, autorizo o terceiro acima a:</p>
+            {% set responsavel_nome = request.args.get('responsavel_nome', dados_impressao.responsavel_nome if dados_impressao else '____________________') %}
+            {% set terceiro_nome = request.args.get('terceiro_nome', terceiro.nome if terceiro else '____________________') %}
+            <p style="font-size: 12px; margin-bottom: 5px;">Eu, <strong>{{ responsavel_nome }}</strong>, autorizo o terceiro <strong>{{ terceiro_nome }}</strong> a:</p>
             <ul class="clausulas">
                 <li>Buscar o aluno na creche no horário regular;</li>
                 <li>Acompanhar em atividades externas e eventos;</li>
@@ -559,7 +558,7 @@
         <!-- RESPONSABILIDADES -->
         <div class="secao">
             <div class="secao-titulo">
-                <span>⚖️</span> RESPONSABILIDADES
+                <span>⚖️</span> RESPONSABILIDADES DO TERCEIRO
             </div>
             <ul class="clausulas">
                 <li>Apresentar documento com foto ao buscar o aluno;</li>
@@ -574,7 +573,7 @@
                 <span>✅</span> AUTORIZAÇÃO DO TERCEIRO
             </div>
             <div class="autorizacao-terceiro-box">
-                <p>Eu, <strong>{{ terceiro.nome if terceiro else '____________________' }}</strong>, CPF <strong>{{ terceiro.cpf if terceiro else '______________' }}</strong>, declaro estar ciente das responsabilidades assumidas e autorizo a Creche El Shadday a utilizar meus dados para fins de cadastro e controle de acesso, conforme Lei nº 13.709/2018 (LGPD).</p>
+                <p>Eu, <strong>{{ terceiro_nome or '____________________' }}</strong>, CPF <strong>{{ request.args.get('terceiro_cpf', terceiro.cpf if terceiro else '______________') }}</strong>, declaro estar ciente das responsabilidades assumidas e autorizo a Creche El Shadday a utilizar meus dados para fins de cadastro e controle de acesso, conforme Lei nº 13.709/2018 (LGPD).</p>
             </div>
         </div>
 
@@ -582,8 +581,8 @@
         <div class="assinaturas">
             <div class="assinatura-item">
                 <div class="linha-assinatura"></div>
-                <div class="assinatura-nome">{{ dados_impressao.responsavel_nome if dados_impressao and dados_impressao.responsavel_nome else (resp_principal.nome if resp_principal else '________________________') }}</div>
-                <div class="assinatura-info">{{ dados_impressao.responsavel_parentesco if dados_impressao and dados_impressao.responsavel_parentesco else (resp_principal.parentesco.capitalize() if resp_principal and resp_principal.parentesco else 'Responsável Legal') }}</div>
+                <div class="assinatura-nome">{{ responsavel_nome }}</div>
+                <div class="assinatura-info">{{ request.args.get('responsavel_parentesco', dados_impressao.responsavel_parentesco if dados_impressao else 'Responsável Legal') }}</div>
             </div>
             <div class="assinatura-item">
                 <div class="linha-assinatura"></div>
@@ -597,14 +596,14 @@
             <div class="assinatura-terceiro-titulo">✍️ TERCEIRO AUTORIZADO:</div>
             <div style="margin: 10px 0;">
                 <div class="linha-terceiro"></div>
-                <div class="assinatura-nome">{{ terceiro.nome if terceiro else '________________________' }}</div>
-                <div class="assinatura-info">CPF: {{ terceiro.cpf if terceiro else '______________' }}</div>
+                <div class="assinatura-nome">{{ terceiro_nome or '________________________' }}</div>
+                <div class="assinatura-info">CPF: {{ request.args.get('terceiro_cpf', terceiro.cpf if terceiro else '______________') }}</div>
             </div>
         </div>
 
         <!-- DATA -->
         <div class="data-local">
-            {{ unidade.cidade }}/{{ unidade.uf }}, {{ data_atual }}
+            {{ unidade.cidade if unidade else 'Mogi das Cruzes' }}/{{ unidade.uf if unidade else 'SP' }}, {{ data_atual or '___/___/_____' }}
         </div>
 
         <!-- SEÇÃO DE REVOGAÇÃO -->
@@ -640,9 +639,9 @@
 
         <!-- RODAPÉ -->
         <div class="rodape">
-            <p>{{ unidade.nome }} - {{ unidade.tipo }} - CNPJ: {{ unidade.cnpj }}</p>
-            <p>{{ unidade.endereco }} - {{ unidade.bairro }} - {{ unidade.cidade }}/{{ unidade.uf }} - CEP: {{ unidade.cep }}</p>
-            <p>Telefone: {{ unidade.telefone }} | E-mail: <span class="email-destaque">{{ unidade.email }}</span></p>
+            <p>{{ unidade.nome if unidade else 'Creche El Shadday' }} - {{ unidade.tipo if unidade else 'CEIC' }} - CNPJ: {{ unidade.cnpj if unidade else '______________' }}</p>
+            <p>{{ unidade.endereco if unidade else 'Rua ________________' }} - {{ unidade.bairro if unidade else '______________' }} - {{ unidade.cidade if unidade else 'Mogi das Cruzes' }}/{{ unidade.uf if unidade else 'SP' }} - CEP: {{ unidade.cep if unidade else '______________' }}</p>
+            <p>Telefone: {{ unidade.telefone if unidade else '______________' }} | E-mail: <span class="email-destaque">{{ unidade.email if unidade else 'contato@crecheelshaddday.com.br' }}</span></p>
             <div class="lgpd-footer">Documento conforme Lei nº 13.709/2018 (LGPD)</div>
         </div>
     </div>

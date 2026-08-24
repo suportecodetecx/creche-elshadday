@@ -1331,9 +1331,7 @@ function coletarDadosFormulario() {
     const campoNumero = document.getElementById('num_inscricao');
     let numInscricao = campoNumero ? campoNumero.value : '';
     
-    // CORREÇÃO: Garantir que o número não está vazio
     if (!numInscricao || numInscricao.trim() === '') {
-        // Tentar gerar um número temporário
         const data = new Date();
         const ano = data.getFullYear();
         numInscricao = `001-${ano}`;
@@ -1374,9 +1372,7 @@ function coletarDadosFormulario() {
     }
     
     const alunoData = {
-        // ===== CAMPO PRINCIPAL =====
         num_inscricao: numInscricao,
-        
         nome: dados['nome'] || '',
         data_nasc: dados['data_nasc'] || '',
         sexo: dados['sexo'] || '',
@@ -1415,28 +1411,25 @@ function coletarDadosFormulario() {
         transporte_email: dados['transporte_email'] || ''
     };
     
-    // Para edição, adiciona o número original (fallback)
     if (typeof alunoParaEditar !== 'undefined' && alunoParaEditar && alunoParaEditar !== 'null') {
         alunoData.num_inscricao_original = alunoParaEditar.num_inscricao;
         alunoData.modo_edicao = 'true';
     }
     
-    // CORREÇÃO: Adicionar campos alternativos para garantir que o número seja reconhecido
     alunoData.numero_inscricao = numInscricao;
     alunoData.inscricao = numInscricao;
     
     console.log('📦 Dados coletados (resumo):', {
         num_inscricao: alunoData.num_inscricao,
-        numero_inscricao: alunoData.numero_inscricao,
-        inscricao: alunoData.inscricao,
         nome: alunoData.nome
     });
     
     return alunoData;
 }
-// ===== FUNÇÃO: Processar uploads de arquivos COM BARRA DE PROGRESSO E RETRY =====
-async function processarUploadsArquivos() {
-    console.log('\n📸 INICIANDO UPLOAD DOS ARQUIVOS...');
+
+// ===== FUNÇÃO: Processar uploads de fotos =====
+async function processarUploadsFotos() {
+    console.log('\n📸 INICIANDO UPLOAD DAS FOTOS...');
     
     const overlay = document.getElementById('progressOverlay');
     const progressBar = document.getElementById('progressBar');
@@ -1459,173 +1452,23 @@ async function processarUploadsArquivos() {
     const isEditing = typeof alunoParaEditar !== 'undefined' && alunoParaEditar && alunoParaEditar !== 'null';
     const arquivosExistentes = isEditing ? (alunoParaEditar.arquivos_ids || {}) : {};
     
-    // Array para armazenar itens com erro e permitir reupload
-    let todosArquivos = [];
-    let itensComErro = [];
-    
+    // Lista de fotos
     const fotos = [
-        { id: 'aluno_foto_img', campo: 'foto_aluno', nome: '📸 Foto do Aluno', obrigatorio: !isEditing, tipo: 'foto' },
-        { id: 'resp_foto_img', campo: 'foto_responsavel1', nome: '📸 Foto do Responsável', obrigatorio: !isEditing, tipo: 'foto' },
-        { id: 'transporte_foto_img', campo: 'foto_transporte', nome: '📸 Foto do Transporte', obrigatorio: false, tipo: 'foto' }
+        { id: 'aluno_foto_img', campo: 'foto_aluno', nome: '📸 Foto do Aluno', obrigatorio: !isEditing },
+        { id: 'resp_foto_img', campo: 'foto_responsavel1', nome: '📸 Foto do Responsável', obrigatorio: !isEditing },
+        { id: 'transporte_foto_img', campo: 'foto_transporte', nome: '📸 Foto do Transporte', obrigatorio: false }
     ];
     
     for (let i = 2; i <= 5; i++) {
-        fotos.push({ id: `resp${i}_foto_img`, campo: `foto_responsavel${i}`, nome: `📸 Foto Responsável ${i-1}`, obrigatorio: false, tipo: 'foto' });
+        fotos.push({ id: `resp${i}_foto_img`, campo: `foto_responsavel${i}`, nome: `📸 Foto Responsável ${i-1}`, obrigatorio: false });
     }
     
     for (let i = 1; i <= 10; i++) {
-        fotos.push({ id: `terceiro${i}_foto_img`, campo: `foto_terceiro${i}`, nome: `📸 Foto Terceiro ${i}`, obrigatorio: false, tipo: 'foto' });
+        fotos.push({ id: `terceiro${i}_foto_img`, campo: `foto_terceiro${i}`, nome: `📸 Foto Terceiro ${i}`, obrigatorio: false });
     }
     
-   const documentos = [
-    // Documentos do aluno
-    { id: 'aluno_certidao', campo: 'aluno_certidao', nome: '📄 Certidão de Nascimento', obrigatorio: !isEditing, tipo: 'doc' },
-    { id: 'aluno_rg', campo: 'aluno_rg', nome: '📄 Documento com foto (RG/CNH) - Aluno', obrigatorio: !isEditing, tipo: 'doc' },
-    { id: 'aluno_vacinacao', campo: 'aluno_vacinacao', nome: '📄 Carteira de Vacinação', obrigatorio: !isEditing, tipo: 'doc' },
-    { id: 'aluno_laudos', campo: 'aluno_laudos', nome: '📄 Laudos Médicos', obrigatorio: false, tipo: 'doc' },
+    let todosArquivos = [];
     
-    // Documentos do responsável
-    { id: 'resp_rg', campo: 'resp_rg', nome: '📄 Documento com foto (RG/CNH) - Responsável', obrigatorio: !isEditing, tipo: 'doc' },
-    { id: 'resp_comprovante', campo: 'resp_comprovante', nome: '📄 Comprovante de Residência', obrigatorio: !isEditing, tipo: 'doc' },
-    { id: 'resp2_rg', campo: 'resp2_rg', nome: '📄 Documento com foto (RG/CNH) - 2º Responsável', obrigatorio: false, tipo: 'doc' },
-    
-    // Documentos do transporte
-    { id: 'transporte_rg', campo: 'transporte_rg', nome: '📄 Documento com foto (RG/CNH) - Transporte', obrigatorio: (transporteAtivo && !isEditing), tipo: 'doc' },
-    { id: 'transporte_cnh', campo: 'transporte_cnh', nome: '📄 CNH - Transporte', obrigatorio: (transporteAtivo && !isEditing), tipo: 'doc' }
-];
-
-// 🔥 ADICIONAR DOCUMENTOS DE CADA TERCEIRO INDIVIDUALMENTE
-for (let i = 1; i <= 10; i++) {
-    // Verificar se o terceiro existe (tem nome preenchido)
-    const nomeInput = document.querySelector(`input[name="terceiro${i}_nome"]`);
-    if (nomeInput && nomeInput.value && nomeInput.value.trim()) {
-        // Adicionar documento RG do terceiro
-        documentos.push({
-            id: `terceiro${i}_rg`,
-            campo: `terceiro${i}_rg`,
-            nome: `📄 Documento com foto (RG/CNH) - Terceiro ${i}`,
-            obrigatorio: false,
-            tipo: 'doc'
-        });
-        
-        // Adicionar documento CPF do terceiro (se existir)
-        const cpfInput = document.getElementById(`terceiro${i}_cpf_arquivo`);
-        if (cpfInput) {
-            documentos.push({
-                id: `terceiro${i}_cpf_arquivo`,
-                campo: `terceiro${i}_cpf`,
-                nome: `📄 CPF - Terceiro ${i}`,
-                obrigatorio: false,
-                tipo: 'doc'
-            });
-        }
-    }
-}
-
-console.log(`📎 Total de documentos a processar: ${documentos.length}`);
-    
-    // Função para adicionar item à lista
-    function adicionarItem(item) {
-        const div = document.createElement('div');
-        div.className = 'progress-file-item';
-        div.id = `progress-item-${item.campo}`;
-        div.setAttribute('data-campo', item.campo);
-        div.setAttribute('data-tipo', item.tipo);
-        div.setAttribute('data-id', item.id);
-        div.setAttribute('data-nome', item.nome);
-        div.innerHTML = `
-            <span class="status pending" id="status-${item.campo}">⏳</span>
-            <span class="filename">${item.nome}</span>
-            <span class="filesize">${formatarTamanho(item.size || 0)}</span>
-            <button class="btn-retry" style="display:none; background:var(--netflix-red); border:none; color:white; border-radius:20px; padding:4px 12px; cursor:pointer; margin-left:10px;">↻ Reenviar</button>
-        `;
-        
-        // Adicionar evento de clique no botão retry
-        const retryBtn = div.querySelector('.btn-retry');
-        if (retryBtn) {
-            retryBtn.onclick = async (e) => {
-                e.stopPropagation();
-                await reenviarArquivo(item, div, arquivosIds);
-            };
-        }
-        
-        // Também permitir clicar na linha inteira para reenviar
-        div.style.cursor = 'pointer';
-        div.onclick = async (e) => {
-            if (e.target.classList.contains('btn-retry')) return;
-            const statusSpan = div.querySelector('.status');
-            if (statusSpan && statusSpan.classList.contains('error')) {
-                await reenviarArquivo(item, div, arquivosIds);
-            }
-        };
-        
-        progressFilesList.appendChild(div);
-        return div;
-    }
-    
-    // Função para reenviar um arquivo específico
-    async function reenviarArquivo(item, div, arquivosIds) {
-        console.log(`🔄 Reenviando: ${item.nome}`);
-        
-        const statusSpan = div.querySelector('.status');
-        const retryBtn = div.querySelector('.btn-retry');
-        
-        statusSpan.className = 'status uploading';
-        statusSpan.innerHTML = '⏫';
-        if (retryBtn) retryBtn.style.display = 'none';
-        
-        currentFileSpan.textContent = `Reenviando: ${item.nome}...`;
-        
-        try {
-            let file = null;
-            
-            if (item.tipo === 'foto') {
-                const imgElement = document.getElementById(item.id);
-                if (imgElement && imgElement.classList.contains('active') && imgElement.src && imgElement.src.startsWith('data:')) {
-                    file = await dataURLToFile(imgElement.src, `${item.campo}_${Date.now()}.jpg`);
-                } else if (imgElement && imgElement.classList.contains('active') && imgElement.src && !imgElement.src.startsWith('data:')) {
-                    // Se a imagem já está no servidor (edição), não precisa reenviar
-                    console.log(`   ℹ️ Imagem já existe no servidor, pulando upload: ${item.campo}`);
-                    statusSpan.className = 'status success';
-                    statusSpan.innerHTML = '✅';
-                    if (retryBtn) retryBtn.style.display = 'none';
-                    return;
-                }
-            } else if (item.tipo === 'doc') {
-                const inputElement = document.getElementById(item.id);
-                if (inputElement && inputElement.files && inputElement.files.length > 0) {
-                    file = inputElement.files[0];
-                }
-            }
-            
-            if (!file) {
-                throw new Error('Arquivo não encontrado');
-            }
-            
-            const resultado = await uploadArquivoParaGridFS(file, item.campo);
-            
-            if (resultado.sucesso) {
-                arquivosIds[item.campo] = resultado.file_id;
-                statusSpan.className = 'status success';
-                statusSpan.innerHTML = '✅';
-                if (retryBtn) retryBtn.style.display = 'none';
-                mostrarNotificacao(`✅ ${item.nome} reenviado com sucesso!`, 'success');
-                console.log(`   ✅ ${item.campo} reenviado! ID: ${resultado.file_id}`);
-            } else {
-                throw new Error(resultado.erro || 'Erro no upload');
-            }
-        } catch (error) {
-            console.error(`   ❌ Erro ao reenviar ${item.campo}:`, error);
-            statusSpan.className = 'status error';
-            statusSpan.innerHTML = '❌';
-            if (retryBtn) retryBtn.style.display = 'inline-block';
-            mostrarNotificacao(`❌ Erro ao reenviar ${item.nome}: ${error.message}`, 'error');
-        } finally {
-            currentFileSpan.textContent = 'Pronto para continuar';
-        }
-    }
-    
-    // Coletar todos os arquivos
     for (const foto of fotos) {
         const imgElement = document.getElementById(foto.id);
         const fotoExistente = arquivosExistentes[foto.campo];
@@ -1641,20 +1484,6 @@ console.log(`📎 Total de documentos a processar: ${documentos.length}`);
         }
     }
     
-    for (const doc of documentos) {
-        const inputElement = document.getElementById(doc.id);
-        const docExistente = arquivosExistentes[doc.campo];
-        
-        if (inputElement && inputElement.files && inputElement.files.length > 0) {
-            todosArquivos.push({ ...doc, file: inputElement.files[0], isNew: true, size: inputElement.files[0].size });
-        } else if (isEditing && docExistente) {
-            arquivosIds[doc.campo] = docExistente;
-        } else if (doc.obrigatorio) {
-            overlay.classList.remove('active');
-            throw new Error(`Documento obrigatório não anexado: ${doc.campo}`);
-        }
-    }
-    
     if (todosArquivos.length === 0) {
         overlay.classList.remove('active');
         return arquivosIds;
@@ -1664,35 +1493,28 @@ console.log(`📎 Total de documentos a processar: ${documentos.length}`);
     progressTotalSpan.textContent = totalArquivos;
     progressCountSpan.textContent = '0';
     
-    // Adicionar todos os itens à lista
-    const itemsDiv = {};
+    // Adicionar itens à lista
     for (const item of todosArquivos) {
-        const div = adicionarItem(item);
-        itemsDiv[item.campo] = div;
+        const div = document.createElement('div');
+        div.className = 'progress-file-item';
+        div.innerHTML = `
+            <span class="status pending">⏳</span>
+            <span class="filename">${item.nome}</span>
+            <span class="filesize">${formatarTamanho(item.size || 0)}</span>
+        `;
+        progressFilesList.appendChild(div);
     }
     
     // Processar uploads
     for (let i = 0; i < totalArquivos; i++) {
         const item = todosArquivos[i];
-        const div = itemsDiv[item.campo];
+        const items = progressFilesList.querySelectorAll('.progress-file-item');
+        const div = items[i];
         const statusSpan = div.querySelector('.status');
-        const retryBtn = div.querySelector('.btn-retry');
         
         statusSpan.className = 'status uploading';
         statusSpan.innerHTML = '⏫';
         currentFileSpan.textContent = `${item.nome} (${i+1} de ${totalArquivos})`;
-        
-        // COMPRIMIR PDF SE FOR GRANDE
-        if (item.file && item.file.type === 'application/pdf' && item.file.size > 2 * 1024 * 1024) {
-            console.log(`📄 Comprimindo PDF: ${item.nome}`);
-            item.file = await comprimirPDF(item.file, 2);
-        }
-        
-        // COMPRIMIR IMAGEM SE FOR GRANDE
-        if (item.file && item.file.type.startsWith('image/') && item.file.size > 1.5 * 1024 * 1024) {
-            console.log(`🖼️ Comprimindo imagem: ${item.nome}`);
-            item.file = await comprimirImagem(item.file, 500);
-        }
         
         try {
             const resultado = await uploadArquivoParaGridFS(item.file, item.campo);
@@ -1706,9 +1528,7 @@ console.log(`📎 Total de documentos a processar: ${documentos.length}`);
                 uploadsFalha++;
                 statusSpan.className = 'status error';
                 statusSpan.innerHTML = '❌';
-                if (retryBtn) retryBtn.style.display = 'inline-block';
                 if (item.obrigatorio) {
-                    // Não para o processo, apenas marca como erro
                     console.warn(`⚠️ Falha no upload obrigatório: ${item.nome}`);
                 }
             }
@@ -1716,7 +1536,6 @@ console.log(`📎 Total de documentos a processar: ${documentos.length}`);
             uploadsFalha++;
             statusSpan.className = 'status error';
             statusSpan.innerHTML = '❌';
-            if (retryBtn) retryBtn.style.display = 'inline-block';
             console.error(`❌ Erro no upload de ${item.campo}:`, error);
         }
         
@@ -1726,27 +1545,23 @@ console.log(`📎 Total de documentos a processar: ${documentos.length}`);
         progressCountSpan.textContent = i + 1;
     }
     
-    // Se houver erros, mostrar mensagem e manter overlay com opção de reenviar
     if (uploadsFalha > 0) {
         progressBar.style.width = '100%';
         progressPercent.textContent = '100%';
-        currentFileSpan.innerHTML = `⚠️ ${uploadsFalha} arquivo(s) com erro. Clique no ❌ para reenviar.`;
+        currentFileSpan.innerHTML = `⚠️ ${uploadsFalha} arquivo(s) com erro.`;
         
-        // Adicionar botão para continuar mesmo com erros (apenas para documentos não obrigatórios)
         const continueBtn = document.createElement('button');
-        continueBtn.textContent = '✅ Continuar mesmo assim (pular erros)';
+        continueBtn.textContent = '✅ Continuar mesmo assim';
         continueBtn.style.cssText = 'background: var(--accent-green); color: #1a1a1a; border: none; padding: 10px 20px; border-radius: 30px; margin-top: 15px; cursor: pointer; font-weight: bold;';
         continueBtn.onclick = () => {
             overlay.classList.remove('active');
         };
         
-        const existingBtn = document.querySelector('.progress-card .continue-btn');
-        if (!existingBtn) {
+        if (!document.querySelector('.progress-card .continue-btn')) {
             document.querySelector('.progress-card').appendChild(continueBtn);
             continueBtn.classList.add('continue-btn');
         }
         
-        // Aguardar o usuário clicar para continuar ou reenviar
         return new Promise((resolve) => {
             const checkInterval = setInterval(() => {
                 if (!overlay.classList.contains('active')) {
@@ -1759,39 +1574,6 @@ console.log(`📎 Total de documentos a processar: ${documentos.length}`);
     
     overlay.classList.remove('active');
     return arquivosIds;
-}
-
-// ===== FUNÇÃO DE FALLBACK PARA EDIÇÃO =====
-function salvarCadastroTradicional() {
-    console.log('📝 Usando método tradicional para edição');
-    
-    const form = document.getElementById('formCadastroAluno');
-    const formData = new FormData(form);
-    
-    formData.append('modo_edicao', 'true');
-    if (alunoParaEditar && alunoParaEditar.num_inscricao) {
-        formData.append('num_inscricao_original', alunoParaEditar.num_inscricao);
-    }
-    
-    fetch('/api/alunos/atualizar', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.sucesso) {
-            mostrarNotificacao('✅ Cadastro atualizado com sucesso!', 'success');
-            setTimeout(() => {
-                window.location.href = '/';
-            }, 2000);
-        } else {
-            mostrarNotificacao('❌ Erro: ' + (data.erro || 'Erro desconhecido'), 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Erro na edição:', error);
-        mostrarNotificacao('❌ Erro de conexão: ' + error.message, 'error');
-    });
 }
 
 // ===== FUNÇÃO DE COMPRESSÃO DE IMAGEM =====
@@ -1851,62 +1633,13 @@ async function comprimirImagem(file, maxSizeKB = 500) {
     });
 }
 
-// ===== FUNÇÃO DE COMPRESSÃO DE PDF =====
-async function comprimirPDF(file, tamanhoMaximoMB = 2) {
-    if (file.type !== 'application/pdf') return file;
-    if (file.size <= tamanhoMaximoMB * 1024 * 1024) return file;
-    
-    mostrarNotificacao(`🔄 Comprimindo PDF de ${(file.size / 1024 / 1024).toFixed(2)}MB... Aguarde`, 'warning');
-    
-    try {
-        if (typeof window.PDFLib === 'undefined') {
-            console.warn('PDF-Lib não carregado');
-            return file;
-        }
-        
-        const arrayBuffer = await file.arrayBuffer();
-        const { PDFDocument } = window.PDFLib;
-        const pdfDoc = await PDFDocument.load(arrayBuffer);
-        
-        const pageCount = pdfDoc.getPageCount();
-        console.log(`📄 PDF tem ${pageCount} página(s)`);
-        
-        const novoPdf = await PDFDocument.create();
-        
-        for (let i = 0; i < pageCount; i++) {
-            const [copiedPage] = await novoPdf.copyPages(pdfDoc, [i]);
-            novoPdf.addPage(copiedPage);
-        }
-        
-        const compressedBytes = await novoPdf.save({
-            useObjectStreams: true,
-            addDefaultPage: false,
-            objectsPerTick: 50
-        });
-        
-        const compressedFile = new File([compressedBytes], file.name, {
-            type: 'application/pdf',
-            lastModified: Date.now()
-        });
-        
-        console.log(`   ✅ PDF comprimido: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
-        mostrarNotificacao(`✅ PDF comprimido!`, 'success');
-        
-        return compressedFile;
-    } catch (error) {
-        console.error('Erro ao comprimir PDF:', error);
-        return file;
-    }
-}
-
-// ===== FUNÇÃO CORRIGIDA PARA CARREGAR FOTOS VIA GRIDFS NA EDIÇÃO =====
+// ===== FUNÇÃO PARA CARREGAR FOTOS VIA GRIDFS NA EDIÇÃO =====
 function carregarFotosExistentes(aluno) {
-    console.log('📸 Carregando fotos e documentos existentes via GridFS...');
+    console.log('📸 Carregando fotos existentes via GridFS...');
     
     const arquivosIds = aluno.arquivos_ids || {};
     console.log('   📎 IDs disponíveis:', Object.keys(arquivosIds));
     
-    // Mapa de fotos - mapeia o campo no banco para o ID do elemento HTML
     const mapaFotos = {
         'foto_aluno': 'aluno_foto_img',
         'foto_responsavel1': 'resp_foto_img',
@@ -1927,7 +1660,6 @@ function carregarFotosExistentes(aluno) {
         'foto_transporte': 'transporte_foto_img'
     };
     
-    // Carregar fotos
     for (const [campo, imgId] of Object.entries(mapaFotos)) {
         const fileId = arquivosIds[campo];
         if (fileId) {
@@ -1938,7 +1670,6 @@ function carregarFotosExistentes(aluno) {
                 imgElement.classList.add('active');
                 console.log(`   ✅ Foto carregada: ${campo} -> ${imgId}`);
                 
-                // CORREÇÃO: Mapeamento correto para o review
                 let prefix = '';
                 if (campo === 'foto_aluno') prefix = 'aluno';
                 else if (campo === 'foto_responsavel1') prefix = 'resp';
@@ -1953,43 +1684,11 @@ function carregarFotosExistentes(aluno) {
                 if (reviewDiv) {
                     reviewDiv.innerHTML = `<img src="${imageUrl}" class="photo-thumbnail" onerror="this.style.display='none'">`;
                 }
-            } else {
-                console.log(`   ⚠️ Elemento não encontrado: ${imgId} para campo ${campo}`);
             }
         }
     }
     
-    // Mapa de documentos base
-const mapaCards = {
-    'aluno_certidao': 'certidao-card',
-    'aluno_rg': 'rg-card',
-    'aluno_vacinacao': 'vacinacao-card',
-    'aluno_laudos': 'laudos-card',
-    'resp_rg': 'resp-rg-card',
-    'resp_comprovante': 'resp-comprovante-card',
-    'resp2_rg': 'resp2-rg-card',
-    'transporte_rg': 'transporte-rg-card',
-    'transporte_cnh': 'transporte-cnh-card'
-};
-
-// 🔥 ADICIONAR DOCUMENTOS DOS TERCEIROS DINAMICAMENTE
-for (let i = 1; i <= 10; i++) {
-    mapaCards[`terceiro${i}_rg`] = `terceiro${i}-rg-card`;
-}
-    
-    // Marcar documentos como anexados
-for (const [campo, cardId] of Object.entries(mapaCards)) {
-    const fileId = arquivosIds[campo];
-    if (fileId) {
-        const card = document.getElementById(cardId);
-        if (card) {
-            card.classList.add('has-file');
-            console.log(`   ✅ Documento marcado: ${campo}`);
-        }
-    }
-}
-    
-    console.log('✅ Fotos e documentos carregados com sucesso via GridFS!');
+    console.log('✅ Fotos carregadas com sucesso via GridFS!');
 }
 
 // ===== FUNÇÃO PARA PREENCHER O FORMULÁRIO =====
@@ -2063,7 +1762,7 @@ function preencherFormulario(aluno) {
         setValue('ano_letivo', aluno.ano_letivo);
     }
 
-        // SAÚDE (CORRIGIDO - DEFICIÊNCIA)
+    // SAÚDE
     if (aluno.saude) {
         setValue('tipo_sanguineo', aluno.saude.tipo_sanguineo);
         setValue('plano_saude', aluno.saude.plano_saude);
@@ -2073,7 +1772,6 @@ function preencherFormulario(aluno) {
         setValue('pediatra', aluno.saude.pediatra);
         setValue('contato_pediatra', aluno.saude.contato_pediatra);
         
-        // CORREÇÃO: Deficiência
         const temDeficiencia = aluno.saude.deficiencia === true || 
                                aluno.saude.deficiencia === 'sim' || 
                                aluno.saude.deficiencia === 'Sim' ||
@@ -2088,7 +1786,7 @@ function preencherFormulario(aluno) {
             setValue('deficiencia', 'nao');
             const divDescricao = document.getElementById('deficiencia-descricao');
             if (divDescricao) divDescricao.style.display = 'none';
-            setValue('deficiencia_desc', ''); // Limpa a descrição
+            setValue('deficiencia_desc', '');
         }
     } else {
         setValue('tipo_sanguineo', aluno.tipo_sanguineo);
@@ -2099,7 +1797,6 @@ function preencherFormulario(aluno) {
         setValue('pediatra', aluno.pediatra);
         setValue('contato_pediatra', aluno.contato_pediatra);
         
-        // CORREÇÃO: Deficiência - verifica o valor diretamente
         const temDeficiencia = aluno.deficiencia === 'sim' || 
                                aluno.deficiencia === true ||
                                aluno.deficiencia === 1;
@@ -2125,11 +1822,9 @@ function preencherFormulario(aluno) {
     if (aluno.responsaveis && Array.isArray(aluno.responsaveis) && aluno.responsaveis.length > 0) {
         responsaveis = aluno.responsaveis;
         console.log('   ✅ Responsáveis encontrados em aluno.responsaveis:', responsaveis.length);
-        console.log('   📋 Estrutura do primeiro responsável:', JSON.stringify(responsaveis[0], null, 2));
     } else if (aluno.dados_pessoais && aluno.dados_pessoais.responsaveis) {
         responsaveis = aluno.dados_pessoais.responsaveis;
         console.log('   ✅ Responsáveis encontrados em dados_pessoais.responsaveis:', responsaveis.length);
-        console.log('   📋 Estrutura do primeiro responsável:', JSON.stringify(responsaveis[0], null, 2));
     }
     
     if (responsaveis.length > 0) {
@@ -2137,7 +1832,6 @@ function preencherFormulario(aluno) {
         
         if (respPrincipal) {
             console.log('   👤 Responsável Principal encontrado');
-            console.log('   📋 Campos disponíveis:', Object.keys(respPrincipal));
             
             let nomeResponsavel = respPrincipal.nome || respPrincipal.nome_completo || 
                                   (respPrincipal.dados && respPrincipal.dados.nome) || '';
@@ -2156,7 +1850,6 @@ function preencherFormulario(aluno) {
             
             console.log(`   📋 Nome: "${nomeResponsavel}"`);
             console.log(`   📋 Parentesco: "${parentesco}"`);
-            console.log(`   📋 Telefone: "${telefone}"`);
             
             setValueByName('responsavel1_nome', nomeResponsavel);
             setValueByName('responsavel1_parentesco', parentesco);
@@ -2226,15 +1919,11 @@ function preencherFormulario(aluno) {
     
     if (terceiros.length > 0) {
         if (!terceirosAtivos) {
-            // Ativa o container sem adicionar automaticamente
             const container = document.getElementById('terceiros-container');
-            const docsSection = document.getElementById('terceiros-docs-section');
             terceirosAtivos = true;
             container.style.display = 'block';
-            if (docsSection) docsSection.style.display = 'block';
         }
         
-        // Limpa os terceiros existentes
         const container = document.getElementById('terceiros-container');
         container.innerHTML = '';
         
@@ -2243,49 +1932,47 @@ function preencherFormulario(aluno) {
         });
     }
 
-   // TRANSPORTE
-console.log('📌 Processando transporte...');
-let transporte = null;
+    // TRANSPORTE
+    console.log('📌 Processando transporte...');
+    let transporte = null;
 
-if (aluno.transporte && aluno.transporte.nome) {
-    transporte = aluno.transporte;
-    console.log('   ✅ Transporte encontrado em aluno.transporte');
-    console.log('   📌 Conteúdo completo do transporte:', JSON.stringify(transporte, null, 2));  // 🔥 ADICIONE ESTE LOG
-} else if (aluno.dados_pessoais && aluno.dados_pessoais.transporte) {
-    transporte = aluno.dados_pessoais.transporte;
-    console.log('   ✅ Transporte encontrado em dados_pessoais.transporte');
-    console.log('   📌 Conteúdo completo do transporte:', JSON.stringify(transporte, null, 2));  // 🔥 ADICIONE ESTE LOG
-}
+    if (aluno.transporte && aluno.transporte.nome) {
+        transporte = aluno.transporte;
+        console.log('   ✅ Transporte encontrado em aluno.transporte');
+    } else if (aluno.dados_pessoais && aluno.dados_pessoais.transporte) {
+        transporte = aluno.dados_pessoais.transporte;
+        console.log('   ✅ Transporte encontrado em dados_pessoais.transporte');
+    }
 
-if (transporte && transporte.nome) {
-    const checkbox = document.querySelector('input[name="utiliza_transporte"]');
-    if (checkbox) {
-        checkbox.checked = true;
-        toggleTransporte({ checked: true });
-        
-        setValueByName('transporte_nome', transporte.nome);
-        setValueByName('transporte_cnpj', transporte.cnpj);
-        setValueByName('transporte_cpf', transporte.cpf);
-        setValueByName('transporte_rg', transporte.rg || '');  // 🔥 ADICIONE fallback
-        setValueByName('transporte_telefone', transporte.telefone);
-        setValueByName('transporte_email', transporte.email);
-        console.log('   ✅ Transporte preenchido, RG:', transporte.rg);  // 🔥 ADICIONE ESTE LOG
+    if (transporte && transporte.nome) {
+        const checkbox = document.querySelector('input[name="utiliza_transporte"]');
+        if (checkbox) {
+            checkbox.checked = true;
+            toggleTransporte({ checked: true });
+            
+            setValueByName('transporte_nome', transporte.nome);
+            setValueByName('transporte_cnpj', transporte.cnpj);
+            setValueByName('transporte_cpf', transporte.cpf);
+            setValueByName('transporte_rg', transporte.rg || '');
+            setValueByName('transporte_telefone', transporte.telefone);
+            setValueByName('transporte_email', transporte.email);
+            console.log('   ✅ Transporte preenchido');
+        }
+    } else if (aluno.utiliza_transporte === '1' || aluno.utiliza_transporte === 1) {
+        const checkbox = document.querySelector('input[name="utiliza_transporte"]');
+        if (checkbox) {
+            checkbox.checked = true;
+            toggleTransporte({ checked: true });
+            
+            setValueByName('transporte_nome', aluno.transporte_nome);
+            setValueByName('transporte_cnpj', aluno.transporte_cnpj);
+            setValueByName('transporte_cpf', aluno.transporte_cpf);
+            setValueByName('transporte_rg', aluno.transporte_rg || '');
+            setValueByName('transporte_telefone', aluno.transporte_telefone);
+            setValueByName('transporte_email', aluno.transporte_email);
+            console.log('   ✅ Transporte preenchido (fallback)');
+        }
     }
-} else if (aluno.utiliza_transporte === '1' || aluno.utiliza_transporte === 1) {
-    const checkbox = document.querySelector('input[name="utiliza_transporte"]');
-    if (checkbox) {
-        checkbox.checked = true;
-        toggleTransporte({ checked: true });
-        
-        setValueByName('transporte_nome', aluno.transporte_nome);
-        setValueByName('transporte_cnpj', aluno.transporte_cnpj);
-        setValueByName('transporte_cpf', aluno.transporte_cpf);
-        setValueByName('transporte_rg', aluno.transporte_rg || '');  // 🔥 ADICIONE fallback
-        setValueByName('transporte_telefone', aluno.transporte_telefone);
-        setValueByName('transporte_email', aluno.transporte_email);
-        console.log('   ✅ Transporte preenchido (fallback), RG:', aluno.transporte_rg);  // 🔥 ADICIONE ESTE LOG
-    }
-}
 
     // NÚMERO DE INSCRIÇÃO
     const campoNumero = document.getElementById('num_inscricao');
@@ -2298,30 +1985,17 @@ if (transporte && transporte.nome) {
         }
     }
 
-    // ===== ATIVAR CARDS NA EDIÇÃO =====
-    console.log('🔧 Ativando cards para edição...');
-
-    // Ativa container de transporte se houver transporte
-    if (aluno.transporte && aluno.transporte.nome) {
-        const checkbox = document.querySelector('input[name="utiliza_transporte"]');
-        if (checkbox && !checkbox.checked) {
-            checkbox.checked = true;
-            toggleTransporte({ checked: true });
-            console.log('   ✅ Container de transporte ativado');
-        }
-    }
-
-    // CARREGAR FOTOS E DOCUMENTOS
+    // CARREGAR FOTOS
     carregarFotosExistentes(aluno);
     
     console.log('✅ Formulário preenchido com sucesso!');
     mostrarNotificacao('✅ Dados carregados para edição', 'success');
 }
 
-// ===== FUNÇÃO DE SALVAR CADASTRO CORRIGIDA =====
+// ===== FUNÇÃO DE SALVAR CADASTRO =====
 async function salvarCadastro() {
     console.clear();
-    console.log('\n🚀 INICIANDO PROCESSO DE CADASTRO (GRIDFS)');
+    console.log('\n🚀 INICIANDO PROCESSO DE CADASTRO');
     console.log('=' .repeat(60));
     const isEditing = typeof alunoParaEditar !== 'undefined' && alunoParaEditar && alunoParaEditar !== 'null';
     if (isEditing) console.log('📝 Modo: EDIÇÃO'); else console.log('➕ Modo: NOVO CADASTRO');
@@ -2337,63 +2011,37 @@ async function salvarCadastro() {
         } 
     }
     
-    if (!isEditing && !validarPasso(3)) { 
-        passoAtual = 3; 
-        atualizarPasso(3); 
-        atualizarBotoes(); 
-        mostrarNotificacao('Complete todos os documentos obrigatórios!', 'warning'); 
-        rolarAteCampoVazio(3); 
-        return; 
-    }
-    
-    mostrarNotificacao('📤 Enviando arquivos...', 'success');
+    mostrarNotificacao('📤 Enviando fotos...', 'success');
     
     try {
-        console.log('\n📦 ETAPA 1: Upload dos arquivos para GridFS');
-        const arquivosIds = await processarUploadsArquivos();
+        console.log('\n📦 ETAPA 1: Upload das fotos');
+        const arquivosIds = await processarUploadsFotos();
         
         console.log('\n📋 ETAPA 2: Coletando dados do formulário');
         
-        // Para edição, precisamos enviar no formato que o servidor espera
         if (isEditing) {
             console.log('   📝 Coletando dados para EDIÇÃO (form-data)');
             
             const form = document.getElementById('formCadastroAluno');
             const formData = new FormData(form);
             
-            const camposArquivo = [
-    'foto_aluno', 'foto_responsavel1', 'foto_responsavel2', 'foto_responsavel3',
-    'foto_responsavel4', 'foto_responsavel5', 'foto_terceiro1', 'foto_terceiro2',
-    'foto_terceiro3', 'foto_terceiro4', 'foto_terceiro5', 'foto_terceiro6',
-    'foto_terceiro7', 'foto_terceiro8', 'foto_terceiro9', 'foto_terceiro10',
-    'foto_transporte', 'aluno_certidao', 'aluno_rg',
-    'aluno_vacinacao', 'aluno_laudos', 'resp_rg', 'resp_comprovante',
-    'resp2_rg', 'transporte_cnh'  // ← 'terceiro_rg' REMOVIDO!
-];
+            const camposFoto = [
+                'foto_aluno', 'foto_responsavel1', 'foto_responsavel2', 'foto_responsavel3',
+                'foto_responsavel4', 'foto_responsavel5', 'foto_terceiro1', 'foto_terceiro2',
+                'foto_terceiro3', 'foto_terceiro4', 'foto_terceiro5', 'foto_terceiro6',
+                'foto_terceiro7', 'foto_terceiro8', 'foto_terceiro9', 'foto_terceiro10',
+                'foto_transporte'
+            ];
             
-            // Adicionar documentos específicos dos terceiros
-           // for (let i = 1; i <= 10; i++) {
-               // camposArquivo.push(`terceiro${i}_rg`);
-            //}
-            
-            // Remove todos os arquivos do FormData
-            for (const campo of camposArquivo) {
+            for (const campo of camposFoto) {
                 formData.delete(campo);
                 console.log(`   🗑️ Removido do FormData: ${campo}`);
             }
             
-            // Adiciona o número de inscrição original
             const numInscricao = document.getElementById('num_inscricao').value;
             formData.append('num_inscricao_original', numInscricao);
             formData.append('modo_edicao', 'true');
-            
-            // Adiciona apenas os IDs dos arquivos
             formData.append('arquivos_ids', JSON.stringify(arquivosIds));
-            
-            console.log(`   📎 IDs dos documentos de terceiros:`, {
-                terceiro1_rg: arquivosIds['terceiro1_rg'],
-                terceiro2_rg: arquivosIds['terceiro2_rg']
-            });
             
             const response = await fetch('/api/alunos/atualizar', {
                 method: 'POST',
@@ -2411,7 +2059,6 @@ async function salvarCadastro() {
             }
             
         } else {
-            // NOVO CADASTRO: usar JSON (rota /cadastrar-json)
             console.log('   📝 Coletando dados para NOVO CADASTRO (JSON)');
             const dadosAluno = coletarDadosFormulario();
             dadosAluno.arquivos_ids = arquivosIds;
@@ -2473,7 +2120,7 @@ async function salvarCadastro() {
                     </div>
                     <div class="step-item" data-step="3" onclick="irParaPasso(3)">
                         <div class="step-circle"><span>3</span></div>
-                        <div class="step-label">Fotos e Docs</div>
+                        <div class="step-label">Fotos</div>
                     </div>
                     <div class="step-item" data-step="4" onclick="irParaPasso(4)">
                         <div class="step-circle"><span>4</span></div>
@@ -2882,7 +2529,7 @@ async function salvarCadastro() {
                                 </div>
                                 
                                 <div class="camera-section">
-                                    <label class="section-label">Foto do Responsável pelo Transporte <span class="required">*</span></label>
+                                    <label class="section-label">Foto do Responsável pelo Transporte</label>
                                     <div class="camera-controls">
                                         <button type="button" class="btn-clean" onclick="abrirCamera('transporte_foto')">Abrir Câmera</button>
                                         <button type="button" class="btn-clean primary" onclick="capturarFoto('transporte_foto')">Capturar</button>
@@ -2899,7 +2546,7 @@ async function salvarCadastro() {
                     </section>
                 </div>
 
-                <!-- PASSO 3: FOTOS E DOCUMENTOS -->
+                <!-- PASSO 3: FOTOS -->
                 <div class="step-content" id="step3">
                     <section class="form-card">
                         <div class="card-header">
@@ -2923,91 +2570,107 @@ async function salvarCadastro() {
                         </div>
                     </section>
 
-                    <!-- Documentos do Aluno -->
-<section class="form-card">
-    <div class="card-header">
-        <div class="header-icon">📄</div>
-        <h2>Documentos do Aluno</h2>
-    </div>
-
-    <!-- Mensagem informativa sobre RG/CNH -->
-    <div style="background: rgba(255, 209, 102, 0.1); border-left: 4px solid var(--accent-yellow); padding: 12px 16px; border-radius: 12px; margin-bottom: 20px;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 1.1rem;">i</span>
-            <span style="color: var(--accent-yellow); font-weight: 500;">Informacao importante:</span>
-        </div>
-        <p style="color: rgba(255,255,255,0.8); font-size: 0.85rem; margin-top: 8px;">
-            O campo <strong>"Documento com foto (RG/CIN)"</strong> é <strong style="color: var(--accent-yellow);">OPCIONAL</strong> para alunos que ainda não possuem RG/CIN.
-        </p>
-    </div>
-
-    <div class="upload-grid-clean">
-        <div class="upload-card-clean" id="certidao-card" onclick="document.getElementById('aluno_certidao').click()">Certidao de Nascimento <span style="color: var(--netflix-red);">*</span></div>
-        <input type="file" id="aluno_certidao" name="aluno_certidao" accept=".pdf,.jpg,.png" style="display: none;" onchange="marcarArquivoAnexado('certidao-card')">
-        <div class="field-message" id="msg-aluno-certidao">Documento obrigatorio</div>
-        
-        <div class="upload-card-clean" id="rg-card" onclick="document.getElementById('aluno_rg').click()">Documento com foto (RG/CIN) <span style="color: var(--accent-yellow);">(Opcional para Aluno)</span></div>
-        <input type="file" id="aluno_rg" name="aluno_rg" accept=".pdf,.jpg,.png" style="display: none;" onchange="marcarArquivoAnexado('rg-card')">
-        <div class="field-message" id="msg-aluno-rg" style="color: var(--accent-yellow);">Documento opcional - pode deixar em branco</div>
-        
-        <div class="upload-card-clean" id="vacinacao-card" onclick="document.getElementById('aluno_vacinacao').click()">Carteira de Vacinação <span style="color: var(--netflix-red);">*</span></div>
-        <input type="file" id="aluno_vacinacao" name="aluno_vacinacao" accept=".pdf,.jpg,.png" style="display: none;" onchange="marcarArquivoAnexado('vacinacao-card')">
-        <div class="field-message" id="msg-aluno-vacinacao">Documento obrigatorio</div>
-        
-        <div class="upload-card-clean" id="laudos-card" onclick="document.getElementById('aluno_laudos').click()">Laudos Médicos</div>
-        <input type="file" id="aluno_laudos" name="aluno_laudos" accept=".pdf,.jpg,.png" style="display: none;" onchange="marcarArquivoAnexado('laudos-card')">
-    </div>
-</section>
-
-                    <!-- Documentos dos Responsáveis (SEM CPF) -->
-                    <section class="form-card">
+                    <!-- Fotos dos Responsáveis Adicionais -->
+                    <section class="form-card" id="responsavel2-foto-section" style="display: none;">
                         <div class="card-header">
-                            <div class="header-icon">📌</div>
-                            <h2>Documentos dos Responsáveis</h2>
+                            <div class="header-icon">👤</div>
+                            <h2>Foto do 2º Responsável</h2>
+                            <span class="badge badge-warning">Opcional</span>
                         </div>
-
-                        <div class="upload-grid-clean">
-                            <div class="upload-card-clean" id="resp-rg-card" onclick="document.getElementById('resp_rg').click()">Documento com foto (RG/CNH)</div>
-                            <input type="file" id="resp_rg" name="resp_rg" accept=".pdf,.jpg,.png" style="display: none;" onchange="marcarArquivoAnexado('resp-rg-card')">
-                            <div class="field-message" id="msg-resp-rg-doc">Documento obrigatório</div>
-                            
-                            <div class="upload-card-clean" id="resp-comprovante-card" onclick="document.getElementById('resp_comprovante').click()">Comprovante de Residência</div>
-                            <input type="file" id="resp_comprovante" name="resp_comprovante" accept=".pdf,.jpg,.png" style="display: none;" onchange="marcarArquivoAnexado('resp-comprovante-card')">
-                            <div class="field-message" id="msg-resp-comprovante">Documento obrigatório</div>
+                        <div class="camera-section">
+                            <label class="section-label">Foto do 2º Responsável</label>
+                            <div class="camera-controls">
+                                <button type="button" class="btn-clean" onclick="abrirCamera('resp2_foto')">Abrir Câmera</button>
+                                <button type="button" class="btn-clean primary" onclick="capturarFoto('resp2_foto')">Capturar</button>
+                                <button type="button" class="btn-clean" onclick="document.getElementById('resp2_foto_arquivo').click()">Anexar Arquivo</button>
+                            </div>
+                            <video id="resp2_foto_video" class="camera-preview" autoplay></video>
+                            <canvas id="resp2_foto_canvas" style="display: none;"></canvas>
+                            <img id="resp2_foto_img" class="foto-capturada" onload="mostrarFotoPreview(this, 'resp2')">
+                            <input type="file" id="resp2_foto_arquivo" name="foto_responsavel2" accept="image/*" style="display: none;" onchange="previewArquivo(this, 'resp2_foto_img')">
                         </div>
                     </section>
 
-                    <!-- Documentos do Segundo Responsável (SÓ APARECE SE TIVER 2º RESPONSÁVEL) -->
-<section class="form-card" id="responsavel2-docs-section" style="display: none;">
-    <div class="card-header">
-        <div class="header-icon">👤</div>
-        <h2>Documentos do 2º Responsável</h2>
-        <span class="badge badge-warning">Opcional</span>
-    </div>
+                    <section class="form-card" id="responsavel3-foto-section" style="display: none;">
+                        <div class="card-header">
+                            <div class="header-icon">👤</div>
+                            <h2>Foto do 3º Responsável</h2>
+                            <span class="badge badge-warning">Opcional</span>
+                        </div>
+                        <div class="camera-section">
+                            <label class="section-label">Foto do 3º Responsável</label>
+                            <div class="camera-controls">
+                                <button type="button" class="btn-clean" onclick="abrirCamera('resp3_foto')">Abrir Câmera</button>
+                                <button type="button" class="btn-clean primary" onclick="capturarFoto('resp3_foto')">Capturar</button>
+                                <button type="button" class="btn-clean" onclick="document.getElementById('resp3_foto_arquivo').click()">Anexar Arquivo</button>
+                            </div>
+                            <video id="resp3_foto_video" class="camera-preview" autoplay></video>
+                            <canvas id="resp3_foto_canvas" style="display: none;"></canvas>
+                            <img id="resp3_foto_img" class="foto-capturada" onload="mostrarFotoPreview(this, 'resp3')">
+                            <input type="file" id="resp3_foto_arquivo" name="foto_responsavel3" accept="image/*" style="display: none;" onchange="previewArquivo(this, 'resp3_foto_img')">
+                        </div>
+                    </section>
 
-    <div class="upload-grid-clean">
-        <div class="upload-card-clean" id="resp2-rg-card" onclick="document.getElementById('resp2_rg').click()">Documento com foto (RG/CNH)</div>
-        <input type="file" id="resp2_rg" name="resp2_rg" accept=".pdf,.jpg,.png" style="display: none;" onchange="marcarArquivoAnexado('resp2-rg-card')">
-    </div>
-</section>
+                    <section class="form-card" id="responsavel4-foto-section" style="display: none;">
+                        <div class="card-header">
+                            <div class="header-icon">👤</div>
+                            <h2>Foto do 4º Responsável</h2>
+                            <span class="badge badge-warning">Opcional</span>
+                        </div>
+                        <div class="camera-section">
+                            <label class="section-label">Foto do 4º Responsável</label>
+                            <div class="camera-controls">
+                                <button type="button" class="btn-clean" onclick="abrirCamera('resp4_foto')">Abrir Câmera</button>
+                                <button type="button" class="btn-clean primary" onclick="capturarFoto('resp4_foto')">Capturar</button>
+                                <button type="button" class="btn-clean" onclick="document.getElementById('resp4_foto_arquivo').click()">Anexar Arquivo</button>
+                            </div>
+                            <video id="resp4_foto_video" class="camera-preview" autoplay></video>
+                            <canvas id="resp4_foto_canvas" style="display: none;"></canvas>
+                            <img id="resp4_foto_img" class="foto-capturada" onload="mostrarFotoPreview(this, 'resp4')">
+                            <input type="file" id="resp4_foto_arquivo" name="foto_responsavel4" accept="image/*" style="display: none;" onchange="previewArquivo(this, 'resp4_foto_img')">
+                        </div>
+                    </section>
 
-  
+                    <section class="form-card" id="responsavel5-foto-section" style="display: none;">
+                        <div class="card-header">
+                            <div class="header-icon">👤</div>
+                            <h2>Foto do 5º Responsável</h2>
+                            <span class="badge badge-warning">Opcional</span>
+                        </div>
+                        <div class="camera-section">
+                            <label class="section-label">Foto do 5º Responsável</label>
+                            <div class="camera-controls">
+                                <button type="button" class="btn-clean" onclick="abrirCamera('resp5_foto')">Abrir Câmera</button>
+                                <button type="button" class="btn-clean primary" onclick="capturarFoto('resp5_foto')">Capturar</button>
+                                <button type="button" class="btn-clean" onclick="document.getElementById('resp5_foto_arquivo').click()">Anexar Arquivo</button>
+                            </div>
+                            <video id="resp5_foto_video" class="camera-preview" autoplay></video>
+                            <canvas id="resp5_foto_canvas" style="display: none;"></canvas>
+                            <img id="resp5_foto_img" class="foto-capturada" onload="mostrarFotoPreview(this, 'resp5')">
+                            <input type="file" id="resp5_foto_arquivo" name="foto_responsavel5" accept="image/*" style="display: none;" onchange="previewArquivo(this, 'resp5_foto_img')">
+                        </div>
+                    </section>
 
-                    <!-- Documentos do Transporte (SEM CPF) -->
-                    <section class="form-card" id="transporte_docs_section" style="display: none;">
+                    <!-- Fotos dos Terceiros -->
+                    <div id="terceiros-fotos-container"></div>
+
+                    <!-- Foto do Transporte -->
+                    <section class="form-card" id="transporte_foto_section" style="display: none;">
                         <div class="card-header">
                             <div class="header-icon">🚍</div>
-                            <h2>Documentos do Transporte</h2>
+                            <h2>Foto do Transporte</h2>
                         </div>
-
-                        <div class="upload-grid-clean">
-                            <div class="upload-card-clean" id="transporte-rg-card" onclick="document.getElementById('transporte_rg').click()">Documento com foto (RG/CNH)</div>
-                            <input type="file" id="transporte_rg" name="transporte_rg" accept=".pdf,.jpg,.png" style="display: none;" onchange="marcarArquivoAnexado('transporte-rg-card')">
-                            <div class="field-message" id="msg-transporte-rg-doc">Documento obrigatório</div>
-                            
-                            <div class="upload-card-clean" id="transporte-cnh-card" onclick="document.getElementById('transporte_cnh').click()">CNH</div>
-                            <input type="file" id="transporte_cnh" name="transporte_cnh" accept=".pdf,.jpg,.png" style="display: none;" onchange="marcarArquivoAnexado('transporte-cnh-card')">
-                            <div class="field-message" id="msg-transporte-cnh-doc">Documento obrigatório</div>
+                        <div class="camera-section">
+                            <label class="section-label">Foto do Responsável pelo Transporte</label>
+                            <div class="camera-controls">
+                                <button type="button" class="btn-clean" onclick="abrirCamera('transporte_foto')">Abrir Câmera</button>
+                                <button type="button" class="btn-clean primary" onclick="capturarFoto('transporte_foto')">Capturar</button>
+                                <button type="button" class="btn-clean" onclick="document.getElementById('transporte_foto_arquivo').click()">Anexar Arquivo</button>
+                            </div>
+                            <video id="transporte_foto_video" class="camera-preview" autoplay></video>
+                            <canvas id="transporte_foto_canvas" style="display: none;"></canvas>
+                            <img id="transporte_foto_img" class="foto-capturada" onload="mostrarFotoPreview(this, 'transporte')">
+                            <input type="file" id="transporte_foto_arquivo" name="foto_transporte" accept="image/*" style="display: none;" onchange="previewArquivo(this, 'transporte_foto_img')">
                         </div>
                     </section>
                 </div>
@@ -3057,29 +2720,20 @@ async function salvarCadastro() {
                             </div>
 
                             <div class="summary-card">
-    <div class="edit-button" onclick="irParaPasso(3)">Editar</div>
-    <h4>Fotos</h4>
-    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <div><div>Aluno:</div><div id="review-foto-aluno"></div></div>
-        <div><div>Responsável 1:</div><div id="review-foto-resp"></div></div>
-        <div><div>Responsável 2:</div><div id="review-foto-resp2"></div></div>
-        <div><div>Responsável 3:</div><div id="review-foto-resp3"></div></div>
-        <div><div>Responsável 4:</div><div id="review-foto-resp4"></div></div>
-        <div><div>Responsável 5:</div><div id="review-foto-resp5"></div></div>
-        <div><div>Terceiro 1:</div><div id="review-foto-terceiro1"></div></div>
-        <div><div>Terceiro 2:</div><div id="review-foto-terceiro2"></div></div>
-        <div><div>Terceiro 3:</div><div id="review-foto-terceiro3"></div></div>
-        <div><div>Transporte:</div><div id="review-foto-transporte"></div></div>
-    </div>
-</div>
-
-                            <div class="summary-card">
                                 <div class="edit-button" onclick="irParaPasso(3)">Editar</div>
-                                <h4>Documentos Anexados</h4>
-                                <div class="summary-item"><span class="summary-label">Aluno:</span><span class="summary-value" id="review-docs-aluno">Nenhum</span></div>
-                                <div class="summary-item"><span class="summary-label">Responsável:</span><span class="summary-value" id="review-docs-resp">Nenhum</span></div>
-                                <div class="summary-item"><span class="summary-label">Terceiros:</span><span class="summary-value" id="review-docs-terceiros">Nenhum</span></div>
-                                <div class="summary-item"><span class="summary-label">Transporte:</span><span class="summary-value" id="review-docs-transporte">Nenhum</span></div>
+                                <h4>Fotos</h4>
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <div><div>Aluno:</div><div id="review-foto-aluno"></div></div>
+                                    <div><div>Responsável 1:</div><div id="review-foto-resp"></div></div>
+                                    <div><div>Responsável 2:</div><div id="review-foto-resp2"></div></div>
+                                    <div><div>Responsável 3:</div><div id="review-foto-resp3"></div></div>
+                                    <div><div>Responsável 4:</div><div id="review-foto-resp4"></div></div>
+                                    <div><div>Responsável 5:</div><div id="review-foto-resp5"></div></div>
+                                    <div><div>Terceiro 1:</div><div id="review-foto-terceiro1"></div></div>
+                                    <div><div>Terceiro 2:</div><div id="review-foto-terceiro2"></div></div>
+                                    <div><div>Terceiro 3:</div><div id="review-foto-terceiro3"></div></div>
+                                    <div><div>Transporte:</div><div id="review-foto-transporte"></div></div>
+                                </div>
                             </div>
                         </div>
                     </section>
@@ -3092,11 +2746,6 @@ async function salvarCadastro() {
                 </div>
 
                 <script>
-                function marcarArquivoAnexado(cardId) {
-                    const card = document.getElementById(cardId);
-                    if (card) card.classList.add('has-file');
-                }
-
                 function validarCPF(cpf) {
                     cpf = cpf.replace(/[^\d]/g, '');
                     if (cpf.length !== 11) return false;
@@ -3137,14 +2786,7 @@ async function salvarCadastro() {
                             if (this.id) { const msg = document.getElementById(`msg-${this.id}`); if (msg) msg.style.display = 'none'; }
                         });
                     });
-                    document.querySelectorAll('input[type="file"]').forEach(campo => {
-                        campo.addEventListener('change', function() {
-                            this.classList.remove('input-error');
-                            if (this.id) { const msg = document.getElementById(`msg-${this.id}`); if (msg) msg.style.display = 'none'; }
-                        });
-                    });
                     
-                    // Reset do campo deficiência
                     const deficienciaDesc = document.getElementById('deficiencia_desc');
                     if (deficienciaDesc) {
                         deficienciaDesc.addEventListener('input', function() {
@@ -3155,193 +2797,159 @@ async function salvarCadastro() {
                     }
                 }
 
- function toggleTerceiros() {
-    const container = document.getElementById('terceiros-container');
-    
-    // Se o container já está visível, apenas adiciona um novo terceiro
-    if (container.style.display === 'block') {
-        adicionarTerceiro();
-        return;
-    }
-    
-    // Se não está visível, ativa e adiciona o primeiro
-    terceirosAtivos = true;
-    container.style.display = 'block';
-    
-    // Adiciona o primeiro terceiro se não houver nenhum
-    if (container.children.length === 0) {
-        adicionarTerceiro();
-    }
-}
+                function toggleTerceiros() {
+                    const container = document.getElementById('terceiros-container');
+                    
+                    if (container.style.display === 'block') {
+                        adicionarTerceiro();
+                        return;
+                    }
+                    
+                    terceirosAtivos = true;
+                    container.style.display = 'block';
+                    
+                    if (container.children.length === 0) {
+                        adicionarTerceiro();
+                    }
+                }
 
-// ===== FUNÇÃO CORRIGIDA: adicionarTerceiro COM DOCUMENTO DENTRO DO CARD =====
-function adicionarTerceiro() {
-    const container = document.getElementById('terceiros-container');
-    
-    // Se o container está oculto, primeiro ativa
-    if (container.style.display === 'none') {
-        terceirosAtivos = true;
-        container.style.display = 'block';
-    }
-    
-    // Calcula o próximo número disponível
-    let maiorNumero = 0;
-    for (let i = 0; i < container.children.length; i++) {
-        const card = container.children[i];
-        const inputNome = card.querySelector('input[name*="_nome"]');
-        if (inputNome) {
-            const match = inputNome.name.match(/terceiro(\d+)_nome/);
-            if (match && parseInt(match[1]) > maiorNumero) {
-                maiorNumero = parseInt(match[1]);
-            }
-        }
-    }
-    
-    const numero = maiorNumero + 1;
-    
-    const div = document.createElement('div'); 
-    div.className = 'terceiro-card';
-    div.innerHTML = `
-        <button type="button" class="btn-remover" onclick="removerTerceiro(this)">×</button>
-        <h3>Terceiro Autorizado ${numero}</h3>
-        <div class="form-grid">
-            <div class="input-wrapper">
-                <label>Nome Completo <span class="required">*</span></label>
-                <input type="text" name="terceiro${numero}_nome" placeholder="Nome completo" class="input-moderno">
-                <div class="field-message" id="msg-terceiro${numero}-nome">Campo obrigatório</div>
-            </div>
-            <div class="input-wrapper">
-                <label>Telefone <span class="required">*</span></label>
-                <input type="text" name="terceiro${numero}_telefone" placeholder="(00) 00000-0000" maxlength="15" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-                <div class="field-message" id="msg-terceiro${numero}-telefone">Campo obrigatório</div>
-            </div>
-            <div class="input-wrapper">
-                <label>CPF <span class="required">*</span></label>
-                <input type="text" name="terceiro${numero}_cpf" placeholder="Apenas números" maxlength="11" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-                <div class="field-message" id="msg-terceiro${numero}-cpf">Campo obrigatório</div>
-            </div>
-            <div class="input-wrapper">
-                <label>RG / CIN <span class="required">*</span></label>
-                <input type="text" name="terceiro${numero}_rg" placeholder="RG ou CIN" class="input-moderno">
-                <div class="field-message" id="msg-terceiro${numero}-rg">Campo obrigatório</div>
-            </div>
-            <div class="input-wrapper">
-                <label>E-mail</label>
-                <input type="email" name="terceiro${numero}_email" placeholder="email@exemplo.com" class="input-moderno">
-            </div>
-        </div>
-        <div class="camera-section">
-            <label class="section-label">Foto do Terceiro <span class="required">*</span></label>
-            <div class="camera-controls">
-                <button type="button" class="btn-clean" onclick="abrirCamera('terceiro${numero}_foto')">Abrir Câmera</button>
-                <button type="button" class="btn-clean primary" onclick="capturarFoto('terceiro${numero}_foto')">Capturar</button>
-                <button type="button" class="btn-clean" onclick="document.getElementById('terceiro${numero}_foto_arquivo').click()">Anexar Arquivo</button>
-            </div>
-            <video id="terceiro${numero}_foto_video" class="camera-preview" autoplay></video>
-            <canvas id="terceiro${numero}_foto_canvas" style="display: none;"></canvas>
-            <img id="terceiro${numero}_foto_img" class="foto-capturada" onload="mostrarFotoPreview(this, 'terceiro${numero}')">
-            <input type="file" id="terceiro${numero}_foto_arquivo" name="foto_terceiro${numero}" accept="image/*" style="display: none;" onchange="previewArquivo(this, 'terceiro${numero}_foto_img')">
-            <div class="field-message" id="msg-terceiro${numero}-foto">Foto obrigatória</div>
-        </div>
-        <!-- SEÇÃO DE DOCUMENTO DO TERCEIRO DENTRO DO CARD -->
-        <div class="upload-section" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
-            <label class="section-label">Documento do Terceiro <span class="required">*</span></label>
-            <div class="upload-grid-clean">
-                <div class="upload-card-clean" id="terceiro${numero}-rg-card" onclick="document.getElementById('terceiro${numero}_rg').click()">Documento com foto (RG/CNH)</div>
-                <input type="file" id="terceiro${numero}_rg" name="terceiro${numero}_rg" accept=".pdf,.jpg,.png" style="display: none;" onchange="marcarArquivoAnexado('terceiro${numero}-rg-card')">
-                <div class="field-message" id="msg-terceiro${numero}-rg-doc">Documento obrigatório</div>
-            </div>
-        </div>
-    `;
-    container.appendChild(div);
-}
+                function adicionarTerceiro() {
+                    const container = document.getElementById('terceiros-container');
+                    
+                    if (container.style.display === 'none') {
+                        terceirosAtivos = true;
+                        container.style.display = 'block';
+                    }
+                    
+                    let maiorNumero = 0;
+                    for (let i = 0; i < container.children.length; i++) {
+                        const card = container.children[i];
+                        const inputNome = card.querySelector('input[name*="_nome"]');
+                        if (inputNome) {
+                            const match = inputNome.name.match(/terceiro(\d+)_nome/);
+                            if (match && parseInt(match[1]) > maiorNumero) {
+                                maiorNumero = parseInt(match[1]);
+                            }
+                        }
+                    }
+                    
+                    const numero = maiorNumero + 1;
+                    
+                    const div = document.createElement('div'); 
+                    div.className = 'terceiro-card';
+                    div.innerHTML = `
+                        <button type="button" class="btn-remover" onclick="removerTerceiro(this)">×</button>
+                        <h3>Terceiro Autorizado ${numero}</h3>
+                        <div class="form-grid">
+                            <div class="input-wrapper">
+                                <label>Nome Completo <span class="required">*</span></label>
+                                <input type="text" name="terceiro${numero}_nome" placeholder="Nome completo" class="input-moderno">
+                                <div class="field-message" id="msg-terceiro${numero}-nome">Campo obrigatório</div>
+                            </div>
+                            <div class="input-wrapper">
+                                <label>Telefone <span class="required">*</span></label>
+                                <input type="text" name="terceiro${numero}_telefone" placeholder="(00) 00000-0000" maxlength="15" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                                <div class="field-message" id="msg-terceiro${numero}-telefone">Campo obrigatório</div>
+                            </div>
+                            <div class="input-wrapper">
+                                <label>CPF <span class="required">*</span></label>
+                                <input type="text" name="terceiro${numero}_cpf" placeholder="Apenas números" maxlength="11" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                                <div class="field-message" id="msg-terceiro${numero}-cpf">Campo obrigatório</div>
+                            </div>
+                            <div class="input-wrapper">
+                                <label>RG / CIN <span class="required">*</span></label>
+                                <input type="text" name="terceiro${numero}_rg" placeholder="RG ou CIN" class="input-moderno">
+                                <div class="field-message" id="msg-terceiro${numero}-rg">Campo obrigatório</div>
+                            </div>
+                            <div class="input-wrapper">
+                                <label>E-mail</label>
+                                <input type="email" name="terceiro${numero}_email" placeholder="email@exemplo.com" class="input-moderno">
+                            </div>
+                        </div>
+                        <div class="camera-section">
+                            <label class="section-label">Foto do Terceiro</label>
+                            <div class="camera-controls">
+                                <button type="button" class="btn-clean" onclick="abrirCamera('terceiro${numero}_foto')">Abrir Câmera</button>
+                                <button type="button" class="btn-clean primary" onclick="capturarFoto('terceiro${numero}_foto')">Capturar</button>
+                                <button type="button" class="btn-clean" onclick="document.getElementById('terceiro${numero}_foto_arquivo').click()">Anexar Arquivo</button>
+                            </div>
+                            <video id="terceiro${numero}_foto_video" class="camera-preview" autoplay></video>
+                            <canvas id="terceiro${numero}_foto_canvas" style="display: none;"></canvas>
+                            <img id="terceiro${numero}_foto_img" class="foto-capturada" onload="mostrarFotoPreview(this, 'terceiro${numero}')">
+                            <input type="file" id="terceiro${numero}_foto_arquivo" name="foto_terceiro${numero}" accept="image/*" style="display: none;" onchange="previewArquivo(this, 'terceiro${numero}_foto_img')">
+                        </div>
+                    `;
+                    container.appendChild(div);
+                }
 
-// ===== FUNÇÃO PARA ADICIONAR TERCEIRO COM DADOS (EDIÇÃO) =====
-function adicionarTerceiroComDados(terceiro, numero) {
-    const container = document.getElementById('terceiros-container');
-    
-    // Garante que o container está visível
-    if (container.style.display === 'none') {
-        terceirosAtivos = true;
-        container.style.display = 'block';
-    }
-    
-    const div = document.createElement('div'); 
-    div.className = 'terceiro-card';
-    div.innerHTML = `
-        <button type="button" class="btn-remover" onclick="removerTerceiro(this)">×</button>
-        <h3>Terceiro Autorizado ${numero}</h3>
-        <div class="form-grid">
-            <div class="input-wrapper">
-                <label>Nome Completo <span class="required">*</span></label>
-                <input type="text" name="terceiro${numero}_nome" placeholder="Nome completo" value="${escapeHtml(terceiro.nome || '')}" class="input-moderno">
-                <div class="field-message" id="msg-terceiro${numero}-nome">Campo obrigatório</div>
-            </div>
-            <div class="input-wrapper">
-                <label>Telefone <span class="required">*</span></label>
-                <input type="text" name="terceiro${numero}_telefone" placeholder="(00) 00000-0000" maxlength="15" value="${escapeHtml(terceiro.telefone || '')}" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-                <div class="field-message" id="msg-terceiro${numero}-telefone">Campo obrigatório</div>
-            </div>
-            <div class="input-wrapper">
-                <label>CPF <span class="required">*</span></label>
-                <input type="text" name="terceiro${numero}_cpf" placeholder="Apenas números" maxlength="11" value="${escapeHtml(terceiro.cpf || '')}" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-                <div class="field-message" id="msg-terceiro${numero}-cpf">Campo obrigatório</div>
-            </div>
-            <div class="input-wrapper">
-                <label>RG / CIN <span class="required">*</span></label>
-                <input type="text" name="terceiro${numero}_rg" placeholder="RG ou CIN" value="${escapeHtml(terceiro.rg || '')}" class="input-moderno">
-                <div class="field-message" id="msg-terceiro${numero}-rg">Campo obrigatório</div>
-            </div>
-            <div class="input-wrapper">
-                <label>E-mail</label>
-                <input type="email" name="terceiro${numero}_email" placeholder="email@exemplo.com" value="${escapeHtml(terceiro.email || '')}" class="input-moderno">
-            </div>
-        </div>
-        <div class="camera-section">
-            <label class="section-label">Foto do Terceiro <span class="required">*</span></label>
-            <div class="camera-controls">
-                <button type="button" class="btn-clean" onclick="abrirCamera('terceiro${numero}_foto')">Abrir Câmera</button>
-                <button type="button" class="btn-clean primary" onclick="capturarFoto('terceiro${numero}_foto')">Capturar</button>
-                <button type="button" class="btn-clean" onclick="document.getElementById('terceiro${numero}_foto_arquivo').click()">Anexar Arquivo</button>
-            </div>
-            <video id="terceiro${numero}_foto_video" class="camera-preview" autoplay></video>
-            <canvas id="terceiro${numero}_foto_canvas" style="display: none;"></canvas>
-            <img id="terceiro${numero}_foto_img" class="foto-capturada" onload="mostrarFotoPreview(this, 'terceiro${numero}')">
-            <input type="file" id="terceiro${numero}_foto_arquivo" name="foto_terceiro${numero}" accept="image/*" style="display: none;" onchange="previewArquivo(this, 'terceiro${numero}_foto_img')">
-            <div class="field-message" id="msg-terceiro${numero}-foto">Foto obrigatória</div>
-        </div>
-        <!-- SEÇÃO DE DOCUMENTO DO TERCEIRO DENTRO DO CARD -->
-        <div class="upload-section" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
-            <label class="section-label">Documento do Terceiro <span class="required">*</span></label>
-            <div class="upload-grid-clean">
-                <div class="upload-card-clean" id="terceiro${numero}-rg-card" onclick="document.getElementById('terceiro${numero}_rg').click()">Documento com foto (RG/CNH)</div>
-                <input type="file" id="terceiro${numero}_rg" name="terceiro${numero}_rg" accept=".pdf,.jpg,.png" style="display: none;" onchange="marcarArquivoAnexado('terceiro${numero}-rg-card')">
-                <div class="field-message" id="msg-terceiro${numero}-rg-doc">Documento obrigatório</div>
-            </div>
-        </div>
-    `;
-    container.appendChild(div);
-}
+                function adicionarTerceiroComDados(terceiro, numero) {
+                    const container = document.getElementById('terceiros-container');
+                    
+                    if (container.style.display === 'none') {
+                        terceirosAtivos = true;
+                        container.style.display = 'block';
+                    }
+                    
+                    const div = document.createElement('div'); 
+                    div.className = 'terceiro-card';
+                    div.innerHTML = `
+                        <button type="button" class="btn-remover" onclick="removerTerceiro(this)">×</button>
+                        <h3>Terceiro Autorizado ${numero}</h3>
+                        <div class="form-grid">
+                            <div class="input-wrapper">
+                                <label>Nome Completo <span class="required">*</span></label>
+                                <input type="text" name="terceiro${numero}_nome" placeholder="Nome completo" value="${escapeHtml(terceiro.nome || '')}" class="input-moderno">
+                                <div class="field-message" id="msg-terceiro${numero}-nome">Campo obrigatório</div>
+                            </div>
+                            <div class="input-wrapper">
+                                <label>Telefone <span class="required">*</span></label>
+                                <input type="text" name="terceiro${numero}_telefone" placeholder="(00) 00000-0000" maxlength="15" value="${escapeHtml(terceiro.telefone || '')}" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                                <div class="field-message" id="msg-terceiro${numero}-telefone">Campo obrigatório</div>
+                            </div>
+                            <div class="input-wrapper">
+                                <label>CPF <span class="required">*</span></label>
+                                <input type="text" name="terceiro${numero}_cpf" placeholder="Apenas números" maxlength="11" value="${escapeHtml(terceiro.cpf || '')}" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                                <div class="field-message" id="msg-terceiro${numero}-cpf">Campo obrigatório</div>
+                            </div>
+                            <div class="input-wrapper">
+                                <label>RG / CIN <span class="required">*</span></label>
+                                <input type="text" name="terceiro${numero}_rg" placeholder="RG ou CIN" value="${escapeHtml(terceiro.rg || '')}" class="input-moderno">
+                                <div class="field-message" id="msg-terceiro${numero}-rg">Campo obrigatório</div>
+                            </div>
+                            <div class="input-wrapper">
+                                <label>E-mail</label>
+                                <input type="email" name="terceiro${numero}_email" placeholder="email@exemplo.com" value="${escapeHtml(terceiro.email || '')}" class="input-moderno">
+                            </div>
+                        </div>
+                        <div class="camera-section">
+                            <label class="section-label">Foto do Terceiro</label>
+                            <div class="camera-controls">
+                                <button type="button" class="btn-clean" onclick="abrirCamera('terceiro${numero}_foto')">Abrir Câmera</button>
+                                <button type="button" class="btn-clean primary" onclick="capturarFoto('terceiro${numero}_foto')">Capturar</button>
+                                <button type="button" class="btn-clean" onclick="document.getElementById('terceiro${numero}_foto_arquivo').click()">Anexar Arquivo</button>
+                            </div>
+                            <video id="terceiro${numero}_foto_video" class="camera-preview" autoplay></video>
+                            <canvas id="terceiro${numero}_foto_canvas" style="display: none;"></canvas>
+                            <img id="terceiro${numero}_foto_img" class="foto-capturada" onload="mostrarFotoPreview(this, 'terceiro${numero}')">
+                            <input type="file" id="terceiro${numero}_foto_arquivo" name="foto_terceiro${numero}" accept="image/*" style="display: none;" onchange="previewArquivo(this, 'terceiro${numero}_foto_img')">
+                        </div>
+                    `;
+                    container.appendChild(div);
+                }
 
-                // ===== FUNÇÃO CORRIGIDA: removerTerceiro =====
                 function removerTerceiro(botao) {
                     const card = botao.parentElement;
                     card.remove();
                     
-                    // Se não tiver mais nenhum terceiro, desativa o container
                     const container = document.getElementById('terceiros-container');
                     if (container.children.length === 0) {
                         terceirosAtivos = false;
                         container.style.display = 'none';
-                        const docsSection = document.getElementById('terceiros-docs-section');
-                        if (docsSection) docsSection.style.display = 'none';
                     }
                     
-                    // Renomeia os títulos dos terceiros restantes para ficar sequencial
                     renomearTerceiros();
                 }
 
-                // ===== NOVA FUNÇÃO: Renomear terceiros para manter sequência =====
                 function renomearTerceiros() {
                     const container = document.getElementById('terceiros-container');
                     const cards = container.querySelectorAll('.terceiro-card');
@@ -3353,7 +2961,6 @@ function adicionarTerceiroComDados(terceiro, numero) {
                             titulo.textContent = `Terceiro Autorizado ${novoNumero}`;
                         }
                         
-                        // Renomeia todos os inputs dentro do card
                         const inputs = card.querySelectorAll('input, select');
                         inputs.forEach(input => {
                             if (input.name) {
@@ -3364,7 +2971,6 @@ function adicionarTerceiroComDados(terceiro, numero) {
                             }
                         });
                         
-                        // Renomeia os elementos de câmera
                         const buttons = card.querySelectorAll('button');
                         buttons.forEach(button => {
                             const onclickAttr = button.getAttribute('onclick');
@@ -3395,7 +3001,6 @@ function adicionarTerceiroComDados(terceiro, numero) {
                     });
                 }
 
-                // ===== NOVA FUNÇÃO: escapeHtml para evitar XSS =====
                 function escapeHtml(text) {
                     if (!text) return '';
                     const div = document.createElement('div');
@@ -3403,7 +3008,6 @@ function adicionarTerceiroComDados(terceiro, numero) {
                     return div.innerHTML;
                 }
 
-                // ===== NOVA FUNÇÃO: inicializarContainerTerceiros =====
                 function inicializarContainerTerceiros() {
                     const container = document.getElementById('terceiros-container');
                     if (container && container.children.length === 0) {
@@ -3451,7 +3055,6 @@ function adicionarTerceiroComDados(terceiro, numero) {
                             const elemento = document.getElementById(campo);
                             if (elemento && !elemento.value) { elemento.scrollIntoView({ behavior: 'smooth', block: 'center' }); elemento.focus(); break; }
                         }
-                        // Verifica se deficiência está selecionada e descrição vazia
                         const deficienciaSelect = document.getElementById('deficiencia');
                         const deficienciaDesc = document.getElementById('deficiencia_desc');
                         if (deficienciaSelect && deficienciaSelect.value === 'sim' && deficienciaDesc && !deficienciaDesc.value) {
@@ -3479,14 +3082,9 @@ function adicionarTerceiroComDados(terceiro, numero) {
                             if (transpNome && !transpNome.value) { transpNome.scrollIntoView({ behavior: 'smooth', block: 'center' }); transpNome.focus(); }
                         }
                     } else if (passo === 3) {
-                        const docs = [
-                            { id: 'aluno_foto_img', tipo: 'foto' }, { id: 'aluno_certidao', tipo: 'file' }, { id: 'aluno_rg', tipo: 'file' },
-                            { id: 'aluno_vacinacao', tipo: 'file' }, { id: 'resp_rg', tipo: 'file' }, { id: 'resp_comprovante', tipo: 'file' }
-                        ];
-                        for (let doc of docs) {
-                            const elemento = document.getElementById(doc.id);
-                            if (doc.tipo === 'foto') { if (!elemento.classList.contains('active')) { elemento.scrollIntoView({ behavior: 'smooth', block: 'center' }); break; } }
-                            else { if (!elemento.files || elemento.files.length === 0) { elemento.scrollIntoView({ behavior: 'smooth', block: 'center' }); break; } }
+                        const alunoFoto = document.getElementById('aluno_foto_img');
+                        if (!alunoFoto.classList.contains('active')) {
+                            alunoFoto.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         }
                     }
                 }
@@ -3497,7 +3095,6 @@ function adicionarTerceiroComDados(terceiro, numero) {
                         const basicValid = campos.every(campo => { const elemento = document.getElementById(campo); return elemento && elemento.value; });
                         if (!basicValid) return false;
                         
-                        // Verifica deficiência
                         const deficienciaSelect = document.getElementById('deficiencia');
                         const deficienciaDesc = document.getElementById('deficiencia_desc');
                         if (deficienciaSelect && deficienciaSelect.value === 'sim') {
@@ -3536,22 +3133,14 @@ function adicionarTerceiroComDados(terceiro, numero) {
                     }
                     if (passo === 3) {
                         const alunoFoto = document.getElementById('aluno_foto_img');
-                        const alunoCertidao = document.getElementById('aluno_certidao');
-                        const alunoRg = document.getElementById('aluno_rg');
-                        const alunoVacinacao = document.getElementById('aluno_vacinacao');
-                        const respRgDoc = document.getElementById('resp_rg');
-                        const respComprovante = document.getElementById('resp_comprovante');
-                        let valido = alunoFoto.classList.contains('active') && alunoCertidao.files.length > 0 && alunoRg.files.length > 0 && alunoVacinacao.files.length > 0 && respRgDoc.files.length > 0 && respComprovante.files.length > 0;
-                        if (terceirosAtivos) { const terceiroRg = document.getElementById('terceiro_rg'); valido = valido && terceiroRg.files.length > 0; }
-                        if (transporteAtivo) { const transporteRg = document.getElementById('transporte_rg'); const transporteCnh = document.getElementById('transporte_cnh'); valido = valido && transporteRg.files.length > 0 && transporteCnh.files.length > 0; }
-                        return valido;
+                        return alunoFoto.classList.contains('active');
                     }
                     return true;
                 }
 
                 function validarPasso(passo) {
                     if (passo === 3 && alunoParaEditar && alunoParaEditar !== 'null') {
-                        console.log('📝 Modo edição - ignorando validação de documentos e fotos');
+                        console.log('📝 Modo edição - ignorando validação de fotos obrigatórias');
                         return true;
                     }
                     
@@ -3573,7 +3162,6 @@ function adicionarTerceiroComDados(terceiro, numero) {
                             }
                         });
                         
-                        // VALIDAÇÃO DA DEFICIÊNCIA
                         const deficienciaSelect = document.getElementById('deficiencia');
                         const deficienciaDesc = document.getElementById('deficiencia_desc');
                         const msgDeficiencia = document.getElementById('msg-deficiencia-desc');
@@ -3646,24 +3234,6 @@ function adicionarTerceiroComDados(terceiro, numero) {
                                     const cpfInput = terceiro.querySelector(`input[name="terceiro${num}_cpf"]`);
                                     const rgInput = terceiro.querySelector(`input[name="terceiro${num}_rg"]`);
                                     const fotoImg = document.getElementById(`terceiro${num}_foto_img`);
-                                    // VALIDAÇÃO DO DOCUMENTO DO TERCEIRO (RG/CNH)
-const docInput = document.getElementById(`terceiro${num}_rg`);
-const isEditing = typeof alunoParaEditar !== 'undefined' && alunoParaEditar && alunoParaEditar !== 'null';
-const arquivosExistentes = isEditing ? (alunoParaEditar.arquivos_ids || {}) : {};
-const docExistente = arquivosExistentes[`terceiro${num}_rg`];
-
-if ((!docInput || !docInput.files || docInput.files.length === 0) && !docExistente) {
-    const msgDoc = document.getElementById(`msg-terceiro${num}-rg-doc`);
-    if (msgDoc) {
-        msgDoc.style.display = 'block';
-    }
-    valido = false;
-} else {
-    const msgDoc = document.getElementById(`msg-terceiro${num}-rg-doc`);
-    if (msgDoc) {
-        msgDoc.style.display = 'none';
-    }
-}
                                     
                                     if (nomeInput && !nomeInput.value) { 
                                         document.getElementById(`msg-terceiro${num}-nome`).style.display = 'block'; 
@@ -3691,11 +3261,6 @@ if ((!docInput || !docInput.files || docInput.files.length === 0) && !docExisten
                                     if (rgInput && !rgInput.value) { 
                                         document.getElementById(`msg-terceiro${num}-rg`).style.display = 'block'; 
                                         rgInput.classList.add('input-error'); 
-                                        valido = false; 
-                                    }
-                                    
-                                    if (fotoImg && !fotoImg.classList.contains('active')) { 
-                                        document.getElementById(`msg-terceiro${num}-foto`).style.display = 'block'; 
                                         valido = false; 
                                     }
                                 });
@@ -3752,70 +3317,13 @@ if ((!docInput || !docInput.files || docInput.files.length === 0) && !docExisten
                         }
                     }
                     
-                   if (passo === 3) {
-    const docsAluno = [
-        { id: 'aluno_foto_img', msg: 'msg-aluno-foto', tipo: 'foto' },
-        { id: 'aluno_certidao', msg: 'msg-aluno-certidao', tipo: 'file' },
-        { id: 'aluno_vacinacao', msg: 'msg-aluno-vacinacao', tipo: 'file' }
-    ];
+                    if (passo === 3) {
+                        const alunoFoto = document.getElementById('aluno_foto_img');
+                        const msg = document.getElementById('msg-aluno-foto');
                         
-                        docsAluno.forEach(doc => {
-                            const elemento = document.getElementById(doc.id);
-                            const msg = document.getElementById(doc.msg);
-                            
-                            if (doc.tipo === 'foto') {
-                                if (!elemento.classList.contains('active')) {
-                                    msg.style.display = 'block';
-                                    valido = false;
-                                }
-                            } else {
-                                if (!elemento.files || elemento.files.length === 0) {
-                                    msg.style.display = 'block';
-                                    valido = false;
-                                }
-                            }
-                        });
-                        
-                        const docsResp = [
-                            { id: 'resp_rg', msg: 'msg-resp-rg-doc' },
-                            { id: 'resp_comprovante', msg: 'msg-resp-comprovante' }
-                        ];
-                        
-                        docsResp.forEach(doc => {
-                            const elemento = document.getElementById(doc.id);
-                            const msg = document.getElementById(doc.msg);
-                            
-                            if (!elemento.files || elemento.files.length === 0) {
-                                msg.style.display = 'block';
-                                valido = false;
-                            }
-                        });
-                        
-                        if (terceirosAtivos) {
-                            const terceiroRg = document.getElementById('terceiro_rg');
-                            const msg = document.getElementById('msg-terceiro-rg-doc');
-                            
-                            if (!terceiroRg.files || terceiroRg.files.length === 0) {
-                                msg.style.display = 'block';
-                                valido = false;
-                            }
-                        }
-                        
-                        if (transporteAtivo) {
-                            const docsTransp = [
-                                { id: 'transporte_rg', msg: 'msg-transporte-rg-doc' },
-                                { id: 'transporte_cnh', msg: 'msg-transporte-cnh-doc' }
-                            ];
-                            
-                            docsTransp.forEach(doc => {
-                                const elemento = document.getElementById(doc.id);
-                                const msg = document.getElementById(doc.msg);
-                                
-                                if (!elemento.files || elemento.files.length === 0) {
-                                    msg.style.display = 'block';
-                                    valido = false;
-                                }
-                            });
+                        if (!alunoFoto.classList.contains('active')) {
+                            msg.style.display = 'block';
+                            valido = false;
                         }
                     }
                     
@@ -3839,113 +3347,6 @@ if ((!docInput || !docInput.files || docInput.files.length === 0) && !docExisten
                     else { btnNext.style.display = 'inline-flex'; btnSave.style.display = 'none'; }
                 }
 
-                // 🔥 FUNÇÃO CORRIGIDA - Agora verifica documentos existentes no banco de dados
-                function contarDocumentosAnexados() {
-                    let docs = { aluno: [], responsavel: [], terceiros: [], transporte: [] };
-                    
-                    // Verifica se está em modo edição
-                    const isEditing = typeof alunoParaEditar !== 'undefined' && alunoParaEditar && alunoParaEditar !== 'null';
-                    const arquivosExistentes = isEditing ? (alunoParaEditar.arquivos_ids || {}) : {};
-                    
-                    // ===== DOCUMENTOS DO ALUNO =====
-                    // Certidão
-                    const alunoCertidao = document.getElementById('aluno_certidao');
-                    const certidaoCard = document.getElementById('certidao-card');
-                    if ((alunoCertidao && alunoCertidao.files.length > 0) || 
-                        (certidaoCard && certidaoCard.classList.contains('has-file')) ||
-                        arquivosExistentes['aluno_certidao']) {
-                        docs.aluno.push('Certidão');
-                    }
-                    
-                    // RG do Aluno
-                    const alunoRg = document.getElementById('aluno_rg');
-                    const rgCard = document.getElementById('rg-card');
-                    if ((alunoRg && alunoRg.files.length > 0) || 
-                        (rgCard && rgCard.classList.contains('has-file')) ||
-                        arquivosExistentes['aluno_rg']) {
-                        docs.aluno.push('RG');
-                    }
-                    
-                    // Vacinação
-                    const alunoVacinacao = document.getElementById('aluno_vacinacao');
-                    const vacinacaoCard = document.getElementById('vacinacao-card');
-                    if ((alunoVacinacao && alunoVacinacao.files.length > 0) || 
-                        (vacinacaoCard && vacinacaoCard.classList.contains('has-file')) ||
-                        arquivosExistentes['aluno_vacinacao']) {
-                        docs.aluno.push('Vacinação');
-                    }
-                    
-                    // Laudos
-                    const alunoLaudos = document.getElementById('aluno_laudos');
-                    const laudosCard = document.getElementById('laudos-card');
-                    if ((alunoLaudos && alunoLaudos.files.length > 0) || 
-                        (laudosCard && laudosCard.classList.contains('has-file')) ||
-                        arquivosExistentes['aluno_laudos']) {
-                        docs.aluno.push('Laudos');
-                    }
-                    
-                    // ===== DOCUMENTOS DO RESPONSÁVEL =====
-                    // RG do Responsável
-                    const respRg = document.getElementById('resp_rg');
-                    const respRgCard = document.getElementById('resp-rg-card');
-                    if ((respRg && respRg.files.length > 0) || 
-                        (respRgCard && respRgCard.classList.contains('has-file')) ||
-                        arquivosExistentes['resp_rg']) {
-                        docs.responsavel.push('RG');
-                    }
-                    
-                    // Comprovante de Residência
-                    const respComprovante = document.getElementById('resp_comprovante');
-                    const respComprovanteCard = document.getElementById('resp-comprovante-card');
-                    if ((respComprovante && respComprovante.files.length > 0) || 
-                        (respComprovanteCard && respComprovanteCard.classList.contains('has-file')) ||
-                        arquivosExistentes['resp_comprovante']) {
-                        docs.responsavel.push('Comprovante');
-                    }
-                    
-                    // RG do 2º Responsável (se existir)
-                    const resp2Rg = document.getElementById('resp2_rg');
-                    const resp2RgCard = document.getElementById('resp2-rg-card');
-                    if ((resp2Rg && resp2Rg.files.length > 0) || 
-                        (resp2RgCard && resp2RgCard.classList.contains('has-file')) ||
-                        arquivosExistentes['resp2_rg']) {
-                        docs.responsavel.push('RG 2º Resp.');
-                    }
-                    
-                    // ===== DOCUMENTOS DOS TERCEIROS =====
-                    if (terceirosAtivos) {
-                        const terceiroRg = document.getElementById('terceiro_rg');
-                        const terceiroRgCard = document.getElementById('terceiro-rg-card');
-                        if ((terceiroRg && terceiroRg.files.length > 0) || 
-                            (terceiroRgCard && terceiroRgCard.classList.contains('has-file')) ||
-                            arquivosExistentes['terceiro_rg']) {
-                            docs.terceiros.push('RG');
-                        }
-                    }
-                    
-                    // ===== DOCUMENTOS DO TRANSPORTE =====
-                    if (transporteAtivo) {
-                        const transporteRg = document.getElementById('transporte_rg');
-                        const transporteRgCard = document.getElementById('transporte-rg-card');
-                        if ((transporteRg && transporteRg.files.length > 0) || 
-                            (transporteRgCard && transporteRgCard.classList.contains('has-file')) ||
-                            arquivosExistentes['transporte_rg']) {
-                            docs.transporte.push('RG');
-                        }
-                        
-                        const transporteCnh = document.getElementById('transporte_cnh');
-                        const transporteCnhCard = document.getElementById('transporte-cnh-card');
-                        if ((transporteCnh && transporteCnh.files.length > 0) || 
-                            (transporteCnhCard && transporteCnhCard.classList.contains('has-file')) ||
-                            arquivosExistentes['transporte_cnh']) {
-                            docs.transporte.push('CNH');
-                        }
-                    }
-                    
-                    console.log('📋 Documentos encontrados:', docs);
-                    return docs;
-                }
-
                 function atualizarResumo() {
                     document.getElementById('review-nome').textContent = document.getElementById('nome').value || '-';
                     document.getElementById('review-data').textContent = document.getElementById('data_nasc').value || '-';
@@ -3964,15 +3365,6 @@ if ((!docInput || !docInput.files || docInput.files.length === 0) && !docExisten
                     document.getElementById('review-resp-telefone').textContent = document.querySelector('input[name="responsavel1_telefone"]').value || '-';
                     document.getElementById('review-resp-telefone-contato').textContent = document.querySelector('input[name="responsavel1_telefone_contato"]').value || '-';
                     document.getElementById('review-resp-cpf').textContent = document.querySelector('input[name="responsavel1_cpf"]').value || '-';
-                    const docs = contarDocumentosAnexados();
-                    const docsAlunoEl = document.getElementById('review-docs-aluno');
-                    const docsRespEl = document.getElementById('review-docs-resp');
-                    const docsTerceirosEl = document.getElementById('review-docs-terceiros');
-                    const docsTransporteEl = document.getElementById('review-docs-transporte');
-                    if (docsAlunoEl) docsAlunoEl.textContent = docs.aluno.length > 0 ? docs.aluno.join(', ') : 'Nenhum';
-                    if (docsRespEl) docsRespEl.textContent = docs.responsavel.length > 0 ? docs.responsavel.join(', ') : 'Nenhum';
-                    if (docsTerceirosEl) docsTerceirosEl.textContent = docs.terceiros.length > 0 ? docs.terceiros.join(', ') : 'Nenhum';
-                    if (docsTransporteEl) docsTransporteEl.textContent = docs.transporte.length > 0 ? docs.transporte.join(', ') : 'Nenhum';
                 }
 
                 function limparFormulario() {
@@ -3981,13 +3373,10 @@ if ((!docInput || !docInput.files || docInput.files.length === 0) && !docExisten
                     document.querySelectorAll('[id^="review-foto-"]').forEach(div => div.innerHTML = '');
                     document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
                     document.querySelectorAll('.field-message').forEach(msg => msg.style.display = 'none');
-                    document.querySelectorAll('.upload-card-clean').forEach(card => card.classList.remove('has-file'));
                     terceirosAtivos = false; transporteAtivo = false;
                     document.getElementById('terceiros-container').style.display = 'none';
-                    document.getElementById('terceiros-docs-section').style.display = 'none';
                     document.getElementById('transporte-container').style.display = 'none';
-                    document.getElementById('transporte_docs_section').style.display = 'none';
-                    // Reset deficiência
+                    document.getElementById('transporte_foto_section').style.display = 'none';
                     document.getElementById('deficiencia').value = 'nao';
                     document.getElementById('deficiencia-descricao').style.display = 'none';
                     document.getElementById('deficiencia_desc').value = '';
@@ -3998,117 +3387,108 @@ if ((!docInput || !docInput.files || docInput.files.length === 0) && !docExisten
                 }
 
                 async function abrirCamera(id) {
-    console.log(`📷 Abrindo câmera: ${id}`);
-    fecharCamera(id);
-    
-    const video = document.getElementById(id + '_video');
-    if (!video) {
-        console.error(`❌ Video não encontrado: ${id}_video`);
-        mostrarNotificacao('Erro: elemento de vídeo não encontrado', 'error');
-        return;
-    }
-    
-    // Mostra loading
-    mostrarNotificacao('🔍 Inicializando câmera... Aguarde', 'warning');
-    
-    try {
-        // Primeiro, tenta acessar com permissão padrão
-        const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
-        tempStream.getTracks().forEach(track => track.stop());
-        
-        // Lista todas as câmeras
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        let videoDevices = devices.filter(device => device.kind === 'videoinput');
-        
-        console.log('📹 Câmeras encontradas:');
-        videoDevices.forEach((d, i) => console.log(`   ${i}: ${d.label || 'Sem nome'}`));
-        
-        if (videoDevices.length === 0) {
-            throw new Error('Nenhuma câmera encontrada');
-        }
-        
-        // Para Windows Desktop Positivo, prioriza o índice 1 (USB verdadeira)
-const isWindows = navigator.userAgent.indexOf('Windows') !== -1;
-let selectedDevice;
+                    console.log(`📷 Abrindo câmera: ${id}`);
+                    fecharCamera(id);
+                    
+                    const video = document.getElementById(id + '_video');
+                    if (!video) {
+                        console.error(`❌ Video não encontrado: ${id}_video`);
+                        mostrarNotificacao('Erro: elemento de vídeo não encontrado', 'error');
+                        return;
+                    }
+                    
+                    mostrarNotificacao('🔍 Inicializando câmera... Aguarde', 'warning');
+                    
+                    try {
+                        const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                        tempStream.getTracks().forEach(track => track.stop());
+                        
+                        const devices = await navigator.mediaDevices.enumerateDevices();
+                        let videoDevices = devices.filter(device => device.kind === 'videoinput');
+                        
+                        console.log('📹 Câmeras encontradas:');
+                        videoDevices.forEach((d, i) => console.log(`   ${i}: ${d.label || 'Sem nome'}`));
+                        
+                        if (videoDevices.length === 0) {
+                            throw new Error('Nenhuma câmera encontrada');
+                        }
+                        
+                        const isWindows = navigator.userAgent.indexOf('Windows') !== -1;
+                        let selectedDevice;
 
-if (isWindows && videoDevices.length >= 2) {
-    // Windows: usa índice 1 primeiro (USB verdadeira)
-    selectedDevice = videoDevices[1];
-    console.log('🎯 Windows: usando câmera de índice 1 (USB verdadeira)');
-} else {
-    // Mac/Linux: usa índice 0
-    selectedDevice = videoDevices[0];
-    console.log('🎯 Outros SO: usando câmera de índice 0');
-}
-        
-        console.log(`🎯 Tentando abrir: ${selectedDevice.label || 'USB Camera'}`);
-        
-        // 🔥 CONFIGURAÇÕES MAIS TOLERANTES
-        const constraints = {
-            video: {
-                deviceId: { exact: selectedDevice.deviceId },
-                width: { ideal: 640, max: 1280 },
-                height: { ideal: 480, max: 720 },
-                frameRate: { ideal: 15, max: 30 }
-            }
-        };
-        
-        // Tenta abrir com timeout manual
-        const stream = await new Promise((resolve, reject) => {
-            let timeoutId = setTimeout(() => {
-                reject(new Error('Timeout ao abrir câmera USB (10 segundos)'));
-            }, 10000);
-            
-            navigator.mediaDevices.getUserMedia(constraints)
-                .then(stream => {
-                    clearTimeout(timeoutId);
-                    resolve(stream);
-                })
-                .catch(err => {
-                    clearTimeout(timeoutId);
-                    reject(err);
-                });
-        });
-        
-        video.srcObject = stream;
-        video.classList.add('active');
-        cameraStreams[id] = stream;
-        
-        const track = stream.getVideoTracks()[0];
-        mostrarNotificacao(`📷 Câmera USB ativa: ${track.label}`, 'success');
-        console.log(`✅ Câmera aberta: ${track.label}`);
-        
-    } catch (err) {
-        console.error(`❌ Erro na USB:`, err);
-        
-        // FALLBACK: Tenta a câmera nativa (índice 1)
-        mostrarNotificacao('⚠️ Câmera USB com problemas, tentando câmera nativa...', 'warning');
-        
-        try {
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            let videoDevices = devices.filter(device => device.kind === 'videoinput');
-            
-            let fallbackDevice = videoDevices[1]; // XWF-1080P (nativa)
-            if (!fallbackDevice) fallbackDevice = videoDevices[0];
-            
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { deviceId: { exact: fallbackDevice.deviceId } }
-            });
-            
-            video.srcObject = stream;
-            video.classList.add('active');
-            cameraStreams[id] = stream;
-            
-            const track = stream.getVideoTracks()[0];
-            mostrarNotificacao(`📷 Usando câmera nativa: ${track.label}`, 'warning');
-            console.log(`✅ Fallback funcionou: ${track.label}`);
-            
-        } catch (err2) {
-            console.error('❌ Fallback também falhou:', err2);
-            mostrarNotificacao('Erro: Nenhuma câmera disponível. Verifique as permissões.', 'error');
-        }
-    }
-}
+                        if (isWindows && videoDevices.length >= 2) {
+                            selectedDevice = videoDevices[1];
+                            console.log('🎯 Windows: usando câmera de índice 1 (USB verdadeira)');
+                        } else {
+                            selectedDevice = videoDevices[0];
+                            console.log('🎯 Outros SO: usando câmera de índice 0');
+                        }
+                        
+                        console.log(`🎯 Tentando abrir: ${selectedDevice.label || 'USB Camera'}`);
+                        
+                        const constraints = {
+                            video: {
+                                deviceId: { exact: selectedDevice.deviceId },
+                                width: { ideal: 640, max: 1280 },
+                                height: { ideal: 480, max: 720 },
+                                frameRate: { ideal: 15, max: 30 }
+                            }
+                        };
+                        
+                        const stream = await new Promise((resolve, reject) => {
+                            let timeoutId = setTimeout(() => {
+                                reject(new Error('Timeout ao abrir câmera USB (10 segundos)'));
+                            }, 10000);
+                            
+                            navigator.mediaDevices.getUserMedia(constraints)
+                                .then(stream => {
+                                    clearTimeout(timeoutId);
+                                    resolve(stream);
+                                })
+                                .catch(err => {
+                                    clearTimeout(timeoutId);
+                                    reject(err);
+                                });
+                        });
+                        
+                        video.srcObject = stream;
+                        video.classList.add('active');
+                        cameraStreams[id] = stream;
+                        
+                        const track = stream.getVideoTracks()[0];
+                        mostrarNotificacao(`📷 Câmera USB ativa: ${track.label}`, 'success');
+                        console.log(`✅ Câmera aberta: ${track.label}`);
+                        
+                    } catch (err) {
+                        console.error(`❌ Erro na USB:`, err);
+                        
+                        mostrarNotificacao('⚠️ Câmera USB com problemas, tentando câmera nativa...', 'warning');
+                        
+                        try {
+                            const devices = await navigator.mediaDevices.enumerateDevices();
+                            let videoDevices = devices.filter(device => device.kind === 'videoinput');
+                            
+                            let fallbackDevice = videoDevices[1];
+                            if (!fallbackDevice) fallbackDevice = videoDevices[0];
+                            
+                            const stream = await navigator.mediaDevices.getUserMedia({
+                                video: { deviceId: { exact: fallbackDevice.deviceId } }
+                            });
+                            
+                            video.srcObject = stream;
+                            video.classList.add('active');
+                            cameraStreams[id] = stream;
+                            
+                            const track = stream.getVideoTracks()[0];
+                            mostrarNotificacao(`📷 Usando câmera nativa: ${track.label}`, 'warning');
+                            console.log(`✅ Fallback funcionou: ${track.label}`);
+                            
+                        } catch (err2) {
+                            console.error('❌ Fallback também falhou:', err2);
+                            mostrarNotificacao('Erro: Nenhuma câmera disponível. Verifique as permissões.', 'error');
+                        }
+                    }
+                }
 
                 function capturarFoto(id) {
                     const video = document.getElementById(id + '_video');
@@ -4152,16 +3532,15 @@ if (isWindows && videoDevices.length >= 2) {
 
                 function toggleTransporte(checkbox) {
                     const container = document.getElementById('transporte-container');
-                    const docsSection = document.getElementById('transporte_docs_section');
+                    const fotoSection = document.getElementById('transporte_foto_section');
                     transporteAtivo = checkbox.checked;
                     container.style.display = checkbox.checked ? 'block' : 'none';
-                    docsSection.style.display = checkbox.checked ? 'block' : 'none';
+                    fotoSection.style.display = checkbox.checked ? 'block' : 'none';
                 }
 
                 function toggleDeficiencia(select) {
                     const divDescricao = document.getElementById('deficiencia-descricao');
                     divDescricao.style.display = select.value === 'sim' ? 'block' : 'none';
-                    // Limpa erro ao mudar
                     const msg = document.getElementById('msg-deficiencia-desc');
                     if (msg) msg.style.display = 'none';
                     const campoDesc = document.getElementById('deficiencia_desc');
@@ -4197,22 +3576,28 @@ if (isWindows && videoDevices.length >= 2) {
                     const numero = container.children.length + 2;
                     const div = document.createElement('div'); 
                     div.className = 'responsavel-card';
-                    div.innerHTML = `<button type="button" class="btn-remover" onclick="this.parentElement.remove(); verificarMostrarDocsSegundoResponsavel()">×</button><h3>Responsável Adicional ${numero - 1}</h3><div class="form-grid"><div class="input-wrapper"><label>Nome Completo</label><input type="text" name="responsavel${numero}_nome" placeholder="Nome do responsável" class="input-moderno"></div><div class="input-wrapper"><label>Parentesco</label><select name="responsavel${numero}_parentesco" class="select-moderno"><option value="">Selecione...</option><option value="pai">Pai</option><option value="mae">Mãe</option><option value="avo">Avô/Avó</option><option value="tio">Tio/Tia</option><option value="outro">Outro</option></select></div><div class="input-wrapper"><label>Telefone</label><input type="text" name="responsavel${numero}_telefone" placeholder="(00) 00000-0000" maxlength="15" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div><div class="input-wrapper"><label>Telefone de Contato</label><input type="text" name="responsavel${numero}_telefone_contato" placeholder="(00) 00000-0000" maxlength="15" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')"><small class="small-text">Telefone alternativo para contato</small></div><div class="input-wrapper"><label>CPF</label><input type="text" name="responsavel${numero}_cpf" placeholder="Apenas números" maxlength="11" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div><div class="input-wrapper"><label>RG / CIN</label><input type="text" name="responsavel${numero}_rg" placeholder="RG ou CIN" class="input-moderno"></div><div class="input-wrapper"><label>E-mail</label><input type="email" name="responsavel${numero}_email" placeholder="email@exemplo.com" class="input-moderno"></div></div><div class="camera-section"><label class="section-label">Foto do Responsável</label><div class="camera-controls"><button type="button" class="btn-clean" onclick="abrirCamera('resp${numero}_foto')">Abrir Câmera</button><button type="button" class="btn-clean primary" onclick="capturarFoto('resp${numero}_foto')">Capturar</button><button type="button" class="btn-clean" onclick="document.getElementById('resp${numero}_foto_arquivo').click()">Anexar Arquivo</button></div><video id="resp${numero}_foto_video" class="camera-preview" autoplay></video><canvas id="resp${numero}_foto_canvas" style="display: none;"></canvas><img id="resp${numero}_foto_img" class="foto-capturada" onload="mostrarFotoPreview(this, 'resp${numero}')"><input type="file" id="resp${numero}_foto_arquivo" name="foto_responsavel${numero}" accept="image/*" style="display: none;" onchange="previewArquivo(this, 'resp${numero}_foto_img')"></div>`;
+                    div.innerHTML = `<button type="button" class="btn-remover" onclick="this.parentElement.remove(); verificarMostrarFotosResponsaveis()">×</button><h3>Responsável Adicional ${numero - 1}</h3><div class="form-grid"><div class="input-wrapper"><label>Nome Completo</label><input type="text" name="responsavel${numero}_nome" placeholder="Nome do responsável" class="input-moderno"></div><div class="input-wrapper"><label>Parentesco</label><select name="responsavel${numero}_parentesco" class="select-moderno"><option value="">Selecione...</option><option value="pai">Pai</option><option value="mae">Mãe</option><option value="avo">Avô/Avó</option><option value="tio">Tio/Tia</option><option value="outro">Outro</option></select></div><div class="input-wrapper"><label>Telefone</label><input type="text" name="responsavel${numero}_telefone" placeholder="(00) 00000-0000" maxlength="15" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div><div class="input-wrapper"><label>Telefone de Contato</label><input type="text" name="responsavel${numero}_telefone_contato" placeholder="(00) 00000-0000" maxlength="15" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')"><small class="small-text">Telefone alternativo para contato</small></div><div class="input-wrapper"><label>CPF</label><input type="text" name="responsavel${numero}_cpf" placeholder="Apenas números" maxlength="11" class="input-moderno" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div><div class="input-wrapper"><label>RG / CIN</label><input type="text" name="responsavel${numero}_rg" placeholder="RG ou CIN" class="input-moderno"></div><div class="input-wrapper"><label>E-mail</label><input type="email" name="responsavel${numero}_email" placeholder="email@exemplo.com" class="input-moderno"></div></div><div class="camera-section"><label class="section-label">Foto do Responsável</label><div class="camera-controls"><button type="button" class="btn-clean" onclick="abrirCamera('resp${numero}_foto')">Abrir Câmera</button><button type="button" class="btn-clean primary" onclick="capturarFoto('resp${numero}_foto')">Capturar</button><button type="button" class="btn-clean" onclick="document.getElementById('resp${numero}_foto_arquivo').click()">Anexar Arquivo</button></div><video id="resp${numero}_foto_video" class="camera-preview" autoplay></video><canvas id="resp${numero}_foto_canvas" style="display: none;"></canvas><img id="resp${numero}_foto_img" class="foto-capturada" onload="mostrarFotoPreview(this, 'resp${numero}')"><input type="file" id="resp${numero}_foto_arquivo" name="foto_responsavel${numero}" accept="image/*" style="display: none;" onchange="previewArquivo(this, 'resp${numero}_foto_img')"></div>`;
                     container.appendChild(div);
                     
-                    // Mostrar seção de documentos do 2º responsável
-                    verificarMostrarDocsSegundoResponsavel();
+                    verificarMostrarFotosResponsaveis();
                 }
 
-                function verificarMostrarDocsSegundoResponsavel() {
+                function verificarMostrarFotosResponsaveis() {
                     const container = document.getElementById('responsaveis-adicionais');
-                    const docsSection = document.getElementById('responsavel2-docs-section');
-                    if (container && docsSection) {
-                        // Se tem pelo menos um responsável adicional, mostra os docs
-                        if (container.children.length > 0) {
-                            docsSection.style.display = 'block';
-                        } else {
-                            docsSection.style.display = 'none';
+                    const sections = {
+                        2: document.getElementById('responsavel2-foto-section'),
+                        3: document.getElementById('responsavel3-foto-section'),
+                        4: document.getElementById('responsavel4-foto-section'),
+                        5: document.getElementById('responsavel5-foto-section')
+                    };
+                    
+                    if (container) {
+                        const count = container.children.length;
+                        for (let i = 2; i <= 5; i++) {
+                            const section = sections[i];
+                            if (section) {
+                                section.style.display = (i <= count + 1) ? 'block' : 'none';
+                            }
                         }
                     }
                 }
@@ -4246,12 +3631,12 @@ if (isWindows && videoDevices.length >= 2) {
             <div class="progress-stats">
                 <span class="progress-percent" id="progressPercent">0%</span>
                 <span class="progress-count">
-                    <span id="progressCount">0</span> / <span id="progressTotal">0</span> arquivos
+                    <span id="progressCount">0</span> / <span id="progressTotal">0</span> fotos
                 </span>
             </div>
             
             <div class="progress-status" id="progressStatus">
-                <span>📁 </span>
+                <span>📷 </span>
                 <span class="current-file" id="currentFile">Preparando...</span>
             </div>
             

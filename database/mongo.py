@@ -70,7 +70,6 @@ class MongoDB:
                 self.db.alunos.create_index('num_inscricao', unique=True)
                 print("✅ Índice 'num_inscricao' criado na coleção 'alunos'")
                 
-                # ===== NOVOS ÍNDICES PARA EVITAR DUPLICIDADE =====
                 # Índice para RA (único - opcional, mas recomendado)
                 self.db.alunos.create_index('dados_pessoais.ra', unique=True, sparse=True)
                 print("✅ Índice 'dados_pessoais.ra' criado (único)")
@@ -84,23 +83,7 @@ class MongoDB:
                 self.db.usuarios.create_index('usuario', unique=True)
                 print("✅ Índice 'usuario' criado na coleção 'usuarios'")
             
-            # ===== ÍNDICES PARA DOCUMENTOS =====
-            if 'documentos' in self.db.list_collection_names():
-                # Índice para buscas por tipo (prestacao/atestado)
-                self.db.documentos.create_index('tipo')
-                print("✅ Índice 'tipo' criado na coleção 'documentos'")
-                
-                # Índice composto para buscas por mês e ano
-                self.db.documentos.create_index([('mes', 1), ('ano', 1)])
-                print("✅ Índice composto 'mes+ano' criado na coleção 'documentos'")
-                
-                # Índice para buscas por nome (case insensitive)
-                self.db.documentos.create_index('nome_lower')
-                print("✅ Índice 'nome_lower' criado na coleção 'documentos'")
-                
-                # Índice para ordenação por data de upload
-                self.db.documentos.create_index('data_upload')
-                print("✅ Índice 'data_upload' criado na coleção 'documentos'")
+            # 🔥 REMOVIDOS: Índices da coleção 'documentos' (funcionalidade removida)
             
         except Exception as e:
             print(f"⚠️ Erro ao criar índices: {e}")
@@ -221,7 +204,7 @@ class MongoDB:
             return []
     
     def get_gridfs(self):
-        """Retorna uma instância do GridFS para armazenar arquivos grandes"""
+        """Retorna uma instância do GridFS para armazenar fotos"""
         if self._fs is None:
             self._fs = GridFS(self.db)
         return self._fs
@@ -251,15 +234,20 @@ def get_gridfs():
     return db.get_gridfs()
 
 
-# ==================== FUNÇÕES PARA GRIDFS (ARQUIVOS GRANDES) ====================
+# ==================== FUNÇÕES PARA GRIDFS (FOTOS) ====================
 
 def salvar_arquivo_gridfs(file, nome_original, campo):
-    """Salva arquivo no GridFS e retorna o ID"""
+    """Salva foto no GridFS e retorna o ID"""
     try:
         fs = get_gridfs()
         
         # Ler o arquivo
         file_data = file.read()
+        
+        # 🔥 VALIDAÇÃO: SÓ ACEITA IMAGENS
+        if not file.content_type.startswith('image/'):
+            print(f"   ❌ Tipo de arquivo não permitido: {file.content_type}")
+            return None
         
         # Salvar no GridFS
         file_id = fs.put(
@@ -269,11 +257,12 @@ def salvar_arquivo_gridfs(file, nome_original, campo):
                 'campo': campo,
                 'original_name': nome_original,
                 'content_type': file.content_type,
-                'upload_date': datetime.now()
+                'upload_date': datetime.now(),
+                'tipo': 'foto'  # 🔥 Marca como foto
             }
         )
         
-        print(f"   ✅ Arquivo salvo no GridFS: {nome_original} (ID: {file_id})")
+        print(f"   ✅ Foto salva no GridFS: {nome_original} (ID: {file_id})")
         
         return str(file_id)
         
@@ -283,24 +272,24 @@ def salvar_arquivo_gridfs(file, nome_original, campo):
 
 
 def get_arquivo_gridfs(file_id):
-    """Recupera arquivo do GridFS pelo ID"""
+    """Recupera foto do GridFS pelo ID"""
     try:
         fs = get_gridfs()
         return fs.get(ObjectId(file_id))
     except Exception as e:
-        print(f"❌ Erro ao recuperar arquivo: {e}")
+        print(f"❌ Erro ao recuperar foto: {e}")
         return None
 
 
 def excluir_arquivo_gridfs(file_id):
-    """Exclui arquivo do GridFS pelo ID"""
+    """Exclui foto do GridFS pelo ID"""
     try:
         fs = get_gridfs()
         fs.delete(ObjectId(file_id))
-        print(f"✅ Arquivo excluído do GridFS: {file_id}")
+        print(f"✅ Foto excluída do GridFS: {file_id}")
         return True
     except Exception as e:
-        print(f"❌ Erro ao excluir arquivo: {e}")
+        print(f"❌ Erro ao excluir foto: {e}")
         return False
 
 
@@ -575,51 +564,21 @@ def excluir_aluno(num_inscricao):
         return {'sucesso': False, 'erro': str(e)}
 
 
-# ==================== FUNÇÕES PARA ARQUIVOS (LEGADO - DEPRECATED) ====================
+# ==================== FUNÇÕES DEPRECATED (REMOVER EM BREVE) ====================
 
 def salvar_arquivo(num_inscricao, campo, data_url, nome_arquivo=None):
-    """Salva referência de um arquivo no banco de dados (LEGADO - Use GridFS para arquivos grandes)"""
-    try:
-        from datetime import datetime
-        
-        arquivo = {
-            'num_inscricao': num_inscricao,
-            'campo': campo,
-            'data_url': data_url,
-            'nome_arquivo': nome_arquivo,
-            'data_upload': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        }
-        
-        # Remover arquivo anterior se existir
-        db.arquivos.delete_many({'num_inscricao': num_inscricao, 'campo': campo})
-        
-        # Inserir novo arquivo
-        db.arquivos.insert_one(arquivo)
-        return {'sucesso': True}
-        
-    except Exception as e:
-        return {'sucesso': False, 'erro': str(e)}
+    """⚠️ DEPRECATED: Use GridFS para fotos"""
+    print("⚠️ função salvar_arquivo() está deprecated - use GridFS")
+    return {'sucesso': False, 'erro': 'Função deprecated'}
 
 
 def get_arquivo(num_inscricao, campo):
-    """Recupera um arquivo do banco de dados (LEGADO - Use GridFS para arquivos grandes)"""
-    try:
-        return db.arquivos.find_one(
-            {'num_inscricao': num_inscricao, 'campo': campo},
-            {'_id': 0}
-        )
-    except Exception as e:
-        print(f"Erro ao buscar arquivo: {e}")
-        return None
+    """⚠️ DEPRECATED: Use GridFS para fotos"""
+    print("⚠️ função get_arquivo() está deprecated - use GridFS")
+    return None
 
 
 def listar_arquivos_aluno(num_inscricao):
-    """Lista todos os arquivos de um aluno (LEGADO - Use GridFS para arquivos grandes)"""
-    try:
-        return list(db.arquivos.find(
-            {'num_inscricao': num_inscricao},
-            {'_id': 0}
-        ))
-    except Exception as e:
-        print(f"Erro ao listar arquivos: {e}")
-        return []
+    """⚠️ DEPRECATED: Use GridFS para fotos"""
+    print("⚠️ função listar_arquivos_aluno() está deprecated - use GridFS")
+    return []

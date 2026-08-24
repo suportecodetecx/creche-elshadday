@@ -30,7 +30,6 @@
             visibility: hidden;
         }
 
-        /* Animação das setas estilo Netflix */
         .netflix-loader {
             position: relative;
             width: 120px;
@@ -85,7 +84,6 @@
             100% { transform: scaleX(0.9); opacity: 0.8; }
         }
 
-        /* Efeito de brilho */
         .netflix-loader::before {
             content: '';
             position: absolute;
@@ -103,7 +101,6 @@
             50% { opacity: 1; transform: scale(1); }
         }
 
-        /* Texto "CARREGANDO" */
         .splash-text {
             position: absolute;
             bottom: -50px;
@@ -122,7 +119,7 @@
             50% { opacity: 1; }
         }
 
-        /* ===== TODO O RESTO DO CSS DO SEU INDEX ATUAL ===== */
+        /* ===== TODO O RESTO DO CSS ===== */
         * {
             margin: 0;
             padding: 0;
@@ -145,7 +142,6 @@
             width: 100%;
         }
 
-        /* Header */
         .header {
             text-align: center;
             margin-bottom: 60px;
@@ -185,7 +181,6 @@
             font-size: 1.1rem;
         }
 
-        /* Grid de cards de acesso (4 ícones) */
         .cards-acesso {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -193,7 +188,6 @@
             margin-bottom: 60px;
         }
 
-        /* Cards principais do sistema - inicialmente ocultos */
         .cards-sistema {
             display: none !important;
             gap: 30px;
@@ -204,17 +198,14 @@
             display: grid !important;
         }
 
-        /* Grid para cards pedagógicos (3 colunas) */
         .cards-pedagogico {
             grid-template-columns: repeat(3, 1fr);
         }
 
-        /* Grid para cards administrativos (4 colunas) */
         .cards-admin {
             grid-template-columns: repeat(4, 1fr);
         }
 
-        /* Cards de acesso (4 ícones) */
         .card-acesso {
             background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
             border-radius: 24px;
@@ -272,26 +263,13 @@
             justify-content: center;
             margin: 0 auto 20px;
             font-size: 2.5rem;
-            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease, box-shadow 0.3s ease;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3);
         }
 
         .card-acesso:hover .card-icon {
             transform: translateY(-18px) scale(1.02);
             box-shadow: 0 15px 30px -8px rgba(0,0,0,0.5);
-        }
-
-        .card-acesso.pedagogico:hover .card-icon {
-            background: linear-gradient(135deg, #F40612, #E50914);
-        }
-        .card-acesso.administracao:hover .card-icon {
-            background: linear-gradient(135deg, #B87DE0, #A06CD5);
-        }
-        .card-acesso.professores:hover .card-icon {
-            background: linear-gradient(135deg, #5FDFD7, #4ECDC4);
-        }
-        .card-acesso.colaboradores:hover .card-icon {
-            background: linear-gradient(135deg, #FFDE85, #FFD166);
         }
 
         .card-acesso h3 {
@@ -337,7 +315,6 @@
             border: 1px solid rgba(255, 209, 102, 0.3);
         }
 
-        /* Cards do sistema pedagógico */
         .card-sistema {
             border-radius: 16px;
             padding: 40px 30px;
@@ -388,7 +365,6 @@
             font-size: 0.85rem;
         }
 
-        /* Cards administrativos (4 cards) */
         .card-admin {
             border-radius: 16px;
             padding: 40px 30px;
@@ -442,7 +418,7 @@
             font-size: 0.85rem;
         }
 
-        /* Modal de Login */
+        /* ===== MODAL LOGIN ===== */
         .modal-login {
             display: none;
             position: fixed;
@@ -664,171 +640,7 @@
             color: #F40612;
         }
 
-        /* Modal Suporte */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            backdrop-filter: blur(8px);
-            z-index: 1001;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
-            border-radius: 24px;
-            padding: 40px;
-            max-width: 400px;
-            width: 90%;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .modal-content h3 {
-            color: #fff;
-            margin-bottom: 10px;
-        }
-
-        .modal-content p {
-            color: #aaa;
-            margin-bottom: 20px;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .modal-buttons button {
-            flex: 1;
-            padding: 12px;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-modal-primary {
-            background: linear-gradient(135deg, #E50914, #B81D24);
-            border: none;
-            color: white;
-        }
-
-        /* Modal Trocar Senha */
-        .modal-trocar-senha {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            backdrop-filter: blur(8px);
-            z-index: 1002;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-trocar-senha.active {
-            display: flex;
-        }
-
-        .trocar-senha-box {
-            background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
-            border-radius: 24px;
-            padding: 40px;
-            width: 100%;
-            max-width: 400px;
-            border: 1px solid rgba(255,255,255,0.1);
-            animation: slideUp 0.3s ease;
-        }
-
-        .trocar-senha-box h3 {
-            color: #fff;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        .trocar-senha-box p {
-            color: #aaa;
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        /* Footer */
-        .footer {
-            text-align: center;
-            margin-top: 60px;
-            padding-top: 30px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            color: #666;
-            font-size: 0.85rem;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Responsividade */
-        @media (max-width: 1024px) {
-            .cards-acesso {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .cards-pedagogico {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .cards-admin {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .cards-acesso {
-                grid-template-columns: 1fr;
-            }
-            .cards-pedagogico {
-                grid-template-columns: 1fr;
-            }
-            .cards-admin {
-                grid-template-columns: 1fr;
-            }
-            .header h1 {
-                font-size: 1.8rem;
-            }
-            .login-box {
-                padding: 30px 20px;
-                margin: 20px;
-            }
-            .support-links {
-                flex-direction: column;
-                gap: 10px;
-                align-items: center;
-            }
-            .netflix-loader {
-                transform: scale(0.8);
-            }
-            .logo {
-                width: 80px;
-                height: 80px;
-            }
-        }
-
-        /* Avatar do usuário logado */
+        /* ===== USER INFO ===== */
         .user-info {
             display: none;
             align-items: center;
@@ -886,7 +698,7 @@
             border-color: #E50914;
         }
 
-        /* CORREÇÃO DO SELECT - FUNDO E TEXTO */
+        /* ===== TERMOS ===== */
         .termos-select {
             min-width: 280px;
             padding: 16px 24px;
@@ -1056,7 +868,7 @@
         .termo-link.transporte { background: #A06CD5; color: white; }
         .termo-link.terceiros { background: #FF6B6B; color: white; }
         
-        /* Estilos para o modal de seleção de responsáveis */
+        /* ===== MODAL RESPONSÁVEIS ===== */
         .modal-responsaveis {
             display: none;
             position: fixed;
@@ -1150,7 +962,7 @@
             flex-shrink: 0;
         }
 
-        /* Estilos para o modal de seleção de terceiros */
+        /* ===== MODAL TERCEIROS ===== */
         .modal-terceiros {
             display: none;
             position: fixed;
@@ -1303,22 +1115,172 @@
             padding: 60px;
             color: #888;
         }
-        
+
+        /* ===== MODAL TROCAR SENHA ===== */
+        .modal-trocar-senha {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(8px);
+            z-index: 1002;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-trocar-senha.active {
+            display: flex;
+        }
+
+        .trocar-senha-box {
+            background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: slideUp 0.3s ease;
+        }
+
+        .trocar-senha-box h3 {
+            color: #fff;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .trocar-senha-box p {
+            color: #aaa;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-modal-primary {
+            background: linear-gradient(135deg, #E50914, #B81D24);
+            border: none;
+            color: white;
+        }
+
+        .btn-modal-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3);
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         @keyframes spin { to { transform: rotate(360deg); } }
-        
+
+        /* ===== RESPONSIVIDADE ===== */
+        @media (max-width: 1024px) {
+            .cards-acesso {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .cards-pedagogico {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .cards-admin {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
         @media (max-width: 768px) {
-            .termo-card-header { flex-direction: column; text-align: center; }
-            .termo-detalhes { grid-template-columns: 1fr; }
-            .termos-section { padding: 20px; }
-            .termo-card { padding: 20px; }
-            .responsavel-item, .terceiro-item { flex-wrap: wrap; }
-            .responsavel-foto, .terceiro-foto { width: 45px; height: 45px; font-size: 1.2rem; }
-            .responsavel-info .nome, .terceiro-info .nome { font-size: 0.9rem; }
+            .cards-acesso {
+                grid-template-columns: 1fr;
+            }
+            .cards-pedagogico {
+                grid-template-columns: 1fr;
+            }
+            .cards-admin {
+                grid-template-columns: 1fr;
+            }
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            .login-box {
+                padding: 30px 20px;
+                margin: 20px;
+            }
+            .support-links {
+                flex-direction: column;
+                gap: 10px;
+                align-items: center;
+            }
+            .netflix-loader {
+                transform: scale(0.8);
+            }
+            .logo {
+                width: 80px;
+                height: 80px;
+            }
+            .termo-card-header { 
+                flex-direction: column; 
+                text-align: center; 
+            }
+            .termo-detalhes { 
+                grid-template-columns: 1fr; 
+            }
+            .termos-section { 
+                padding: 20px; 
+            }
+            .termo-card { 
+                padding: 20px; 
+            }
+            .responsavel-item, .terceiro-item { 
+                flex-wrap: wrap; 
+            }
+            .responsavel-foto, .terceiro-foto { 
+                width: 45px; 
+                height: 45px; 
+                font-size: 1.2rem; 
+            }
+            .responsavel-info .nome, .terceiro-info .nome { 
+                font-size: 0.9rem; 
+            }
+            .user-info {
+                flex-wrap: wrap;
+                justify-content: center;
+                padding: 12px 15px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- SPLASH SCREEN ESTILO NETFLIX -->
+    <!-- SPLASH SCREEN -->
     <div id="splashScreen" class="splash-screen">
         <div class="netflix-loader">
             <span></span>
@@ -1339,7 +1301,7 @@
             <p>Sistema de Gestão Educacional</p>
         </div>
 
-        <!-- Info do usuário logado (inicialmente oculto) -->
+        <!-- Info do usuário logado -->
         <div id="userInfo" class="user-info">
             <div class="user-avatar" id="userAvatar">👤</div>
             <div class="user-details">
@@ -1350,9 +1312,8 @@
             <button class="btn-logout" onclick="logout()">Sair</button>
         </div>
 
-        <!-- Cards de Acesso (4 ícones) -->
+        <!-- Cards de Acesso -->
         <div id="cardsAcesso" class="cards-acesso">
-            <!-- Pedagógico - Chapéu de formatura -->
             <div class="card-acesso pedagogico" onclick="abrirLoginPedagogico()">
                 <div class="card-icon">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1366,7 +1327,6 @@
                 <span class="card-badge">ACESSAR</span>
             </div>
 
-            <!-- Administração - Gráfico/Dashboard -->
             <div class="card-acesso administracao" onclick="abrirLoginAdmin()">
                 <div class="card-icon">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1382,7 +1342,6 @@
                 <span class="card-badge">ACESSO RESTRITO</span>
             </div>
 
-            <!-- Professores - Lousa com professor -->
             <div class="card-acesso professores" onclick="mostrarEmBreve('Professores')">
                 <div class="card-icon">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1398,7 +1357,6 @@
                 <span class="card-badge">EM BREVE</span>
             </div>
 
-            <!-- Colaboradores - Grupo de pessoas -->
             <div class="card-acesso colaboradores" onclick="mostrarEmBreve('Colaboradores')">
                 <div class="card-icon">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1414,7 +1372,7 @@
             </div>
         </div>
 
-        <!-- Cards do Sistema Pedagógico (3 botões) -->
+        <!-- Cards Pedagógico -->
         <div id="cardsPedagogico" class="cards-sistema cards-pedagogico">
             <a href="/alunos/cadastro" class="card-sistema">
                 <div class="card-sistema-icon">
@@ -1458,7 +1416,7 @@
             </div>
         </div>
 
-        <!-- Cards Administrativos (4 botões) -->
+        <!-- Cards Admin -->
         <div id="cardsAdmin" class="cards-sistema cards-admin">
             <a href="/funcionarios/cadastro" class="card-admin">
                 <div class="card-admin-icon">
@@ -1499,7 +1457,6 @@
                 <span class="card-badge">ARQUIVO DIGITAL</span>
             </a>
 
-            <!-- NOVO CARD: BENEFÍCIOS -->
             <a href="/beneficios" class="card-admin">
                 <div class="card-admin-icon">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1530,7 +1487,7 @@
             <div id="alunos-termos" class="termos-resultado"></div>
         </div>
 
-        <!-- Modal de Seleção de Responsáveis (para assinar termos) -->
+        <!-- Modal de Seleção de Responsáveis -->
         <div id="modalResponsaveis" class="modal-responsaveis">
             <div class="modal-responsaveis-box">
                 <button class="btn-close" onclick="fecharModalResponsaveis()">✕</button>
@@ -1649,7 +1606,7 @@
     </div>
 
     <script>
-        // ===== SPLASH SCREEN - ESCONDE APÓS 2 SEGUNDOS =====
+        // ===== SPLASH SCREEN =====
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(function() {
                 const splash = document.getElementById('splashScreen');
@@ -1666,7 +1623,7 @@
         let usuarioLogado = null;
         let tipoAcesso = 'pedagogico';
         let alunoSelecionadoGlobal = null;
-        let termoPendente = null; // { tipo, numInscricao, aluno }
+        let termoPendente = null;
 
         // ===== FUNÇÕES DE CAPITALIZAÇÃO =====
         function capitalizarTexto(texto) {
@@ -1710,42 +1667,29 @@
             return palavras.join(' ');
         }
 
-        // Função para obter a foto do responsável
         function getFotoResponsavelUrl(aluno, index) {
             if (!aluno) return null;
-            
             const arquivosIds = aluno.arquivos_ids || {};
             const campoFoto = index === 0 ? 'foto_responsavel1' : `foto_responsavel${index + 1}`;
-            
             if (campoFoto && arquivosIds[campoFoto]) {
-                const fileId = arquivosIds[campoFoto];
-                return `/api/alunos/arquivo/${fileId}`;
+                return `/api/alunos/arquivo/${arquivosIds[campoFoto]}`;
             }
-            
             return null;
         }
 
-        // Função para obter a foto do terceiro
         function getFotoTerceiroUrl(aluno, index) {
             if (!aluno) return null;
-            
             const arquivosIds = aluno.arquivos_ids || {};
             const campoFoto = `foto_terceiro${index + 1}`;
-            
             if (campoFoto && arquivosIds[campoFoto]) {
-                const fileId = arquivosIds[campoFoto];
-                return `/api/alunos/arquivo/${fileId}`;
+                return `/api/alunos/arquivo/${arquivosIds[campoFoto]}`;
             }
-            
             return null;
         }
 
-        // Função para obter a foto do aluno
         function getFotoUrl(aluno, tipo) {
             if (!aluno) return null;
-            
             const arquivosIds = aluno.arquivos_ids || {};
-            
             const campoMap = {
                 'aluno': 'foto_aluno',
                 'responsavel1': 'foto_responsavel1',
@@ -1755,18 +1699,14 @@
                 'terceiro2': 'foto_terceiro2',
                 'transporte': 'foto_transporte'
             };
-            
-            const campoFoto = campoMap[tipo] || (tipo === 'aluno' ? 'foto_aluno' : null);
-            
+            const campoFoto = campoMap[tipo];
             if (campoFoto && arquivosIds[campoFoto]) {
-                const fileId = arquivosIds[campoFoto];
-                return `/api/alunos/arquivo/${fileId}`;
+                return `/api/alunos/arquivo/${arquivosIds[campoFoto]}`;
             }
-            
             return null;
         }
 
-        // ===== FUNÇÃO CORRIGIDA: Abrir modal para selecionar qual responsável vai assinar =====
+        // ===== ABRIR MODAL DE RESPONSÁVEIS =====
         function abrirModalResponsaveis(event, tipo, numInscricao) {
             const button = event.currentTarget;
             const textoOriginal = button.textContent;
@@ -1830,61 +1770,62 @@
             termoPendente = null;
         }
 
+        // ===== GERAR TERMO COM O RESPONSÁVEL SELECIONADO =====
         function gerarTermoComResponsavel(aluno, responsavel, tipo) {
-    console.log('===== GERANDO TERMO =====');
-    console.log('Responsável selecionado:', responsavel);
-    console.log('Tipo:', tipo);
-    
-    const dadosCapitalizados = {
-        nome: capitalizarNome(aluno.dados_pessoais?.nome || ''),
-        ra: aluno.dados_pessoais?.ra || '',
-        turma: capitalizarTexto(aluno.turma?.turma || ''),
-        unidade: capitalizarTexto(aluno.turma?.unidade || ''),
-        endereco: capitalizarTexto(aluno.endereco?.logradouro || ''),
-        numero: aluno.endereco?.numero || '',
-        bairro: capitalizarTexto(aluno.endereco?.bairro || ''),
-        cidade: capitalizarTexto(aluno.endereco?.cidade || ''),
-        uf: aluno.endereco?.uf || '',
-        cep: aluno.endereco?.cep || '',
-        responsavel_nome: capitalizarNome(responsavel.nome || ''),
-        responsavel_parentesco: responsavel.parentesco || 'Responsável',
-        responsavel_rg: responsavel.rg || '',
-        responsavel_cpf: responsavel.cpf || '',
-        responsavel_telefone: responsavel.telefone || '',
-        data_nasc: aluno.dados_pessoais?.data_nasc || '',
-        sexo: aluno.dados_pessoais?.sexo === 'M' ? 'Masculino' : 'Feminino'
-    };
-    
-    sessionStorage.setItem('dadosImpressao', JSON.stringify(dadosCapitalizados));
-    
-    // 🔥 CORREÇÃO: Adiciona os parâmetros do responsável na URL
-    const params = new URLSearchParams({
-        responsavel_nome: dadosCapitalizados.responsavel_nome,
-        responsavel_parentesco: dadosCapitalizados.responsavel_parentesco,
-        responsavel_rg: dadosCapitalizados.responsavel_rg,
-        responsavel_cpf: dadosCapitalizados.responsavel_cpf,
-        responsavel_telefone: dadosCapitalizados.responsavel_telefone,
-        capitalizar: 'true'
-    });
-    
-    const urls = {
-        'imagem': `/visualizar/termo/imagem/${aluno.num_inscricao}?${params.toString()}`,
-        'regulamento': `/visualizar/termo/regulamento/${aluno.num_inscricao}?${params.toString()}`,
-        'saude': `/visualizar/termo/saude/${aluno.num_inscricao}?${params.toString()}`,
-        'transporte': `/visualizar/termo/transporte/${aluno.num_inscricao}?${params.toString()}`
-    };
-    
-    const url = urls[tipo];
-    console.log('URL gerada:', url);
-    
-    if (url) {
-        window.open(url, '_blank');
-    } else {
-        console.error('URL não encontrada para o tipo:', tipo);
-    }
-}
+            console.log('===== GERANDO TERMO =====');
+            console.log('Responsável selecionado:', responsavel);
+            console.log('Tipo:', tipo);
+            
+            const dadosCapitalizados = {
+                nome: capitalizarNome(aluno.dados_pessoais?.nome || ''),
+                ra: aluno.dados_pessoais?.ra || '',
+                turma: capitalizarTexto(aluno.turma?.turma || ''),
+                unidade: capitalizarTexto(aluno.turma?.unidade || ''),
+                endereco: capitalizarTexto(aluno.endereco?.logradouro || ''),
+                numero: aluno.endereco?.numero || '',
+                bairro: capitalizarTexto(aluno.endereco?.bairro || ''),
+                cidade: capitalizarTexto(aluno.endereco?.cidade || ''),
+                uf: aluno.endereco?.uf || '',
+                cep: aluno.endereco?.cep || '',
+                responsavel_nome: capitalizarNome(responsavel.nome || ''),
+                responsavel_parentesco: responsavel.parentesco || 'Responsável',
+                responsavel_rg: responsavel.rg || '',
+                responsavel_cpf: responsavel.cpf || '',
+                responsavel_telefone: responsavel.telefone || '',
+                data_nasc: aluno.dados_pessoais?.data_nasc || '',
+                sexo: aluno.dados_pessoais?.sexo === 'M' ? 'Masculino' : 'Feminino'
+            };
+            
+            sessionStorage.setItem('dadosImpressao', JSON.stringify(dadosCapitalizados));
+            
+            const params = new URLSearchParams({
+                responsavel_nome: dadosCapitalizados.responsavel_nome,
+                responsavel_parentesco: dadosCapitalizados.responsavel_parentesco,
+                responsavel_rg: dadosCapitalizados.responsavel_rg,
+                responsavel_cpf: dadosCapitalizados.responsavel_cpf,
+                responsavel_telefone: dadosCapitalizados.responsavel_telefone,
+                capitalizar: 'true'
+            });
+            
+            const urls = {
+                'imagem': `/visualizar/termo/imagem/${aluno.num_inscricao}?${params.toString()}`,
+                'regulamento': `/visualizar/termo/regulamento/${aluno.num_inscricao}?${params.toString()}`,
+                'saude': `/visualizar/termo/saude/${aluno.num_inscricao}?${params.toString()}`,
+                'transporte': `/visualizar/termo/transporte/${aluno.num_inscricao}?${params.toString()}`
+            };
+            
+            const url = urls[tipo];
+            console.log('URL gerada:', url);
+            
+            if (url) {
+                window.open(url, '_blank');
+            } else {
+                console.error('URL não encontrada para o tipo:', tipo);
+            }
+        }
 
-        // ===== FUNÇÃO PARA TERCEIROS (já existente, mantida) =====
+        // ===== MODAL TERCEIROS - CORRIGIDO =====
+        // ===== ABRIR MODAL DE TERCEIROS (AGORA COM SELEÇÃO DE RESPONSÁVEL) =====
         function abrirModalTerceiros(event, numInscricao) {
             const button = event.currentTarget;
             const textoOriginal = button.textContent;
@@ -1901,9 +1842,26 @@
                 return;
             }
             
+            // Verifica se o aluno tem responsáveis
+            if (!aluno.responsaveis || aluno.responsaveis.length === 0) {
+                mostrarNotificacao('Este aluno não possui responsáveis cadastrados.', 'warning');
+                button.textContent = textoOriginal;
+                button.disabled = false;
+                return;
+            }
+            
+            // Armazena os dados para usar depois
+            termoPendente = { 
+                tipo: 'terceiro', 
+                numInscricao: numInscricao, 
+                aluno: aluno,
+                terceiros: aluno.terceiros
+            };
+            
             const listaDiv = document.getElementById('terceirosLista');
             listaDiv.innerHTML = '';
             
+            // Mostra primeiro os terceiros para selecionar
             aluno.terceiros.forEach((terceiro, index) => {
                 const nomeTerceiro = capitalizarNome(terceiro.nome || 'Terceiro sem nome');
                 const telefone = terceiro.telefone || 'Telefone não informado';
@@ -1911,9 +1869,11 @@
                 
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'terceiro-item';
+                // Ao clicar no terceiro, abre o modal de responsáveis para escolher quem assina
                 itemDiv.onclick = () => {
                     fecharModalTerceiros();
-                    gerarTermoTerceiro(aluno, terceiro, index + 1);
+                    // Abre modal de responsáveis com o terceiro selecionado
+                    abrirModalResponsaveisParaTerceiro(aluno, terceiro, index + 1);
                 };
                 
                 let fotoHtml = '';
@@ -1945,7 +1905,67 @@
             document.getElementById('modalTerceiros').classList.remove('active');
         }
 
-        function gerarTermoTerceiro(aluno, terceiro, numero) {
+        // ===== ABRIR MODAL DE RESPONSÁVEIS PARA TERCEIRO =====
+        function abrirModalResponsaveisParaTerceiro(aluno, terceiro, numeroTerceiro) {
+            // Verifica se o aluno tem responsáveis
+            if (!aluno.responsaveis || aluno.responsaveis.length === 0) {
+                mostrarNotificacao('Este aluno não possui responsáveis cadastrados.', 'warning');
+                return;
+            }
+            
+            const listaDiv = document.getElementById('responsaveisLista');
+            listaDiv.innerHTML = '';
+            
+            // Armazena o terceiro selecionado para usar depois
+            termoPendente = { 
+                tipo: 'terceiro', 
+                aluno: aluno,
+                terceiro: terceiro,
+                numeroTerceiro: numeroTerceiro
+            };
+            
+            // Mostra os responsáveis para selecionar qual vai assinar
+            aluno.responsaveis.forEach((responsavel, index) => {
+                const nomeResp = capitalizarNome(responsavel.nome || 'Responsável sem nome');
+                const parentesco = responsavel.parentesco || 'Responsável';
+                const fotoUrl = getFotoResponsavelUrl(aluno, index);
+                
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'responsavel-item';
+                itemDiv.onclick = () => {
+                    fecharModalResponsaveis();
+                    // Gera o termo com o responsável selecionado e o terceiro
+                    gerarTermoTerceiroComResponsavel(aluno, responsavel, terceiro, numeroTerceiro);
+                };
+                
+                let fotoHtml = '';
+                if (fotoUrl) {
+                    fotoHtml = `<img src="${fotoUrl}" class="responsavel-foto" style="object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">`;
+                    fotoHtml += `<div class="responsavel-foto" style="display: none;">${nomeResp.charAt(0).toUpperCase()}</div>`;
+                } else {
+                    fotoHtml = `<div class="responsavel-foto">${nomeResp.charAt(0).toUpperCase()}</div>`;
+                }
+                
+                itemDiv.innerHTML = `
+                    ${fotoHtml}
+                    <div class="responsavel-info">
+                        <div class="nome">${nomeResp}</div>
+                        <div class="parentesco">${parentesco}</div>
+                    </div>
+                    <div class="responsavel-badge">${index === 0 ? 'PRINCIPAL' : 'RESPONSÁVEL'}</div>
+                `;
+                listaDiv.appendChild(itemDiv);
+            });
+            
+            document.getElementById('modalResponsaveis').classList.add('active');
+        }
+
+        // ===== GERAR TERMO DE TERCEIRO COM RESPONSÁVEL SELECIONADO =====
+        function gerarTermoTerceiroComResponsavel(aluno, responsavel, terceiro, numero) {
+            console.log('===== GERANDO TERMO DE TERCEIRO =====');
+            console.log('Responsável selecionado:', responsavel);
+            console.log('Terceiro selecionado:', terceiro);
+            
             const dadosCapitalizados = {
                 nome: capitalizarNome(aluno.dados_pessoais?.nome || ''),
                 ra: aluno.dados_pessoais?.ra || '',
@@ -1957,10 +1977,15 @@
                 cidade: capitalizarTexto(aluno.endereco?.cidade || ''),
                 uf: aluno.endereco?.uf || '',
                 cep: aluno.endereco?.cep || '',
-                responsavel: capitalizarNome(aluno.responsaveis?.[0]?.nome || ''),
-                telefone: aluno.responsaveis?.[0]?.telefone || '',
+                // Dados do responsável selecionado
+                responsavel_nome: capitalizarNome(responsavel.nome || ''),
+                responsavel_parentesco: responsavel.parentesco || 'Responsável',
+                responsavel_rg: responsavel.rg || '',
+                responsavel_cpf: responsavel.cpf || '',
+                responsavel_telefone: responsavel.telefone || '',
                 data_nasc: aluno.dados_pessoais?.data_nasc || '',
                 sexo: aluno.dados_pessoais?.sexo === 'M' ? 'Masculino' : 'Feminino',
+                // Dados do terceiro selecionado
                 terceiro_nome: capitalizarNome(terceiro.nome || ''),
                 terceiro_telefone: terceiro.telefone || '',
                 terceiro_cpf: terceiro.cpf || '',
@@ -1970,24 +1995,36 @@
             
             sessionStorage.setItem('dadosImpressao', JSON.stringify(dadosCapitalizados));
             
-            const url = `/visualizar/termo/terceiro/${aluno.num_inscricao}?terceiro=${numero}&capitalizar=true`;
+            // Monta os parâmetros para a URL
+            const params = new URLSearchParams({
+                responsavel_nome: dadosCapitalizados.responsavel_nome,
+                responsavel_parentesco: dadosCapitalizados.responsavel_parentesco,
+                responsavel_rg: dadosCapitalizados.responsavel_rg,
+                responsavel_cpf: dadosCapitalizados.responsavel_cpf,
+                responsavel_telefone: dadosCapitalizados.responsavel_telefone,
+                terceiro_nome: dadosCapitalizados.terceiro_nome,
+                terceiro_telefone: dadosCapitalizados.terceiro_telefone,
+                terceiro_cpf: dadosCapitalizados.terceiro_cpf,
+                terceiro_rg: dadosCapitalizados.terceiro_rg,
+                terceiro_numero: dadosCapitalizados.terceiro_numero,
+                capitalizar: 'true'
+            });
+            
+            const url = `/visualizar/termo/terceiro/${aluno.num_inscricao}?${params.toString()}`;
+            console.log('URL gerada:', url);
             window.open(url, '_blank');
         }
 
-        // ===== FUNÇÃO MODIFICADA PARA IMPRIMIR TERMO COM SELEÇÃO DE RESPONSÁVEL =====
+        // ===== IMPRIMIR TERMO =====
         function imprimirTermo(event, tipo, numInscricao) {
-            // Para terceiros, abre modal específico de terceiros
             if (tipo === 'terceiro') {
                 abrirModalTerceiros(event, numInscricao);
                 return;
             }
-            
-            // Para os demais termos (imagem, regulamento, saude, transporte)
-            // Abre modal para selecionar qual responsável vai assinar
             abrirModalResponsaveis(event, tipo, numInscricao);
         }
 
-        // Mantém a função original para compatibilidade com o botão de Matrícula
+        // ===== IMPRIMIR MATRÍCULA =====
         function imprimirTermoMatricula(event, numInscricao) {
             const button = event.currentTarget;
             const textoOriginal = button.textContent;
@@ -2049,7 +2086,7 @@
             setTimeout(() => notificacao.remove(), 3000);
         }
 
-        // Verificar se já tem usuário logado (sessionStorage)
+        // ===== LOGIN =====
         function verificarSessao() {
             const usuario = sessionStorage.getItem('usuarioLogado');
             if (usuario) {
@@ -2062,16 +2099,8 @@
             }
         }
 
-        // Mostrar sistema após login
         function mostrarSistemaLogado() {
             document.getElementById('cardsAcesso').style.display = 'none';
-            
-            console.log('===== USUÁRIO LOGADO =====');
-            console.log('usuario:', usuarioLogado.usuario);
-            console.log('perfil:', usuarioLogado.perfil);
-            console.log('nome:', usuarioLogado.nome);
-            console.log('unidade:', usuarioLogado.unidade);
-            console.log('==========================');
             
             const isMaster = usuarioLogado.perfil === 'master' || usuarioLogado.usuario === 'master';
             const isAdmin = usuarioLogado.perfil === 'admin' && !isMaster;
@@ -2098,13 +2127,7 @@
             } else if (isAdmin) {
                 userRoleSpan.textContent = '👨‍💼 Administrador';
             } else if (usuarioLogado.unidade) {
-                if (usuarioLogado.unidade === 'CEIC El Shadday') {
-                    userRoleSpan.innerHTML = '🏫 CEIC El Shadday';
-                } else if (usuarioLogado.unidade === 'CEIM Prof. Egberto Malta Moreira') {
-                    userRoleSpan.innerHTML = '🏫 CEIM Prof. Egberto Malta Moreira';
-                } else {
-                    userRoleSpan.textContent = capitalizarTexto(usuarioLogado.unidade);
-                }
+                userRoleSpan.textContent = '🏫 ' + capitalizarTexto(usuarioLogado.unidade);
             } else {
                 userRoleSpan.textContent = '👩‍🏫 Pedagógico';
             }
@@ -2206,7 +2229,7 @@
             alert(`🔒 O módulo "${modulo}" está em desenvolvimento e será disponibilizado em breve!`);
         }
 
-        // ===== FUNÇÕES DE TERMOS =====
+        // ===== TERMOS =====
         function toggleTermosSection() {
             const section = document.getElementById('termosSection');
             if (section.style.display === 'none') {
@@ -2376,7 +2399,7 @@
             document.getElementById('alunos-termos').innerHTML = html;
         }
 
-        // Modal Trocar Senha
+        // ===== TROCAR SENHA =====
         function abrirModalTrocarSenha() {
             if (!usuarioLogado) {
                 alert('Você precisa estar logado para alterar a senha.');
@@ -2392,8 +2415,6 @@
 
         function fecharModalTrocarSenha() {
             document.getElementById('modalTrocarSenha').classList.remove('active');
-            document.getElementById('trocarSenhaError').classList.remove('show');
-            document.getElementById('trocarSenhaSuccess').classList.remove('show');
         }
 
         function trocarSenha() {
@@ -2457,7 +2478,7 @@
             document.getElementById('trocarSenhaSuccess').classList.remove('show');
         }
 
-        // Abrir modal de suporte
+        // ===== SUPORTE =====
         function abrirSuporteModal() {
             const modal = document.createElement('div');
             modal.id = 'modalSuporteTemp';
@@ -2486,7 +2507,7 @@
             if (modal) modal.remove();
         }
 
-        // Inicialização
+        // ===== INICIALIZAÇÃO =====
         verificarSessao();
     </script>
 </body>
